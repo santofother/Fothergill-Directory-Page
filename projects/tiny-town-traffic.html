@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tiny Town Traffic — How to Play &amp; Strategy | Fothergill</title>
+<meta name="description" content="Tiny Town Traffic is a tile-based routing puzzle about moving cars through a growing town without gridlock. Learn how to play, the strategy, and why it was built.">
+<meta name="author" content="Fothergill">
+<link rel="canonical" href="https://fothergill.com/projects/tiny-town-traffic.html">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body id="top">
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="../index.html" class="brand"><span class="brand-mark">F</span>FOTHERGILL.COM</a>
+    <nav class="topnav" aria-label="Primary">
+      <a href="../index.html#projects">Projects</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+    </nav>
+    <div class="topbar-status"><span class="pulse-dot"></span><span class="status-text">LIVE</span></div>
+  </div>
+</div>
+
+<main>
+  <header class="subhead">
+    <div class="wrap-narrow">
+      <p class="breadcrumb"><a href="../index.html">Home</a> / <a href="../index.html#projects">Projects</a> / Tiny Town Traffic</p>
+      <h1>Tiny Town Traffic</h1>
+      <p class="lede">A tile-based routing puzzle about guiding cars through a growing town without causing gridlock. Every level is a compact optimization problem: limited tiles, limited space, and traffic that won't wait.</p>
+      <div class="badge-row">
+        <span class="card-tag games">Game</span>
+        <span class="card-status"><span class="pulse-dot"></span>LIVE</span>
+        <a class="btn btn-primary" href="https://santofother.github.io/Tiny-Town-Traffic/" target="_blank" rel="noopener noreferrer">Play Tiny Town Traffic &rarr;</a>
+      </div>
+    </div>
+  </header>
+
+  <article class="article">
+    <div class="wrap-narrow">
+
+      <h2 id="what">What is Tiny Town Traffic?</h2>
+      <p>Tiny Town Traffic is a puzzle game about the invisible logistics that keep a town moving. You're handed a grid, a set of road tiles, and a stream of cars that each need to get from where they start to where they're going. Your job is to lay out roads, intersections, and routes so that every car reaches its destination — without piling up into the gridlock that ends the level. The catch is scarcity: you rarely have enough tiles or enough room to build the obvious sprawling solution, so you're forced to be clever.</p>
+      <p>It belongs to the great tradition of small, deterministic puzzle games — the kind where a level looks trivial for about ten seconds, then reveals a knot you have to think your way out of. There's no twitch reflex required; it's a game of planning, spatial reasoning, and the quiet satisfaction of watching a route you designed suddenly flow.</p>
+
+      <div class="cta-row">
+        <div style="flex:1;min-width:220px;"><strong style="color:var(--text-primary);">In the mood for a puzzle?</strong><br><span style="color:var(--text-secondary);font-size:15px;">Free to play, right in the browser.</span></div>
+        <a class="btn btn-primary" href="https://santofother.github.io/Tiny-Town-Traffic/" target="_blank" rel="noopener noreferrer">Launch the game</a>
+        <a class="btn btn-ghost" href="#how">How to play</a>
+      </div>
+
+      <h2 id="why">Why it was built</h2>
+      <p>The best optimization puzzles teach you something about the real world without ever lecturing. Traffic is a perfect subject: everyone has sat fuming at a badly timed light and thought "I could design this better." Tiny Town Traffic hands you that control and quickly humbles the instinct — routing is genuinely hard, and small local decisions cascade into big global consequences. The game was built to capture that "aha" of untangling a system under constraint, in a package small enough to load instantly and play in a spare few minutes.</p>
+
+      <h2 id="how">How to play</h2>
+      <ol>
+        <li><strong>Read the level.</strong> Each puzzle shows where cars enter, where they need to exit, and the grid space you have to work with.</li>
+        <li><strong>Place road tiles.</strong> Using your limited inventory of tiles, lay down roads and connections to form routes between origins and destinations.</li>
+        <li><strong>Manage the flow.</strong> Cars move along your roads. If too many converge on the same space, they stall — and a stalled town fails the level.</li>
+        <li><strong>Optimize under constraints.</strong> Space and tiles are limited, so you'll often need to route multiple cars through shared paths efficiently rather than giving each its own lane.</li>
+        <li><strong>Clear the level.</strong> Get every car home without gridlock to advance. Later levels tighten the constraints and add more competing routes.</li>
+      </ol>
+
+      <h2 id="strategy">Strategy tips</h2>
+      <h3>Solve the bottleneck first</h3>
+      <p>Every level has a pinch point — the one square or junction everything has to pass through. Design that first, then build outward. Fixing the bottleneck usually makes the rest of the layout obvious.</p>
+      <h3>Share roads, don't duplicate them</h3>
+      <p>When tiles are scarce, the temptation is to give every car a dedicated path. Resist it. A single well-placed shared corridor that staggers traffic is almost always more efficient than two parallel roads.</p>
+      <h3>Think about timing, not just paths</h3>
+      <p>Two routes that cross are fine as long as cars don't arrive at the crossing simultaneously. Sometimes the fix isn't a new road — it's a slightly longer path that changes <em>when</em> a car reaches the conflict point.</p>
+      <h3>Undo is your friend</h3>
+      <p>Treat early attempts as experiments. Build a rough solution, watch where it jams, and iterate. The failures show you exactly which junction to redesign.</p>
+      <blockquote>Gridlock is almost never caused by the whole map — it's one junction doing too much work. Find that junction and the rest of the puzzle tends to solve itself.</blockquote>
+
+      <h2 id="features">Features</h2>
+      <ul>
+        <li><strong>Tile-based, constraint-driven puzzles</strong> that reward planning over reflexes.</li>
+        <li><strong>Escalating difficulty</strong> as levels add cars, shrink space, and tighten your tile budget.</li>
+        <li><strong>Instant, browser-based play</strong> — no download, no account, quick to pick up and put down.</li>
+        <li><strong>Clean, readable board</strong> so you can always see why traffic is stalling.</li>
+        <li><strong>Satisfying "click" moments</strong> when a tangled level suddenly flows.</li>
+      </ul>
+
+      <div class="cta-row">
+        <div style="flex:1;min-width:220px;"><strong style="color:var(--text-primary);">Think you can beat the gridlock?</strong><br><span style="color:var(--text-secondary);font-size:15px;">Start with level one.</span></div>
+        <a class="btn btn-primary" href="https://santofother.github.io/Tiny-Town-Traffic/" target="_blank" rel="noopener noreferrer">Play Tiny Town Traffic</a>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq">
+        <details><summary>Is it free?</summary><p>Yes. Tiny Town Traffic runs free in your browser with nothing to install.</p></details>
+        <details><summary>Is this a real-time or turn-based game?</summary><p>You plan your layout, then watch it run. The thinking is deliberate and unhurried — there's no reflex pressure while you're designing.</p></details>
+        <details><summary>Does it get harder?</summary><p>Yes. Later levels add more cars and competing routes while giving you fewer tiles and less room, so solutions get genuinely tricky.</p></details>
+        <details><summary>Can I play on mobile?</summary><p>It runs in modern browsers; a larger screen can make placing tiles on complex levels more comfortable.</p></details>
+        <details><summary>What do I do if I'm stuck?</summary><p>Look for the single busiest junction and redesign around it — most stuck levels come down to one overloaded pinch point.</p></details>
+      </div>
+
+      <p style="margin-top:40px;"><a href="../index.html#projects">&larr; Back to all projects</a></p>
+    </div>
+  </article>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bottom" style="border-top:none;padding-top:0;">
+      <span>&copy; <span id="year"></span> Fothergill. All rights reserved.</span>
+      <span><a href="../privacy.html" style="color:var(--text-muted);">Privacy</a> &middot; <a href="../contact.html" style="color:var(--text-muted);">Contact</a></span>
+    </div>
+  </div>
+</footer>
+<script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+</body>
+</html>

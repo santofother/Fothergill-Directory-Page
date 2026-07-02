@@ -3,528 +3,31 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fothergill — Independent Projects &amp; Web Apps</title>
-<meta name="description" content="Fothergill is an independent studio building lightweight web games, utilities, and photography platforms — including Liar's Dice, a browser poker platform, an NFL budget draft simulator, and more.">
-<style>
-  :root{
-    --bg: #1a202c;
-    --bg-elevated: #161b26;
-    --surface: #2d3748;
-    --surface-hover: #344055;
-    --border: #4a5568;
-    --border-soft: #3a4557;
-    --accent: #3182ce;
-    --accent-hover: #2b6cb0;
-    --accent-soft: rgba(49, 130, 206, 0.14);
-    --text-primary: #e2e8f0;
-    --text-secondary: #a0aec0;
-    --text-muted: #718096;
-    --status-live: #48bb78;
-    --radius: 10px;
-    --mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  }
-
-  *,*::before,*::after{ box-sizing: border-box; }
-
-  html{ scroll-behavior: smooth; }
-
-  body{
-    margin: 0;
-    background: var(--bg);
-    background-image:
-      radial-gradient(circle at 15% 0%, rgba(49,130,206,0.08), transparent 45%),
-      radial-gradient(circle at 85% 15%, rgba(49,130,206,0.05), transparent 40%);
-    color: var(--text-primary);
-    font-family: var(--sans);
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
-
-  a{ color: inherit; }
-
-  ::selection{ background: var(--accent-soft); color: var(--text-primary); }
-
-  :focus-visible{
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-    border-radius: 4px;
-  }
-
-  .wrap{
-    max-width: 1180px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
-
-  /* ---------- Top bar ---------- */
-  .topbar{
-    border-bottom: 1px solid var(--border-soft);
-    background: rgba(22, 27, 38, 0.7);
-    backdrop-filter: blur(8px);
-    position: sticky;
-    top: 0;
-    z-index: 50;
-  }
-  .topbar-inner{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 24px;
-  }
-  .brand{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-family: var(--mono);
-    font-weight: 700;
-    font-size: 15px;
-    letter-spacing: 0.02em;
-    text-decoration: none;
-    color: var(--text-primary);
-  }
-  .brand-mark{
-    width: 26px;
-    height: 26px;
-    border-radius: 6px;
-    background: linear-gradient(135deg, var(--accent), #63b3ed);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #0b1320;
-    font-weight: 800;
-    font-size: 13px;
-    flex-shrink: 0;
-  }
-  .topbar-status{
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-muted);
-    letter-spacing: 0.04em;
-  }
-  .pulse-dot{
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: var(--status-live);
-    box-shadow: 0 0 0 0 rgba(72,187,120,0.6);
-    animation: pulse 2.2s infinite;
-    flex-shrink: 0;
-  }
-  @keyframes pulse{
-    0%{ box-shadow: 0 0 0 0 rgba(72,187,120,0.45); }
-    70%{ box-shadow: 0 0 0 6px rgba(72,187,120,0); }
-    100%{ box-shadow: 0 0 0 0 rgba(72,187,120,0); }
-  }
-
-  /* ---------- Hero ---------- */
-  .hero{
-    padding: 72px 0 48px;
-    border-bottom: 1px solid var(--border-soft);
-  }
-  .hero-eyebrow{
-    font-family: var(--mono);
-    font-size: 12px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 18px;
-    padding: 6px 12px;
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    background: var(--accent-soft);
-  }
-  .hero h1{
-    font-size: clamp(32px, 5vw, 52px);
-    line-height: 1.08;
-    letter-spacing: -0.02em;
-    margin: 0 0 18px;
-    max-width: 16ch;
-  }
-  .hero p{
-    font-size: 17px;
-    color: var(--text-secondary);
-    max-width: 620px;
-    margin: 0 0 0;
-  }
-  .hero-meta{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 28px;
-    margin-top: 36px;
-    padding-top: 28px;
-    border-top: 1px solid var(--border-soft);
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text-muted);
-  }
-  .hero-meta strong{
-    display: block;
-    color: var(--text-primary);
-    font-size: 22px;
-    font-family: var(--sans);
-    font-weight: 700;
-    margin-bottom: 2px;
-  }
-
-  /* ---------- Filter bar ---------- */
-  .filter-section{
-    padding: 32px 0 0;
-  }
-  .filter-bar{
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-bottom: 28px;
-  }
-  .filter-label{
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-muted);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-right: 6px;
-  }
-  .filter-btn{
-    font-family: var(--mono);
-    font-size: 13px;
-    letter-spacing: 0.02em;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
-    padding: 9px 16px;
-    border-radius: 999px;
-    cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
-  }
-  .filter-btn:hover{
-    color: var(--text-primary);
-    border-color: var(--accent);
-    transform: translateY(-1px);
-  }
-  .filter-btn.active{
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #ffffff;
-  }
-  .filter-count{
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-left: auto;
-  }
-
-  /* ---------- Grid ---------- */
-  .grid{
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 20px;
-    padding-bottom: 72px;
-  }
-
-  .card{
-    background: var(--surface);
-    border: 1px solid var(--border-soft);
-    border-radius: var(--radius);
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-    position: relative;
-  }
-  .card:hover{
-    transform: translateY(-3px);
-    border-color: var(--accent);
-    box-shadow: 0 12px 28px -12px rgba(0,0,0,0.45);
-  }
-  .card.hidden{ display: none; }
-
-  .card-top{
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .card-icon{
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border-soft);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--accent);
-    flex-shrink: 0;
-  }
-  .card-icon svg{ width: 22px; height: 22px; }
-
-  .card-tag{
-    font-family: var(--mono);
-    font-size: 11px;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border-radius: 999px;
-    border: 1px solid var(--border);
-    color: var(--text-secondary);
-    white-space: nowrap;
-  }
-  .card-tag.games{ color: #f6ad55; border-color: rgba(246,173,85,0.35); background: rgba(246,173,85,0.08); }
-  .card-tag.utilities{ color: #63b3ed; border-color: rgba(99,179,237,0.35); background: rgba(99,179,237,0.08); }
-  .card-tag.archive{ color: #b794f4; border-color: rgba(183,148,244,0.35); background: rgba(183,148,244,0.08); }
-
-  .card h2{
-    font-size: 19px;
-    margin: 0;
-    letter-spacing: -0.01em;
-  }
-  .card p{
-    font-size: 14px;
-    color: var(--text-secondary);
-    margin: 0;
-    flex-grow: 1;
-  }
-
-  .card-footer{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 14px;
-    border-top: 1px solid var(--border-soft);
-  }
-  .card-status{
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-muted);
-    letter-spacing: 0.04em;
-  }
-  .card-link{
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    text-decoration: none;
-    padding: 8px 14px;
-    border-radius: 6px;
-    background: var(--accent-soft);
-    transition: background 0.15s ease, color 0.15s ease;
-  }
-  .card-link:hover{
-    background: var(--accent);
-    color: #fff;
-  }
-  .card-link svg{ width: 14px; height: 14px; transition: transform 0.15s ease; }
-  .card-link:hover svg{ transform: translate(2px,-2px); }
-
-  .empty-state{
-    display: none;
-    text-align: center;
-    padding: 64px 24px;
-    color: var(--text-muted);
-    font-family: var(--mono);
-    font-size: 14px;
-  }
-  .empty-state.visible{ display: block; }
-
-  /* ---------- Footer ---------- */
-  footer{
-    border-top: 1px solid var(--border-soft);
-    background: var(--bg-elevated);
-    padding: 48px 0 28px;
-  }
-  .footer-grid{
-    display: grid;
-    grid-template-columns: 1.4fr 1fr 1fr;
-    gap: 40px;
-    padding-bottom: 32px;
-  }
-  .footer-col h3{
-    font-family: var(--mono);
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--text-muted);
-    margin: 0 0 16px;
-  }
-  .footer-col p{
-    font-size: 13.5px;
-    color: var(--text-secondary);
-    margin: 0 0 12px;
-    max-width: 42ch;
-  }
-  .footer-links{
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .footer-links button{
-    background: none;
-    border: none;
-    color: var(--text-secondary);
-    font-family: var(--sans);
-    font-size: 13.5px;
-    cursor: pointer;
-    padding: 0;
-    text-align: left;
-    transition: color 0.15s ease;
-  }
-  .footer-links button:hover{ color: var(--accent); }
-
-  .footer-bottom{
-    padding-top: 24px;
-    border-top: 1px solid var(--border-soft);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    font-size: 12.5px;
-    color: var(--text-muted);
-    font-family: var(--mono);
-  }
-
-  /* ---------- Modal ---------- */
-  .modal-overlay{
-    position: fixed;
-    inset: 0;
-    background: rgba(10, 14, 22, 0.72);
-    backdrop-filter: blur(3px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
-    z-index: 100;
-  }
-  .modal-overlay.open{ display: flex; }
-
-  .modal{
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    max-width: 560px;
-    width: 100%;
-    max-height: 82vh;
-    overflow-y: auto;
-    padding: 32px;
-    position: relative;
-    box-shadow: 0 24px 60px -12px rgba(0,0,0,0.6);
-  }
-  .modal h2{
-    font-size: 21px;
-    margin: 0 0 6px;
-  }
-  .modal .modal-eyebrow{
-    font-family: var(--mono);
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--accent);
-    margin: 0 0 16px;
-  }
-  .modal p{
-    font-size: 14.5px;
-    color: var(--text-secondary);
-    margin: 0 0 14px;
-  }
-  .modal-close{
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    width: 32px;
-    height: 32px;
-    border-radius: 8px;
-    border: 1px solid var(--border);
-    background: var(--bg-elevated);
-    color: var(--text-secondary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    line-height: 1;
-    transition: color 0.15s ease, border-color 0.15s ease;
-  }
-  .modal-close:hover{ color: var(--text-primary); border-color: var(--accent); }
-
-  .form-group{ margin-bottom: 14px; }
-  .form-group label{
-    display: block;
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-muted);
-    margin-bottom: 6px;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-  }
-  .form-group input,
-  .form-group textarea{
-    width: 100%;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 10px 12px;
-    color: var(--text-primary);
-    font-family: var(--sans);
-    font-size: 14px;
-    resize: vertical;
-  }
-  .form-group input:focus,
-  .form-group textarea:focus{ border-color: var(--accent); outline: none; }
-  .form-submit{
-    background: var(--accent);
-    border: none;
-    color: #fff;
-    font-weight: 600;
-    font-size: 14px;
-    padding: 11px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
-  .form-submit:hover{ background: var(--accent-hover); }
-  .contact-note{
-    font-size: 12.5px;
-    color: var(--text-muted);
-    margin-top: 12px;
-  }
-
-  @media (max-width: 760px){
-    .footer-grid{ grid-template-columns: 1fr; gap: 28px; }
-    .hero{ padding: 52px 0 36px; }
-    .topbar-status span.status-text{ display: none; }
-  }
-
-  @media (prefers-reduced-motion: reduce){
-    *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
-  }
-</style>
+<title>Fothergill — Independent Web Games, Tools &amp; Photography Projects</title>
+<meta name="description" content="Fothergill is an independent studio building lightweight browser games, practical web tools, and a photography platform — including Liar's Dice, Trivia Poker, an NFL budget draft game, and more. Read how each project works and why it was built.">
+<meta name="author" content="Fothergill">
+<link rel="canonical" href="https://fothergill.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Fothergill — Independent Web Games, Tools &amp; Photography Projects">
+<meta property="og:description" content="An independent studio building lightweight browser games, practical web tools, and a photography platform. Read how each project works and why it was built.">
+<meta property="og:url" content="https://fothergill.com/">
+<link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body id="top">
 
 <div class="topbar">
   <div class="topbar-inner">
-    <a href="#top" class="brand">
+    <a href="index.html" class="brand">
       <span class="brand-mark">F</span>
       FOTHERGILL.COM
     </a>
+    <nav class="topnav" aria-label="Primary">
+      <a href="#projects">Projects</a>
+      <a href="#how-we-build">How We Build</a>
+      <a href="#updates">Updates</a>
+      <a href="about.html">About</a>
+      <a href="contact.html">Contact</a>
+    </nav>
     <div class="topbar-status">
       <span class="pulse-dot"></span>
       <span class="status-text">ALL SYSTEMS OPERATIONAL</span>
@@ -532,16 +35,16 @@
   </div>
 </div>
 
-<main id="top">
+<main>
   <section class="hero">
     <div class="wrap">
       <span class="hero-eyebrow">Independent Web Studio</span>
-      <h1>Fothergill Independent Projects &amp; Web Apps</h1>
-      <p>A small collection of self-built browser games, practical tools, and photography platforms — each one designed, coded, and maintained independently. No bloat, no accounts required, just projects built to work well.</p>
+      <h1>Fothergill builds small, dependable web apps you can actually use.</h1>
+      <p>Fothergill is a one-person independent studio designing, coding, and maintaining lightweight browser games, practical tools, and a photography platform. Everything here runs directly in your browser — no downloads, no accounts required, and no heavy frameworks slowing things down. This page is the home base: it explains what each project is, how it works, and why it exists.</p>
       <div class="hero-meta">
         <div>
           <strong id="stat-total">6</strong>
-          Active Systems
+          Active Projects
         </div>
         <div>
           <strong id="stat-games">4</strong>
@@ -549,20 +52,44 @@
         </div>
         <div>
           <strong id="stat-utils">2</strong>
-          Utilities / Tools
+          Tools &amp; Platforms
+        </div>
+        <div>
+          <strong>2024</strong>
+          Studio Founded
         </div>
       </div>
     </div>
   </section>
 
-  <section class="filter-section">
+  <!-- ABOUT (on-page, not hidden in a modal) -->
+  <section class="section" id="about">
     <div class="wrap">
+      <p class="section-eyebrow">About Fothergill</p>
+      <h2>A studio built around one idea: software should be light, honest, and finished.</h2>
+      <div class="prose">
+        <p>Most of the web has gotten heavier every year. A simple card game wants you to create an account, accept a dozen trackers, download an app, and sit through a loading screen before you can play a single round. Fothergill exists as a deliberate reaction to that. Every project starts from a simple question: <strong>what is the smallest, fastest thing that still feels great to use?</strong></p>
+        <p>The studio is independent and self-funded. There is no venture money steering the roadmap toward growth-at-all-costs, and no product manager pushing engagement metrics. That freedom shows up in the work. Games load in under a second, run on a phone as comfortably as a laptop, and don't ask for your email before you've had any fun. Tools do one job and do it clearly. When a project is done, it's done — it gets maintained and kept online, not endlessly re-monetized.</p>
+        <p>Fothergill covers three kinds of work. The first is <strong>browser games</strong> — bluffing, trivia, drafting, and party games that are easy to learn and quick to play with friends. The second is <strong>practical tools</strong>, small utilities built to solve a specific, real problem without ceremony. The third is <strong>Santo Photos</strong>, a photography platform for booking sessions, buying prints, and browsing a working portfolio. Different surfaces, same philosophy underneath.</p>
+        <p>This site is the central directory for all of that, but it is more than a list of links. Each project below has its own full write-up covering what it is, how to play or use it, the strategy behind it, and the story of why it was built. If you want the short version, launch anything and start playing. If you want the long version, keep reading — that's what these pages are for.</p>
+        <p><a href="about.html">Read the full story of the studio &rarr;</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURED PROJECTS -->
+  <section class="filter-section" id="projects">
+    <div class="wrap">
+      <p class="section-eyebrow">Featured Projects</p>
+      <h2 style="font-size:clamp(24px,3.4vw,34px);letter-spacing:-0.02em;margin:0 0 8px;">Six projects, each with its own home</h2>
+      <p class="prose" style="margin-bottom:28px;color:var(--text-secondary);">Every card links to a full page explaining the project in depth, plus a direct launch link. Filter by category or read them all.</p>
+
       <div class="filter-bar" role="tablist" aria-label="Filter projects by category">
         <span class="filter-label">Filter</span>
         <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">All</button>
         <button class="filter-btn" data-filter="games" role="tab" aria-selected="false">Games</button>
-        <button class="filter-btn" data-filter="utilities" role="tab" aria-selected="false">Utilities / Tools</button>
-        <span class="filter-count" id="filter-count">6 systems shown</span>
+        <button class="filter-btn" data-filter="utilities" role="tab" aria-selected="false">Tools &amp; Platforms</button>
+        <span class="filter-count" id="filter-count">6 projects shown</span>
       </div>
 
       <div class="grid" id="project-grid">
@@ -575,18 +102,20 @@
             </div>
             <span class="card-tag games">Game</span>
           </div>
-          <h2>Liar's Dice</h2>
-          <p>A classic, fully responsive web-based multiplayer bluffing and dice game built with custom AI bidding rules.</p>
+          <h3 class="card-title"><a href="projects/liars-dice.html">Liar's Dice</a></h3>
+          <p>A fully responsive, browser-based version of the classic bluffing dice game, with custom AI opponents that bid, doubt, and call your bluffs using their own probability model. Learn the rules, the odds, and the strategy on its page.</p>
           <div class="card-footer">
             <span class="card-status"><span class="pulse-dot"></span>LIVE</span>
-            <a class="card-link" href="https://liarsdice.fothergill.com/" target="_blank" rel="noopener noreferrer">
-              Launch
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
-            </a>
+            <div class="card-actions">
+              <a class="card-link ghost" href="projects/liars-dice.html">Read</a>
+              <a class="card-link" href="https://liarsdice.fothergill.com/" target="_blank" rel="noopener noreferrer">Play
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+              </a>
+            </div>
           </div>
         </article>
 
-        <!-- Poker Platform -->
+        <!-- Trivia Poker -->
         <article class="card" data-category="games">
           <div class="card-top">
             <div class="card-icon" aria-hidden="true">
@@ -594,14 +123,16 @@
             </div>
             <span class="card-tag games">Game</span>
           </div>
-          <h2>Trivia Poker</h2>
-          <p>A twist on classic poker where trivia questions decide the stakes — answer correctly to boost your hand, bluff your way through the rest.</p>
+          <h3 class="card-title"><a href="projects/trivia-poker.html">Trivia Poker</a></h3>
+          <p>A hybrid of Texas Hold'em and pub trivia. Answer questions correctly to improve your hand, then bet, bluff, and read the table. A game of both knowledge and nerve — full rules and strategy inside.</p>
           <div class="card-footer">
             <span class="card-status"><span class="pulse-dot"></span>LIVE</span>
-            <a class="card-link" href="https://poker.fothergill.com/" target="_blank" rel="noopener noreferrer">
-              Launch
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
-            </a>
+            <div class="card-actions">
+              <a class="card-link ghost" href="projects/trivia-poker.html">Read</a>
+              <a class="card-link" href="https://poker.fothergill.com/" target="_blank" rel="noopener noreferrer">Play
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+              </a>
+            </div>
           </div>
         </article>
 
@@ -611,16 +142,18 @@
             <div class="card-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="9" ry="6"/><path d="M6 12h12M12 8v8"/></svg>
             </div>
-            <span class="card-tag utilities">Utility / Tool</span>
+            <span class="card-tag utilities">Tool / Game</span>
           </div>
-          <h2>NFL Budget Draft</h2>
-          <p>A competitive draft game for you and your friends — win by knowing NFL players cold and reading how your opponents will spend their budget.</p>
+          <h3 class="card-title"><a href="projects/nfl-budget-draft.html">NFL Budget Draft</a></h3>
+          <p>A salary-cap draft game for football fans. You and your friends build rosters from a shared budget — win by knowing player value cold and predicting how your rivals will spend. A test of NFL knowledge and game theory.</p>
           <div class="card-footer">
             <span class="card-status"><span class="pulse-dot"></span>LIVE</span>
-            <a class="card-link" href="https://budgetnfldraft.fothergill.com/" target="_blank" rel="noopener noreferrer">
-              Launch
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
-            </a>
+            <div class="card-actions">
+              <a class="card-link ghost" href="projects/nfl-budget-draft.html">Read</a>
+              <a class="card-link" href="https://budgetnfldraft.fothergill.com/" target="_blank" rel="noopener noreferrer">Play
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+              </a>
+            </div>
           </div>
         </article>
 
@@ -632,14 +165,16 @@
             </div>
             <span class="card-tag games">Game</span>
           </div>
-          <h2>Tiny Town Traffic</h2>
-          <p>An interactive, tile-based traffic routing puzzle game emphasizing resource constraints and optimization.</p>
+          <h3 class="card-title"><a href="projects/tiny-town-traffic.html">Tiny Town Traffic</a></h3>
+          <p>A tile-based routing puzzle about moving cars through a growing town without gridlock. Every level is a small optimization problem under tight resource constraints. Easy to start, genuinely hard to master.</p>
           <div class="card-footer">
             <span class="card-status"><span class="pulse-dot"></span>LIVE</span>
-            <a class="card-link" href="https://santofother.github.io/Tiny-Town-Traffic/" target="_blank" rel="noopener noreferrer">
-              Launch
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
-            </a>
+            <div class="card-actions">
+              <a class="card-link ghost" href="projects/tiny-town-traffic.html">Read</a>
+              <a class="card-link" href="https://santofother.github.io/Tiny-Town-Traffic/" target="_blank" rel="noopener noreferrer">Play
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+              </a>
+            </div>
           </div>
         </article>
 
@@ -649,16 +184,18 @@
             <div class="card-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-3h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg>
             </div>
-            <span class="card-tag utilities">Utility / Tool</span>
+            <span class="card-tag utilities">Platform</span>
           </div>
-          <h2>Santo Photos</h2>
-          <p>A business photoraphy site for Santo Fothergill. Where you can book session, buy prints and presets, as well as look through collections of his greatest works</p>
+          <h3 class="card-title"><a href="projects/santo-photos.html">Santo Photos</a></h3>
+          <p>The photography platform for Santo Fothergill — book a session, buy prints and editing presets, and browse curated collections. A working portfolio and small storefront in one, built for photographers who'd rather shoot than fight software.</p>
           <div class="card-footer">
             <span class="card-status"><span class="pulse-dot"></span>LIVE</span>
-            <a class="card-link" href="https://santophotos.fothergill.com/" target="_blank" rel="noopener noreferrer">
-              Launch
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
-            </a>
+            <div class="card-actions">
+              <a class="card-link ghost" href="projects/santo-photos.html">Read</a>
+              <a class="card-link" href="https://santophotos.fothergill.com/" target="_blank" rel="noopener noreferrer">Visit
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+              </a>
+            </div>
           </div>
         </article>
 
@@ -670,20 +207,131 @@
             </div>
             <span class="card-tag games">Game</span>
           </div>
-          <h2>Do You Know Me?</h2>
-          <p>A game for couples — rank cards on how you'd answer, then guess what your partner ranked. See how well you really know each other.</p>
+          <h3 class="card-title"><a href="projects/do-you-know-me.html">Do You Know Me?</a></h3>
+          <p>A game for couples and close friends. Rank a set of cards the way you'd answer, then guess how your partner ranked theirs. Points for matching — and a surprisingly honest conversation starter. Rules and ideas inside.</p>
           <div class="card-footer">
             <span class="card-status"><span class="pulse-dot"></span>LIVE</span>
-            <a class="card-link" href="https://fothergill.com/" target="_blank" rel="noopener noreferrer">
-              Launch
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
-            </a>
+            <div class="card-actions">
+              <a class="card-link ghost" href="projects/do-you-know-me.html">Read</a>
+              <a class="card-link" href="https://fothergill.com/" target="_blank" rel="noopener noreferrer">Play
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17L17 7"/><path d="M7 7h10v10"/></svg>
+              </a>
+            </div>
           </div>
         </article>
 
       </div>
 
-      <div class="empty-state" id="empty-state">No systems match this filter yet.</div>
+      <div class="empty-state" id="empty-state">No projects match this filter yet.</div>
+    </div>
+  </section>
+
+  <!-- HOW WE BUILD -->
+  <section class="section" id="how-we-build">
+    <div class="wrap">
+      <p class="section-eyebrow">How We Build</p>
+      <h2>The principles behind every Fothergill project</h2>
+      <div class="prose">
+        <p>There's no house style guide pinned to a wall, but after building this many projects the same handful of rules keep showing up. They're less about technology and more about respect — for the person on the other side of the screen, and for the work aging gracefully.</p>
+      </div>
+      <div class="two-col" style="margin-top:32px;">
+        <div class="info-card">
+          <h3>Fast first, always</h3>
+          <p>If a page can't be interactive in about a second on a mid-range phone, something is wrong. That constraint rules out a lot of heavy libraries early, which usually makes the whole project simpler and more reliable, not just faster.</p>
+        </div>
+        <div class="info-card">
+          <h3>No account walls</h3>
+          <p>You should be able to play or use nearly everything here without signing up for anything. Accounts get added only where they genuinely earn their keep — like saving a photography order — never as a gate in front of the fun.</p>
+        </div>
+        <div class="info-card">
+          <h3>Design for the phone</h3>
+          <p>Most people arrive on a phone, so layouts are built mobile-first and scaled up. Tap targets are generous, text stays readable, and nothing important hides behind a hover you can't perform on a touchscreen.</p>
+        </div>
+        <div class="info-card">
+          <h3>Rules you can read in a minute</h3>
+          <p>A good party game explains itself. Each game aims to be learnable in a single round, with the depth revealing itself as you play rather than in a wall of instructions before you start.</p>
+        </div>
+        <div class="info-card">
+          <h3>Ad-light and honest</h3>
+          <p>Where ads appear, they're there to keep the lights on, not to hijack the page. No pop-ups over your game, no interstitials between every action, and a clear privacy policy explaining what that means for you.</p>
+        </div>
+        <div class="info-card">
+          <h3>Built to stay online</h3>
+          <p>Projects are kept simple partly so they keep working for years without babysitting. A finished game is a promise that it'll still be there — and still load fast — the next time you come back to it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- UPDATES -->
+  <section class="section" id="updates">
+    <div class="wrap">
+      <p class="section-eyebrow">Recent Updates</p>
+      <h2>What's changed lately</h2>
+      <ul class="updates">
+        <li>
+          <span class="update-date">June 2026</span>
+          <div class="update-body">
+            <h3>New project pages for every app</h3>
+            <p>Every project now has a full write-up covering how it works, the strategy behind it, and why it was built — starting from this directory and linking straight into each game.</p>
+          </div>
+        </li>
+        <li>
+          <span class="update-date">May 2026</span>
+          <div class="update-body">
+            <h3>Liar's Dice AI difficulty tuning</h3>
+            <p>The computer opponents in Liar's Dice got a smarter bidding model, so early-game bids feel more human and late-game calls are harder to bluff past.</p>
+          </div>
+        </li>
+        <li>
+          <span class="update-date">April 2026</span>
+          <div class="update-body">
+            <h3>Trivia Poker question bank expanded</h3>
+            <p>Hundreds of new questions across more categories, plus better balancing so a single lucky specialty subject can't run the whole table.</p>
+          </div>
+        </li>
+        <li>
+          <span class="update-date">March 2026</span>
+          <div class="update-body">
+            <h3>Santo Photos storefront refresh</h3>
+            <p>Print ordering and preset downloads moved to a cleaner checkout, and the portfolio collections load faster on mobile connections.</p>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq" style="border-bottom:none;">
+    <div class="wrap">
+      <p class="section-eyebrow">FAQ</p>
+      <h2>Questions people ask</h2>
+      <div class="faq">
+        <details>
+          <summary>Do I need an account to play the games?</summary>
+          <p>No. Every game on this site runs directly in your browser and can be played without creating an account or installing anything. The only place accounts come up is Santo Photos, where you may create one to track a print order or session booking.</p>
+        </details>
+        <details>
+          <summary>Are the games free to play?</summary>
+          <p>Yes, the games are free to play in the browser. The site is supported by lightweight advertising, which is explained in full on the <a href="privacy.html">privacy policy</a> page. Santo Photos sells prints, presets, and photography sessions, which are paid products.</p>
+        </details>
+        <details>
+          <summary>Who makes these projects?</summary>
+          <p>Fothergill is an independent studio run by Santo Fothergill. Each project is designed, coded, and maintained independently rather than by a large team. You can read more on the <a href="about.html">About</a> page.</p>
+        </details>
+        <details>
+          <summary>Can I play on my phone?</summary>
+          <p>Yes. Every project is built mobile-first and works on modern phones, tablets, and desktops. No app store download is required — the browser is the app.</p>
+        </details>
+        <details>
+          <summary>How do I report a bug or suggest a feature?</summary>
+          <p>Head to the <a href="contact.html">contact page</a> and email the address listed there. Bug reports that include your device and browser are especially helpful and genuinely do get read.</p>
+        </details>
+        <details>
+          <summary>How does advertising and data work on this site?</summary>
+          <p>The site uses third-party advertising to stay free. Those providers may use cookies to serve relevant ads. Full details, including how to opt out of personalized advertising, are on the <a href="privacy.html">privacy policy</a> page.</p>
+        </details>
+      </div>
     </div>
   </section>
 </main>
@@ -693,24 +341,27 @@
     <div class="footer-grid">
       <div class="footer-col">
         <h3>Fothergill</h3>
-        <p>Fothergill is an independent studio building lightweight, self-hosted web apps, interactive browser games, and custom tool engineering — with a focus on fast, ad-light experiences that work without accounts or installs.</p>
-        <p>Every project on this page is designed, built, and maintained independently, one system at a time.</p>
+        <p>Fothergill is an independent studio building lightweight, self-hosted web apps, interactive browser games, and a photography platform — with a focus on fast, ad-light experiences that work without accounts or installs.</p>
+        <p>Every project on this site is designed, built, and maintained independently, one system at a time.</p>
       </div>
       <div class="footer-col">
         <h3>Site</h3>
         <ul class="footer-links">
-          <li><button type="button" data-modal="about">About Us</button></li>
-          <li><button type="button" data-modal="contact">Contact</button></li>
-          <li><button type="button" data-modal="privacy">Privacy Policy</button></li>
+          <li><a href="about.html">About Us</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="privacy.html">Privacy Policy</a></li>
+          <li><a href="#how-we-build">How We Build</a></li>
         </ul>
       </div>
       <div class="footer-col">
         <h3>Projects</h3>
         <ul class="footer-links">
-          <li><a href="https://liarsdice.fothergill.com/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">Liar's Dice</a></li>
-          <li><a href="https://poker.fothergill.com/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">Trivia Poker</a></li>
-          <li><a href="https://fothergill.com/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">Do You Know Me?</a></li>
-          <li><a href="https://santophotos.fothergill.com/" target="_blank" rel="noopener noreferrer" style="text-decoration:none;">Santo Photos</a></li>
+          <li><a href="projects/liars-dice.html">Liar's Dice</a></li>
+          <li><a href="projects/trivia-poker.html">Trivia Poker</a></li>
+          <li><a href="projects/nfl-budget-draft.html">NFL Budget Draft</a></li>
+          <li><a href="projects/tiny-town-traffic.html">Tiny Town Traffic</a></li>
+          <li><a href="projects/santo-photos.html">Santo Photos</a></li>
+          <li><a href="projects/do-you-know-me.html">Do You Know Me?</a></li>
         </ul>
       </div>
     </div>
@@ -721,63 +372,11 @@
   </div>
 </footer>
 
-<!-- Modals -->
-<div class="modal-overlay" id="modal-about">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="about-title">
-    <button class="modal-close" data-close="about" aria-label="Close">&times;</button>
-    <p class="modal-eyebrow">About Us</p>
-    <h2 id="about-title">Independent, lightweight, and built to last</h2>
-    <p>Fothergill is a small independent studio focused on one thing: building lightweight, dependable web apps, interactive games, and custom tool engineering that people can use directly in the browser — no downloads, no bloated frameworks, no unnecessary accounts.</p>
-    <p>Each project on this site — from the bluffing mechanics behind Liar's Dice, to the trivia-driven hand-building in Trivia Poker, to the budget-and-read strategy behind NFL Budget Draft, to the ranking-and-guessing rounds in Do You Know Me?, to the curation tools running Santo Photos — is designed, coded, and maintained independently. We favor clean interfaces, fast load times, and tools that respect the visitor's time.</p>
-    <p>This hub exists as the central directory for all active Fothergill systems, so every project has one reliable home.</p>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-contact">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="contact-title">
-    <button class="modal-close" data-close="contact" aria-label="Close">&times;</button>
-    <p class="modal-eyebrow">Contact</p>
-    <h2 id="contact-title">Get in touch</h2>
-    <p>Have a bug report, feature idea, or a question about one of the projects above? Send a message using the form below, or reach us directly at <strong>contact@fothergill.com</strong>.</p>
-    <form id="contact-form">
-      <div class="form-group">
-        <label for="contact-name">Name</label>
-        <input type="text" id="contact-name" name="name" placeholder="Your name" required>
-      </div>
-      <div class="form-group">
-        <label for="contact-email">Email</label>
-        <input type="email" id="contact-email" name="email" placeholder="you@example.com" required>
-      </div>
-      <div class="form-group">
-        <label for="contact-message">Message</label>
-        <textarea id="contact-message" name="message" rows="4" placeholder="How can we help?" required></textarea>
-      </div>
-      <button type="submit" class="form-submit">Send Message</button>
-      <p class="contact-note" id="contact-note">This is a placeholder form for demonstration purposes and is not connected to a live mail server yet.</p>
-    </form>
-  </div>
-</div>
-
-<div class="modal-overlay" id="modal-privacy">
-  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="privacy-title">
-    <button class="modal-close" data-close="privacy" aria-label="Close">&times;</button>
-    <p class="modal-eyebrow">Privacy Policy</p>
-    <h2 id="privacy-title">How we handle data and advertising</h2>
-    <p>We use third-party advertising companies to serve ads when you visit our website. These companies may use cookies and web beacons to collect non-personally identifiable information to provide targeted advertisements about goods and services of interest to you.</p>
-    <p>This site does not sell personally identifiable information. Individual project subdomains linked from this hub (such as Liar's Dice, Poker Platform, and Santo Photos) may maintain their own separate privacy practices relevant to their specific functionality.</p>
-    <p>If you would like to opt out of personalized advertising, you can adjust your preferences through your browser settings or through your advertising provider's opt-out tools.</p>
-    <p>Questions about this policy can be sent to <strong>contact@fothergill.com</strong>.</p>
-  </div>
-</div>
-
 <script>
   (function(){
     "use strict";
-
-    // Year
     document.getElementById('year').textContent = new Date().getFullYear();
 
-    // ---- Filtering ----
     var buttons = document.querySelectorAll('.filter-btn');
     var cards = document.querySelectorAll('.card');
     var countEl = document.getElementById('filter-count');
@@ -791,7 +390,7 @@
         card.classList.toggle('hidden', !show);
         if(show) visible++;
       });
-      countEl.textContent = visible + (visible === 1 ? ' system shown' : ' systems shown');
+      countEl.textContent = visible + (visible === 1 ? ' project shown' : ' projects shown');
       emptyState.classList.toggle('visible', visible === 0);
     }
 
@@ -807,66 +406,11 @@
       });
     });
 
-    // ---- Stats ----
     var gameCount = document.querySelectorAll('.card[data-category="games"]').length;
     var utilCount = document.querySelectorAll('.card[data-category="utilities"]').length;
     document.getElementById('stat-total').textContent = cards.length;
     document.getElementById('stat-games').textContent = gameCount;
     document.getElementById('stat-utils').textContent = utilCount;
-
-    // ---- Modals ----
-    var openButtons = document.querySelectorAll('[data-modal]');
-    var closeButtons = document.querySelectorAll('[data-close]');
-    var overlays = document.querySelectorAll('.modal-overlay');
-
-    function openModal(name){
-      var el = document.getElementById('modal-' + name);
-      if(el){
-        el.classList.add('open');
-        document.body.style.overflow = 'hidden';
-      }
-    }
-    function closeModal(name){
-      var el = document.getElementById('modal-' + name);
-      if(el){
-        el.classList.remove('open');
-        document.body.style.overflow = '';
-      }
-    }
-    function closeAllModals(){
-      overlays.forEach(function(el){ el.classList.remove('open'); });
-      document.body.style.overflow = '';
-    }
-
-    openButtons.forEach(function(btn){
-      btn.addEventListener('click', function(){
-        openModal(btn.getAttribute('data-modal'));
-      });
-    });
-    closeButtons.forEach(function(btn){
-      btn.addEventListener('click', function(){
-        closeModal(btn.getAttribute('data-close'));
-      });
-    });
-    overlays.forEach(function(overlay){
-      overlay.addEventListener('click', function(e){
-        if(e.target === overlay){ closeAllModals(); }
-      });
-    });
-    document.addEventListener('keydown', function(e){
-      if(e.key === 'Escape'){ closeAllModals(); }
-    });
-
-    // ---- Contact form placeholder ----
-    var form = document.getElementById('contact-form');
-    if(form){
-      form.addEventListener('submit', function(e){
-        e.preventDefault();
-        var note = document.getElementById('contact-note');
-        note.textContent = 'Thanks — this demo form does not send messages yet. Please email contact@fothergill.com directly.';
-        note.style.color = 'var(--accent)';
-      });
-    }
   })();
 </script>
 

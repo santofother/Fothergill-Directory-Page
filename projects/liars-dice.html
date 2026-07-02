@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Liar's Dice — Rules, Strategy &amp; How to Play Online | Fothergill</title>
+<meta name="description" content="Learn how to play Liar's Dice online: full rules, the probability math behind good bids, bluffing strategy, and how Fothergill's browser version and its AI opponents work.">
+<meta name="author" content="Fothergill">
+<link rel="canonical" href="https://fothergill.com/projects/liars-dice.html">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body id="top">
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="../index.html" class="brand"><span class="brand-mark">F</span>FOTHERGILL.COM</a>
+    <nav class="topnav" aria-label="Primary">
+      <a href="../index.html#projects">Projects</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+    </nav>
+    <div class="topbar-status"><span class="pulse-dot"></span><span class="status-text">LIVE</span></div>
+  </div>
+</div>
+
+<main>
+  <header class="subhead">
+    <div class="wrap-narrow">
+      <p class="breadcrumb"><a href="../index.html">Home</a> / <a href="../index.html#projects">Projects</a> / Liar's Dice</p>
+      <h1>Liar's Dice</h1>
+      <p class="lede">A browser-based version of the centuries-old bluffing dice game, with AI opponents that bid, doubt, and call using their own probability model. No download, no account — just roll and lie convincingly.</p>
+      <div class="badge-row">
+        <span class="card-tag games">Game</span>
+        <span class="card-status"><span class="pulse-dot"></span>LIVE</span>
+        <a class="btn btn-primary" href="https://liarsdice.fothergill.com/" target="_blank" rel="noopener noreferrer">Play Liar's Dice &rarr;</a>
+      </div>
+    </div>
+  </header>
+
+  <article class="article">
+    <div class="wrap-narrow">
+
+      <h2 id="what">What is Liar's Dice?</h2>
+      <p>Liar's Dice is a game of dice, deception, and probability for two or more players. Everyone rolls a cup of five dice and keeps them hidden. Players then take turns making escalating claims about how many dice of a given face value are on the <strong>entire</strong> table — not just their own. Because you can only see your own dice, every claim is part information and part bluff. The round ends the moment someone doesn't believe the last claim and calls "liar." Then all cups lift, the dice are counted, and either the bluffer or the doubter loses a die.</p>
+      <p>It's a beautifully simple loop that produces surprisingly deep play. A single round can be decided by cold arithmetic, by a fearless bluff, or by correctly reading that the quiet player across the table always overbids when they're nervous. Fothergill's version brings that tension to the browser and gives you AI opponents good enough to make bluffing genuinely risky.</p>
+
+      <div class="cta-row">
+        <div style="flex:1;min-width:220px;"><strong style="color:var(--text-primary);">Want to jump straight in?</strong><br><span style="color:var(--text-secondary);font-size:15px;">The full game runs free in your browser.</span></div>
+        <a class="btn btn-primary" href="https://liarsdice.fothergill.com/" target="_blank" rel="noopener noreferrer">Launch the game</a>
+        <a class="btn btn-ghost" href="#rules">Read the rules first</a>
+      </div>
+
+      <h2 id="history">A short history of the game</h2>
+      <p>Liar's Dice has been played in one form or another for hundreds of years, with roots often traced to South America and to sailors and taverns across Europe, where a cup of dice was cheap, portable entertainment. It travels under many names — <em>Dudo</em>, <em>Perudo</em>, <em>Cacho</em>, <em>Mexicano</em> — and every region has its own house rules for wild ones, spot-on calls, and how the first bid works. Most people today know it from film and family game nights, where its "everyone lies until someone snaps" rhythm makes it an instant crowd favorite.</p>
+      <p>What's remarkable is how little the core has changed. Strip away the regional flourishes and you're left with the same elegant standoff: partial information, escalating commitment, and one moment of truth. That durability is exactly why it made a good first game to build — the design work was done centuries ago; the job was to translate it faithfully to a screen.</p>
+
+      <h2 id="rules">The rules, step by step</h2>
+      <p>Here is the standard game as implemented in the Fothergill version:</p>
+      <ol>
+        <li><strong>Setup.</strong> Each player starts with five dice hidden under a cup. At the start of every round, all players roll and secretly look at their own dice.</li>
+        <li><strong>The opening bid.</strong> The first player makes a bid stating a quantity and a face value — for example, "three fours." This is a claim that there are <em>at least</em> three dice showing a four across all cups on the table.</li>
+        <li><strong>Raising.</strong> Play passes around. On your turn you must either raise the bid or call the previous player a liar. A legal raise increases the quantity (e.g. "four fours"), keeps the quantity and increases the face (e.g. "three fives"), or both.</li>
+        <li><strong>Ones are wild.</strong> In the standard ruleset, dice showing a one count toward <em>any</em> face value, which quietly makes every honest bid more likely than it looks.</li>
+        <li><strong>Calling "liar."</strong> If you think the current bid is too high to be true, you challenge it. Everyone lifts their cups and the relevant dice are counted.</li>
+        <li><strong>Resolving the challenge.</strong> If the count meets or beats the bid, the bid was true and the challenger loses a die. If the count falls short, the bidder was lying and <em>they</em> lose a die.</li>
+        <li><strong>Elimination.</strong> A player who loses their last die is out. The last player with dice remaining wins the game.</li>
+      </ol>
+      <p>Because the total number of dice shrinks as players lose them, the math shifts every round — a bid that was safe with thirty dice on the table becomes reckless with eight.</p>
+
+      <h2 id="odds">The probability behind a good bid</h2>
+      <p>Under the hood, Liar's Dice is an exercise in the binomial distribution, and you don't need the formula to feel it. The key intuition: for any face value, each unknown die has a <strong>1 in 3</strong> chance of matching, once you account for ones being wild (a 1/6 chance of rolling the face plus a 1/6 chance of rolling a wild one). So a fast rule of thumb is that roughly a third of all the dice you can't see will match any face you name.</p>
+      <p>Say there are 15 dice on the table and you're holding two fours. Of the 10 dice you can't see, you can expect around three to also be fours or wild — so a bid of "five fours" sits right around the expected value, and "four fours" is comfortably safe. Push to "seven fours" and you're betting on a well-above-average roll. Good players carry this estimate in their head and use it to decide not just what to bid, but when a bid has drifted far enough past the expectation that calling "liar" becomes correct.</p>
+
+      <h2 id="strategy">Strategy: how to actually win</h2>
+      <h3>Anchor your bids to dice you hold</h3>
+      <p>The safest bids lean on faces you already own. If you have three sixes in your own cup, bidding on sixes means you only need a little help from everyone else to be telling the truth. Bluffing on a face you hold none of is high-variance — sometimes necessary, but never your default.</p>
+      <h3>Track the shrinking table</h3>
+      <p>Every eliminated die changes the odds. Beginners keep bidding as if the table is still full; strong players recalculate the expected count each round and pounce when an opponent overbids a thinned-out table.</p>
+      <h3>Bluff with information, not just bravado</h3>
+      <p>The best bluffs are the believable ones — bids that sit just above the expected value, so an opponent can't safely call without risking their own die. Wild, obvious overbids only work as a rare psychological weapon, not a strategy.</p>
+      <h3>Read the rhythm of the table</h3>
+      <p>Against the Fothergill AI, watch how aggressively each opponent raises versus calls. The bots have distinct tendencies, and once you learn which one folds under pressure and which one calls your marginal bids, you can bait them into bad challenges.</p>
+      <blockquote>The single most common beginner mistake is calling "liar" too early. Because ones are wild, honest bids are more likely than they look — when in doubt on a low bid, raise instead of challenging.</blockquote>
+
+      <h2 id="ai">How the AI opponents work</h2>
+      <p>The computer players aren't just rolling random raises. Each turn, the AI estimates the likely total for the current face using the same 1-in-3 expectation described above, factoring in its own hidden dice as certain information. It then compares the standing bid against that estimate: if the bid still looks plausible, it raises to a bid that's aggressive but defensible; if the bid has climbed past what the math supports, it calls "liar." A small amount of controlled randomness and per-opponent personality keeps the bots from feeling robotic, so you get bluffs, occasional overreaches, and the odd fearless call that keeps you honest.</p>
+
+      <h2 id="features">Features of the browser version</h2>
+      <ul>
+        <li><strong>Fully responsive</strong> — plays cleanly on phones, tablets, and desktops with touch-friendly controls.</li>
+        <li><strong>Instant load, no account</strong> — open the link and you're in a game; nothing to install or sign up for.</li>
+        <li><strong>Probability-driven AI</strong> — opponents that bid and call based on real odds, not scripted moves.</li>
+        <li><strong>Standard ruleset with wild ones</strong> — the widely played version most people already know.</li>
+        <li><strong>Clean, distraction-light interface</strong> — the focus stays on the dice and the bluff.</li>
+      </ul>
+
+      <div class="cta-row">
+        <div style="flex:1;min-width:220px;"><strong style="color:var(--text-primary);">Ready to test your poker face?</strong><br><span style="color:var(--text-secondary);font-size:15px;">Play a full game against the AI right now.</span></div>
+        <a class="btn btn-primary" href="https://liarsdice.fothergill.com/" target="_blank" rel="noopener noreferrer">Play Liar's Dice</a>
+      </div>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq">
+        <details><summary>Is Liar's Dice free to play here?</summary><p>Yes. The full game runs free in your browser with no account required.</p></details>
+        <details><summary>How many players are there?</summary><p>You play against AI opponents that fill the table, so you can start a full game solo any time.</p></details>
+        <details><summary>Are ones always wild?</summary><p>In this version ones count as wild toward any face value, which is the most common standard ruleset. It makes honest bids a little more likely than the raw numbers suggest.</p></details>
+        <details><summary>What happens when I lose all my dice?</summary><p>You're eliminated from that game. The last player holding dice wins.</p></details>
+        <details><summary>Do I need to be good at math?</summary><p>No. The one-in-three rule of thumb is all you need to bid sensibly, and you'll develop a feel for it after a few rounds.</p></details>
+      </div>
+
+      <p style="margin-top:40px;"><a href="../index.html#projects">&larr; Back to all projects</a></p>
+    </div>
+  </article>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bottom" style="border-top:none;padding-top:0;">
+      <span>&copy; <span id="year"></span> Fothergill. All rights reserved.</span>
+      <span><a href="../privacy.html" style="color:var(--text-muted);">Privacy</a> &middot; <a href="../contact.html" style="color:var(--text-muted);">Contact</a></span>
+    </div>
+  </div>
+</footer>
+<script>document.getElementById('year').textContent=new Date().getFullYear();</script>
+</body>
+</html>
