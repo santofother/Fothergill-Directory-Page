@@ -111,6 +111,72 @@ img{ max-width: 100%; height: auto; }
 }
 .topnav a:hover, .topnav a.active{ color: var(--text-primary); }
 
+/* ---------- Play dropdown (top nav) ---------- */
+.play-menu{ position: relative; display: inline-flex; }
+.play-toggle{
+  font-family: var(--mono);
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  color: var(--text-primary);
+  background: var(--accent-soft);
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 5px 12px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.play-toggle:hover{ border-color: var(--accent); }
+.play-toggle .caret{ font-size: 8px; opacity: 0.8; transition: transform 0.18s ease; }
+.play-menu:hover .play-toggle .caret,
+.play-menu:focus-within .play-toggle .caret{ transform: rotate(180deg); }
+.play-dropdown{
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) translateY(-6px);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-soft);
+  border-radius: 10px;
+  padding: 6px;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  box-shadow: 0 14px 34px rgba(0,0,0,0.4);
+  z-index: 60;
+  transition: opacity 0.15s ease, transform 0.15s ease, visibility 0.15s;
+}
+/* transparent bridge so hover survives the gap between button and menu */
+.play-dropdown::before{ content:''; position:absolute; top:-10px; left:0; right:0; height:10px; }
+.play-menu:hover .play-dropdown,
+.play-menu:focus-within .play-dropdown{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+.play-dropdown a{
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text-secondary);
+  padding: 9px 12px;
+  border-radius: 7px;
+  text-decoration: none;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.play-dropdown a:hover{ background: var(--accent-soft); color: var(--text-primary); }
+.play-dropdown a .dot{ font-size: 13px; }
+
 .topbar-status{
   display: flex;
   align-items: center;
