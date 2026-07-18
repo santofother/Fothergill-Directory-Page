@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Play NFL Budget Draft Online — Free Single-Player Salary-Cap Auction Game vs AI | Fothergill</title>
+<meta name="description" content="Play NFL Budget Draft free in your browser. Build a 10-man roster from a shared salary cap in a blind-bid auction against AI general managers across four difficulty levels. Value players, manage your budget, and out-draft the room — no download, no account. Full rules and strategy included.">
+<meta name="author" content="Fothergill">
+<meta name="keywords" content="nfl budget draft, salary cap draft game, fantasy auction draft, play budget draft online, nfl auction game, single player draft game, football gm game, blind bid auction, draft simulator, nfl roster builder">
+<link rel="canonical" href="https://fothergill.com/budget-draft/">
+<meta property="og:type" content="game">
+<meta property="og:title" content="Play NFL Budget Draft Online — Free Single-Player Salary-Cap Auction Game">
+<meta property="og:description" content="Build a roster from a shared salary cap in a blind-bid auction against AI general managers. Value players, manage your budget, and out-draft the room — no download or account.">
+<meta property="og:url" content="https://fothergill.com/budget-draft/">
+<link rel="stylesheet" href="../style.css">
+<style>
+  /* ---------- NFL Budget Draft board (page-scoped) ---------- */
+  .game-shell{ max-width: 960px; margin: 0 auto 8px; padding: 0 24px; }
+  .game-panel{ background: var(--bg-elevated); border: 1px solid var(--border-soft); border-radius: 14px; padding: 22px; margin: 18px 0; }
+  .game-panel h2{ margin-top: 0; }
+  .hidden{ display:none !important; }
+  .label-cap{ font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
+
+  .setup-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin:14px 0 6px; }
+  .field-block{ margin-bottom:4px; }
+  .field-block > .label-cap{ display:block; margin-bottom:8px; }
+  .name-input{ width:100%; padding:12px 14px; font-size:16px; background:var(--surface); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-family:var(--sans); }
+  .name-input:focus{ outline:none; border-color:var(--accent); }
+  .seg{ display:flex; flex-wrap:wrap; gap:8px; }
+  .seg button{ flex:1; min-width:60px; padding:10px 8px; background:var(--surface); border:1px solid var(--border); color:var(--text-secondary); border-radius:8px; font-size:14px; cursor:pointer; transition:all .15s ease; }
+  .seg button:hover{ border-color:var(--accent); color:var(--text-primary); }
+  .seg button.selected{ background:var(--accent-soft); border-color:var(--accent); color:var(--text-primary); font-weight:600; }
+  .diff-note{ margin-top:10px; font-size:13.5px; color:var(--text-secondary); min-height:20px; }
+
+  /* GM cards / standings */
+  .gm-row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin:4px 0 18px; }
+  .gm-card{ background:var(--surface); border:1px solid var(--border-soft); border-radius:12px; padding:12px 14px; transition:border-color .2s ease; }
+  .gm-card.you{ border-color:var(--status-live); }
+  .gm-card.leader{ box-shadow:0 0 0 1px var(--accent); }
+  .gm-name{ font-weight:600; font-size:14px; color:var(--text-primary); display:flex; align-items:center; gap:6px; }
+  .gm-badge{ font-family:var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase; padding:1px 6px; border-radius:5px; background:rgba(72,187,120,0.16); color:#9ae6b4; }
+  .gm-stat{ font-family:var(--mono); font-size:12.5px; color:var(--text-secondary); margin-top:6px; display:flex; justify-content:space-between; }
+  .gm-stat .big{ color:var(--text-primary); font-weight:700; font-size:15px; }
+  .slotpips{ display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
+  .slotpip{ width:14px; height:8px; border-radius:2px; background:var(--border); }
+  .slotpip.filled{ background:var(--accent); }
+
+  /* Player card (up for auction) */
+  .auction-card{ background:linear-gradient(160deg,#243244,#161b26); border:1px solid var(--border); border-radius:14px; padding:20px; margin:6px 0 16px; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
+  .ovr-badge{ width:74px; height:74px; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; flex-shrink:0; box-shadow:0 4px 12px rgba(0,0,0,.35); }
+  .ovr-badge .num{ font-size:30px; font-weight:800; line-height:1; }
+  .ovr-badge .lbl{ font-size:10px; letter-spacing:.08em; opacity:.85; }
+  .pl-info{ min-width:180px; flex:1; }
+  .pl-name{ font-size:22px; font-weight:700; color:var(--text-primary); }
+  .pl-sub{ color:var(--text-secondary); font-size:14px; margin-top:2px; }
+  .pos-tag{ display:inline-block; font-family:var(--mono); font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; color:#fff; margin-right:8px; }
+  .accolades{ display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; }
+  .acc{ text-align:center; }
+  .acc .v{ font-size:18px; font-weight:700; color:var(--text-primary); }
+  .acc .k{ font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  .fills-note{ font-size:13px; color:var(--text-muted); margin-top:8px; }
+
+  /* Bid controls */
+  .bid-box{ background:var(--surface); border:1px solid var(--border-soft); border-radius:12px; padding:16px; }
+  .bid-box h3{ margin:0 0 12px; font-size:14px; font-family:var(--mono); letter-spacing:.04em; text-transform:uppercase; color:var(--text-secondary); }
+  .stepper{ display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
+  .stepper button.step{ width:40px; height:40px; border-radius:8px; border:1px solid var(--border); background:var(--surface-hover); color:var(--text-primary); font-size:20px; line-height:1; cursor:pointer; }
+  .stepper button.step:hover{ border-color:var(--accent); }
+  .bid-amount{ font-size:26px; font-weight:800; color:var(--accent); min-width:70px; text-align:center; }
+  .bid-amount .dollar{ color:var(--text-secondary); font-size:18px; }
+  .quickbids{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px; }
+  .quickbids button{ padding:7px 12px; border-radius:20px; border:1px solid var(--border); background:var(--surface); color:var(--text-secondary); cursor:pointer; font-size:13px; }
+  .quickbids button:hover{ border-color:var(--accent); color:var(--text-primary); }
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn-row .btn{ flex:1; min-width:130px; justify-content:center; }
+  .btn-danger{ background:#c53030; color:#fff; } .btn-danger:hover{ background:#9b2c2c; }
+  .btn[disabled]{ opacity:.4; cursor:not-allowed; pointer-events:none; }
+  .bid-cap{ font-size:12.5px; color:var(--text-muted); font-family:var(--mono); margin-top:6px; }
+
+  /* Reveal */
+  .reveal-box{ background:var(--surface); border:1px solid var(--accent); border-radius:12px; padding:16px 18px; margin-top:14px; }
+  .reveal-box h3{ margin:0 0 10px; font-size:17px; }
+  .bidline{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--border-soft); font-size:14px; }
+  .bidline:last-child{ border-bottom:none; }
+  .bidline.win{ color:#9ae6b4; font-weight:600; }
+  .bidline .amt{ font-family:var(--mono); }
+
+  /* Log */
+  .log{ margin-top:16px; max-height:200px; overflow-y:auto; background:var(--bg); border:1px solid var(--border-soft); border-radius:10px; padding:12px 14px; }
+  .log-entry{ font-size:13.5px; padding:5px 0; border-bottom:1px dashed var(--border-soft); color:var(--text-secondary); }
+  .log-entry:last-child{ border-bottom:none; }
+  .log-entry .who{ color:var(--text-primary); font-weight:600; }
+  .log-entry.system{ color:var(--accent); font-family:var(--mono); font-size:12.5px; }
+
+  /* Roster table */
+  .roster-wrap{ overflow-x:auto; }
+  table.roster{ width:100%; border-collapse:collapse; margin-top:8px; font-size:14px; }
+  table.roster th, table.roster td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--border-soft); }
+  table.roster th{ font-family:var(--mono); font-size:11px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
+  table.roster td.slot{ font-family:var(--mono); color:var(--text-muted); font-size:12px; }
+  table.roster td.empty{ color:var(--text-muted); font-style:italic; }
+  table.roster td.ovr{ font-weight:700; color:var(--text-primary); text-align:right; }
+  table.roster td.paid{ font-family:var(--mono); color:var(--text-secondary); text-align:right; }
+  table.roster tfoot td{ font-weight:700; color:var(--text-primary); border-top:2px solid var(--border); }
+
+  .banner-win{ text-align:center; padding:24px 20px; background:linear-gradient(135deg,var(--accent-soft),transparent); border:1px solid var(--accent); border-radius:12px; margin:16px 0; }
+  .banner-win h3{ font-size:24px; margin:0 0 8px; }
+  .final-grid{ display:grid; gap:14px; grid-template-columns:1fr; margin-top:10px; }
+  @media(min-width:700px){ .final-grid{ grid-template-columns:1fr 1fr; } }
+  .final-team{ background:var(--surface); border:1px solid var(--border-soft); border-radius:12px; padding:14px; }
+  .final-team.winner{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .final-team h4{ margin:0 0 4px; display:flex; justify-content:space-between; align-items:center; }
+  .final-team .tot{ font-size:13px; color:var(--text-secondary); }
+</style>
+</head>
+<body id="top">
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="../index.html" class="brand"><span class="brand-mark">F</span>FOTHERGILL.COM</a>
+    <nav class="topnav" aria-label="Primary">
+      <a href="../index.html#projects">Projects</a>
+      <a href="../projects/nfl-budget-draft.html">Rules &amp; Strategy</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+    </nav>
+    <div class="topbar-status"><span class="pulse-dot"></span><span class="status-text">LIVE</span></div>
+  </div>
+</div>
+
+<main>
+  <header class="subhead">
+    <div class="wrap-narrow">
+      <p class="breadcrumb"><a href="../index.html">Home</a> / <a href="../index.html#projects">Projects</a> / <a href="../projects/nfl-budget-draft.html">NFL Budget Draft</a> / Play</p>
+      <h1>Play NFL Budget Draft</h1>
+      <p class="lede">Take the general manager's chair for a full single-player salary-cap draft. You and a room of AI GMs share the same budget and bid in a blind auction for every player on the board. Value talent correctly, manage your cap, and assemble the strongest ten-man roster — all in your browser, with no download and no account.</p>
+      <div class="badge-row">
+        <span class="card-tag utilities">Tool / Game</span>
+        <span class="card-status"><span class="pulse-dot"></span>PLAYABLE HERE</span>
+        <a class="btn btn-ghost" href="#how-to-use">How the auction works</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ THE GAME ============ -->
+  <div class="game-shell">
+
+    <!-- Setup -->
+    <section class="game-panel" id="setup">
+      <h2 style="font-size:22px;">Set up your draft</h2>
+      <p style="color:var(--text-secondary);margin:0 0 6px;">Name your franchise, choose how many rival GMs to draft against, and pick how sharp they are. Every GM — including you — starts with the same <strong>$200 salary cap</strong> and must fill all ten roster slots. When the board is done, the roster with the highest total player rating wins.</p>
+      <div class="setup-grid">
+        <div class="field-block">
+          <span class="label-cap">Your franchise name</span>
+          <input class="name-input" id="name-input" type="text" maxlength="20" placeholder="e.g. Gridiron GMs" autocomplete="off">
+        </div>
+        <div class="field-block">
+          <span class="label-cap">Rival GMs</span>
+          <div class="seg" id="opp-seg" role="group" aria-label="Number of opponents">
+            <button data-opp="1">1</button>
+            <button data-opp="2" class="selected">2</button>
+            <button data-opp="3">3</button>
+          </div>
+        </div>
+        <div class="field-block">
+          <span class="label-cap">GM difficulty</span>
+          <div class="seg" id="diff-seg" role="group" aria-label="AI difficulty">
+            <button data-diff="easy">Easy</button>
+            <button data-diff="medium" class="selected">Medium</button>
+            <button data-diff="hard">Hard</button>
+            <button data-diff="impossible">Sharp</button>
+          </div>
+          <p class="diff-note" id="diff-note">Medium — GMs value players reasonably and spread their cap, with a little noise you can exploit.</p>
+        </div>
+      </div>
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn btn-primary" id="start-btn" style="min-width:200px;">Start the draft &rarr;</button>
+      </div>
+    </section>
+
+    <!-- Draft -->
+    <section class="game-panel hidden" id="game">
+      <div class="gm-row" id="gm-row"></div>
+
+      <div class="label-cap" id="board-status">On the block</div>
+      <div class="auction-card" id="auction-card"></div>
+
+      <div id="bid-stage">
+        <div class="bid-box">
+          <h3>Your bid</h3>
+          <div class="stepper">
+            <button class="step" id="bid-minus" aria-label="Lower bid">&minus;</button>
+            <span class="bid-amount"><span class="dollar">$</span><span id="bid-val">0</span></span>
+            <button class="step" id="bid-plus" aria-label="Raise bid">+</button>
+          </div>
+          <div class="quickbids" id="quickbids"></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="bid-btn">Place blind bid</button>
+            <button class="btn btn-ghost" id="pass-btn">Pass</button>
+          </div>
+          <div class="bid-cap" id="bid-cap"></div>
+        </div>
+      </div>
+
+      <div class="reveal-box hidden" id="reveal-box"></div>
+      <div class="banner-win hidden" id="win-box"></div>
+
+      <div class="log" id="log" aria-live="polite"></div>
+
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn btn-ghost" id="myroster-btn" style="min-width:150px;">View my roster</button>
+        <button class="btn btn-ghost" id="newgame-btn" style="min-width:150px;">Quit &amp; new draft</button>
+      </div>
+      <div id="roster-view" class="roster-wrap hidden" style="margin-top:14px;"></div>
+    </section>
+
+    <p style="text-align:center;font-size:13px;color:var(--text-muted);margin-top:10px;">New here? Read the full <a href="../projects/nfl-budget-draft.html">rules and strategy guide</a> before your first draft.</p>
+  </div>
+
+  <!-- ============ TEXT CONTENT FOR READERS & CRAWLERS ============ -->
+  <article class="article">
+    <div class="wrap-narrow">
+
+      <h2 id="how-to-use">How to play on this page</h2>
+      <p>Everything you need to run a full salary-cap draft is built into the board above — there is nothing to install, no account to create, and no second person required. You begin by <strong>setting up your draft</strong>: name your franchise, choose one to three rival general managers to compete against, and set how sharp those AI GMs are. Every general manager at the table, including you, is handed the exact same <strong>$200 salary cap</strong> and the exact same empty ten-slot roster to fill.</p>
+      <p>The draft then runs as a <strong>blind-bid auction</strong>, one player at a time. The best available player is placed "on the block," and every GM who still needs a slot that player can fill submits a single secret bid at the same moment. You set your bid with the plus and minus buttons or the quick-bid chips, then press <strong>Place blind bid</strong> — or <strong>Pass</strong> if you'd rather save your money. Once you commit, every AI GM's sealed bid is revealed at once. The highest bid wins the player and pays exactly what they bid; a tie is broken in favour of whichever GM has more cap space left. The winner slots the player onto their roster, the cap is deducted, and the next player comes up. This continues until the board can no longer fill anyone's roster.</p>
+      <p>Because the bids are blind, the game is a test of nerve and reading the room. You can see every rival's remaining cap and which slots they still need — that public information is your biggest weapon. If you know a rival is desperate for a quarterback and has $80 left, you know roughly how high you'd have to go to beat them, and whether it's worth it. Overpay for one superstar and you'll be filling the back of your roster with the scraps nobody else wanted; hoard your cap too long and the players you needed will already be gone.</p>
+      <p>When the draft ends, every roster is scored by adding up the overall rating of every player on it. The highest total wins — not the team with the single best player, but the team that spent its cap most efficiently across all ten slots. You'll see a full breakdown of every franchise's roster, what each player cost, and where the draft was won and lost.</p>
+
+      <h2 id="roster">The roster you're building</h2>
+      <p>Each franchise fills the same ten starting slots, drawn from a pool of famous players at every position. The slots are: one quarterback, one running back, two wide receivers, one tight end, one flex spot that accepts a running back, receiver, or tight end, and then four defenders — a defensive lineman, a linebacker, a cornerback, and a safety. The flex slot is where a lot of drafts are won: because it accepts three different positions, a savvy GM can wait for value to fall to them there rather than paying full price at a locked position.</p>
+      <p>Every player carries a single <strong>overall rating</strong> from the low 60s to a maximum of 99, generated from their real career accolades — Pro Bowls, All-Pro selections, MVP awards, and championships — blended with their attributes. That rating is both what you're chasing (it's what your roster is scored on) and the anchor for what a player is truly worth at auction. Learning to feel the gap between a 99 and an 88 at a position, and whether that gap is worth twenty dollars of cap, is the entire skill of the game.</p>
+
+      <h2 id="rules">The rules, step by step</h2>
+      <ol>
+        <li><strong>Everyone gets the same cap.</strong> All GMs start with $200 and an identical empty roster of ten slots.</li>
+        <li><strong>Players are auctioned one at a time.</strong> The highest-rated player still useful to someone is placed on the block.</li>
+        <li><strong>Bids are blind and simultaneous.</strong> Every GM who can use the player submits one secret bid, then all bids are revealed together.</li>
+        <li><strong>Highest bid wins and pays that amount.</strong> Ties go to the GM with more remaining cap. The player fills one of the winner's open slots — a dedicated position slot first, otherwise the flex.</li>
+        <li><strong>You must be able to finish your roster.</strong> The game never lets you bid so much that you couldn't afford at least $1 for every remaining empty slot, so you can always complete a legal team.</li>
+        <li><strong>The draft ends when rosters are full</strong> (or no remaining player fits anyone's open slots). Every roster is then scored by total overall rating.</li>
+        <li><strong>Highest total rating wins.</strong> If two franchises tie on rating, the one with more leftover cap wins the tiebreak.</li>
+      </ol>
+
+      <h2 id="difficulty">Choosing GM difficulty</h2>
+      <p>The rival GMs are not picking randomly — each one runs the same valuation engine you're playing against, but with a different amount of noise and aggression layered on top. The difficulty setting changes how accurately they price players and how disciplined they are with their cap.</p>
+      <h3>Easy</h3>
+      <p>Easy GMs value players loosely, with a lot of random noise in their bids. They'll frequently over-pay for a name they like and under-value a quiet star, leaving obvious bargains on the board for you to scoop up. A forgiving place to learn how the auction flows.</p>
+      <h3>Medium</h3>
+      <p>Medium GMs value players reasonably and spread their cap sensibly across the roster, but there's still enough randomness in their bids that a sharp reader can find edges. This is the fair fight for someone who knows the game.</p>
+      <h3>Hard</h3>
+      <p>Hard GMs price players tightly, stretch appropriately for elite talent, and rarely leave a clear bargain sitting on the board. Beating them means genuinely nailing player value and timing your aggression for the moments they can't match you.</p>
+      <h3>Sharp</h3>
+      <p>Sharp GMs are the benchmark: near-perfect valuations, disciplined cap management, and a willingness to pay a small premium to lock down the players that matter most. They will punish every overpay and every slot you leave to chance. Out-drafting a room of Sharp GMs is a real achievement.</p>
+
+      <h2 id="strategy">Strategy: how to win</h2>
+      <h3>Value tiers, not names</h3>
+      <p>Great GMs think in tiers, not individual players. If three receivers are rated within a couple of points of one another, there is no reason to pay a premium for the first one off the board — let a rival spend big, then take the near-identical option a tier down for far less. Knowing where the real drop-offs are between tiers is most of the game.</p>
+      <h3>Budget for the endgame</h3>
+      <p>The most common way to lose is to run out of usable cap with slots still to fill, forcing you to roster whoever is left for a dollar. Always keep enough powder dry to field a complete, respectable team. Depth across ten slots beats one superstar surrounded by minimum-bid filler almost every time.</p>
+      <h3>Read the room's cap</h3>
+      <p>Every rival's remaining cap and open slots are shown to you. That is public information you should be constantly using: a GM with no cap left can't outbid you, and a GM who still needs three positions with $40 left is about to get squeezed. Nominate and bid with those pressures in mind.</p>
+      <h3>Exploit the flex</h3>
+      <p>Because the flex slot accepts three positions, it is the easiest place to capture value. Rather than paying up for your second running back, you can let the board come to you and drop whichever of a runner, receiver, or tight end falls furthest below its rating into the flex.</p>
+      <blockquote>The winner of a budget draft is rarely the GM with the best single player. It's the GM who spent efficiently across the whole roster while everyone else was busy overpaying at the top.</blockquote>
+
+      <h2 id="how-ai-works">How the AI general managers decide</h2>
+      <p>Each AI GM values every player from the same rating you see, converted into a market price on a curve where elite players cost exponentially more than average ones. On each auction, a GM first checks whether the player fills one of its open slots — if not, it passes outright. If the player is useful, the GM works out a target bid from three things: its <em>fair share</em> of cap per remaining slot, how far above baseline the player's rating sits (it will stretch well past fair share for a genuine star, and well below it for a role player), and a personality factor that makes some GMs naturally more aggressive than others. Difficulty then adds or removes random noise around that target, and the Sharp tier layers on a small premium to secure the players it wants most.</p>
+      <p>Crucially, every GM caps its bid so that it can always afford at least a dollar for each of its other empty slots — the same discipline the game enforces on you. That is why the AI rarely blows itself up early, and why beating the harder tiers comes down to reading which players they'll fight for and which they'll let slide, then bidding one dollar more than they will at exactly the right moment.</p>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq">
+        <details><summary>Is this NFL Budget Draft game really free?</summary><p>Yes. The complete single-player draft runs free in your browser with no account, no download, and no in-game purchases. The site is supported by lightweight advertising, explained in full on the <a href="../privacy.html">privacy policy</a> page.</p></details>
+        <details><summary>Do I need to follow the NFL closely to play?</summary><p>Deep knowledge is a real advantage — knowing which names are underrated is how you find bargains — but the overall ratings and accolades are shown on every player card, so a casual fan can absolutely play and improve.</p></details>
+        <details><summary>Is this the same as fantasy football?</summary><p>It's related but distinct. Instead of drafting in turn order, every GM competes for every player under a shared salary cap in a blind auction, which puts the focus squarely on valuation and bidding rather than draft position.</p></details>
+        <details><summary>How is the winner decided?</summary><p>When all rosters are full, each is scored by adding up the overall rating of every player on it. The highest total wins; a tie is broken by whoever has more leftover cap.</p></details>
+        <details><summary>Can I play on my phone?</summary><p>Yes. The board is responsive with large tap targets for bidding, and works on modern phones, tablets, and desktops.</p></details>
+        <details><summary>What's the difference between this and the full version?</summary><p>This page is a streamlined, self-contained single-player auction. The <a href="https://budgetnfldraft.fothergill.com/" target="_blank" rel="noopener noreferrer">full version</a> adds online multiplayer, a much larger player pool, head coaches, clue cards, and a play-by-play game simulator that actually plays your roster out on the field.</p></details>
+      </div>
+
+      <div class="cta-row">
+        <div style="flex:1;min-width:220px;"><strong style="color:var(--text-primary);">Want the full write-up first?</strong><br><span style="color:var(--text-secondary);font-size:15px;">Read the complete rules, history, and strategy guide.</span></div>
+        <a class="btn btn-primary" href="../projects/nfl-budget-draft.html">Rules &amp; Strategy</a>
+        <a class="btn btn-ghost" href="#top">Back to the draft</a>
+      </div>
+
+      <p style="margin-top:40px;"><a href="../index.html#projects">&larr; Back to all projects</a></p>
+    </div>
+  </article>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bottom" style="border-top:none;padding-top:0;">
+      <span>&copy; <span id="year"></span> Fothergill. All rights reserved.</span>
+      <span><a href="../privacy.html" style="color:var(--text-muted);">Privacy</a> &middot; <a href="../contact.html" style="color:var(--text-muted);">Contact</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* =====================================================================
+   NFL BUDGET DRAFT — OFFLINE SINGLE-PLAYER AUCTION ENGINE
+   ---------------------------------------------------------------------
+   This whole game runs client-side. There is no server round-trip: the
+   player pool, the AI general managers, the blind-bid auction, and the
+   final scoring all live in this one file. The design mirrors the core
+   loop of the full multiplayer game (a shared salary cap + a blind-bid
+   auction) in a simplified, self-contained form.
+
+   HIGH-LEVEL FLOW
+   ---------------
+   1. SETUP   — the human picks a franchise name, a number of AI GMs,
+                and a difficulty. Everyone is seeded with the same cap
+                (BUDGET) and an identical empty roster (SLOTS).
+   2. NOMINATE — the highest-rated player who can still fill *someone's*
+                open slot is placed "on the block". If no remaining
+                player fits anyone, the draft ends.
+   3. BID     — every GM that can use the player submits ONE blind bid
+                simultaneously. The human bids through the UI; each AI
+                bids via computeAIBid(). Bids are capped so a GM can
+                always afford the rest of its roster (see maxBid()).
+   4. RESOLVE — the highest bid wins and pays exactly that amount. Ties
+                break toward the GM with more cap left, then at random.
+                The player is placed into a dedicated slot if one is
+                open, otherwise the flex slot.
+   5. REPEAT  — go back to NOMINATE until all rosters are full.
+   6. SCORE   — each roster's total overall rating is summed; highest
+                total wins, leftover cap breaks ties.
+   ===================================================================== */
+
+(function(){
+  "use strict";
+
+  /* ---- Constants ---------------------------------------------------- */
+  var BUDGET = 200;               // starting salary cap for every GM
+  var MIN_RESERVE = 1;            // dollars each still-empty slot must keep
+
+  // The ten roster slots. `pos` lists which player positions may fill the
+  // slot. A slot with more than one position (the FLEX) is filled only
+  // after dedicated slots, so value naturally falls into it.
+  var SLOTS = [
+    { key:'QB',   label:'Quarterback',      pos:['QB'] },
+    { key:'RB',   label:'Running Back',     pos:['RB'] },
+    { key:'WR1',  label:'Wide Receiver',    pos:['WR'] },
+    { key:'WR2',  label:'Wide Receiver',    pos:['WR'] },
+    { key:'TE',   label:'Tight End',        pos:['TE'] },
+    { key:'FLEX', label:'Flex (RB/WR/TE)',  pos:['RB','WR','TE'] },
+    { key:'DL',   label:'Defensive Line',   pos:['DL'] },
+    { key:'LB',   label:'Linebacker',       pos:['LB'] },
+    { key:'CB',   label:'Cornerback',       pos:['CB'] },
+    { key:'S',    label:'Safety',           pos:['S'] }
+  ];
+
+  // Colours + labels for each position, used purely for display.
+  var POS_META = {
+    QB:{c:'#3182ce'}, RB:{c:'#38a169'}, WR:{c:'#dd6b20'}, TE:{c:'#d69e2e'},
+    DL:{c:'#e53e3e'}, LB:{c:'#805ad5'}, CB:{c:'#319795'}, S:{c:'#d53f8c'}
+  };
+
+  // Names given to the AI general managers (a subset is used per game).
+  var GM_NAMES = ['Dynasty Dan','Moneyball Mia','Cap-Space Casey','Value Vic','Blitz Barry','Sharp Sharon','Trader Tom'];
+
+  /* ---- Player pool -------------------------------------------------- */
+  // Curated from real career accolades. Each player: n=name, p=position,
+  // t=team, o=overall rating (63-99, normalised within position),
+  // pb=Pro Bowls, ap=All-Pros, mvp=MVPs, chp=championships, y=years.
+  var POOL = [
+{n:"Rod Woodson",p:"CB",t:"PIT",o:99,pb:11,ap:6,mvp:0,chp:1,y:17},
+{n:"Reggie White",p:"DL",t:"PHI",o:99,pb:13,ap:8,mvp:0,chp:1,y:15},
+{n:"Lawrence Taylor",p:"LB",t:"NYG",o:99,pb:10,ap:8,mvp:1,chp:2,y:13},
+{n:"Tom Brady",p:"QB",t:"NE",o:99,pb:15,ap:3,mvp:3,chp:7,y:23},
+{n:"Jim Brown",p:"RB",t:"CLE",o:99,pb:9,ap:8,mvp:3,chp:1,y:9},
+{n:"Ronnie Lott",p:"S",t:"SF",o:99,pb:10,ap:8,mvp:0,chp:4,y:14},
+{n:"Travis Kelce",p:"TE",t:"KC",o:99,pb:10,ap:4,mvp:0,chp:3,y:13},
+{n:"Jerry Rice",p:"WR",t:"SF",o:99,pb:13,ap:10,mvp:0,chp:3,y:20},
+{n:"Ray Lewis",p:"LB",t:"BAL",o:98,pb:13,ap:7,mvp:0,chp:2,y:17},
+{n:"Deion Sanders",p:"CB",t:"ATL",o:97,pb:8,ap:6,mvp:0,chp:2,y:14},
+{n:"Tony Gonzalez",p:"TE",t:"KC",o:95,pb:14,ap:6,mvp:0,chp:0,y:17},
+{n:"Aaron Donald",p:"DL",t:"STL",o:94,pb:10,ap:8,mvp:0,chp:1,y:10},
+{n:"Joe Greene",p:"DL",t:"PIT",o:93,pb:10,ap:4,mvp:0,chp:4,y:13},
+{n:"Bruce Smith",p:"DL",t:"BUF",o:93,pb:11,ap:8,mvp:0,chp:0,y:19},
+{n:"Rob Gronkowski",p:"TE",t:"NE",o:93,pb:5,ap:4,mvp:0,chp:4,y:11},
+{n:"Peyton Manning",p:"QB",t:"IND",o:92,pb:14,ap:7,mvp:5,chp:2,y:18},
+{n:"Alan Page",p:"DL",t:"MIN",o:91,pb:9,ap:6,mvp:1,chp:0,y:15},
+{n:"Jack Lambert",p:"LB",t:"PIT",o:91,pb:9,ap:6,mvp:0,chp:4,y:11},
+{n:"Shannon Sharpe",p:"TE",t:"DEN",o:91,pb:8,ap:4,mvp:0,chp:3,y:14},
+{n:"Mel Blount",p:"CB",t:"PIT",o:88,pb:5,ap:2,mvp:0,chp:4,y:14},
+{n:"Emmitt Smith",p:"RB",t:"DAL",o:88,pb:8,ap:4,mvp:1,chp:3,y:15},
+{n:"Walter Payton",p:"RB",t:"CHI",o:88,pb:9,ap:5,mvp:2,chp:1,y:13},
+{n:"Champ Bailey",p:"CB",t:"WAS",o:84,pb:12,ap:3,mvp:0,chp:0,y:15},
+{n:"Mike Ditka",p:"TE",t:"CHI",o:84,pb:5,ap:5,mvp:0,chp:2,y:12},
+{n:"Charles Woodson",p:"CB",t:"OAK",o:83,pb:9,ap:3,mvp:0,chp:1,y:18},
+{n:"Darrelle Revis",p:"CB",t:"NYJ",o:83,pb:7,ap:4,mvp:0,chp:1,y:11},
+{n:"Patrick Mahomes",p:"QB",t:"KC",o:83,pb:7,ap:2,mvp:3,chp:3,y:9},
+{n:"Ty Law",p:"CB",t:"NE",o:82,pb:5,ap:2,mvp:0,chp:3,y:15},
+{n:"Mike Singletary",p:"LB",t:"CHI",o:82,pb:10,ap:7,mvp:0,chp:1,y:12},
+{n:"Aaron Rodgers",p:"QB",t:"GB",o:82,pb:10,ap:4,mvp:4,chp:1,y:20},
+{n:"Joe Montana",p:"QB",t:"SF",o:82,pb:8,ap:3,mvp:2,chp:4,y:16},
+{n:"Barry Sanders",p:"RB",t:"DET",o:82,pb:10,ap:6,mvp:1,chp:0,y:10},
+{n:"Johnny Unitas",p:"QB",t:"BAL",o:81,pb:10,ap:5,mvp:3,chp:3,y:18},
+{n:"Junior Seau",p:"LB",t:"SD",o:80,pb:12,ap:6,mvp:0,chp:0,y:20},
+{n:"Troy Polamalu",p:"S",t:"PIT",o:80,pb:8,ap:4,mvp:0,chp:2,y:12},
+{n:"Bobby Wagner",p:"LB",t:"SEA",o:80,pb:10,ap:6,mvp:0,chp:1,y:14},
+{n:"Jalen Ramsey",p:"CB",t:"JAX",o:79,pb:7,ap:3,mvp:0,chp:1,y:10},
+{n:"Ed Reed",p:"S",t:"BAL",o:79,pb:9,ap:5,mvp:0,chp:1,y:12},
+{n:"Steve Young",p:"QB",t:"SF",o:77,pb:7,ap:3,mvp:2,chp:3,y:15},
+{n:"Brett Favre",p:"QB",t:"GB",o:77,pb:11,ap:3,mvp:3,chp:1,y:20},
+{n:"Terrell Davis",p:"RB",t:"DEN",o:77,pb:3,ap:3,mvp:1,chp:2,y:7},
+{n:"Richard Sherman",p:"CB",t:"SEA",o:76,pb:5,ap:3,mvp:0,chp:1,y:11},
+{n:"Von Miller",p:"LB",t:"DEN",o:76,pb:8,ap:3,mvp:0,chp:2,y:14},
+{n:"Marshall Faulk",p:"RB",t:"IND",o:76,pb:7,ap:3,mvp:1,chp:1,y:12},
+{n:"Adrian Peterson",p:"RB",t:"MIN",o:75,pb:7,ap:4,mvp:1,chp:0,y:15},
+{n:"Lance Alworth",p:"WR",t:"SD",o:75,pb:7,ap:6,mvp:0,chp:1,y:11},
+{n:"DeMarcus Ware",p:"DL",t:"DAL",o:74,pb:9,ap:4,mvp:0,chp:1,y:12},
+{n:"Dave Casper",p:"TE",t:"OAK",o:74,pb:5,ap:4,mvp:0,chp:1,y:11},
+{n:"Brian Dawkins",p:"S",t:"PHI",o:73,pb:9,ap:4,mvp:0,chp:0,y:16},
+{n:"Steve Atwater",p:"S",t:"DEN",o:73,pb:8,ap:2,mvp:0,chp:2,y:11},
+{n:"Asante Samuel",p:"CB",t:"NE",o:72,pb:4,ap:1,mvp:0,chp:2,y:11},
+{n:"John Elway",p:"QB",t:"DEN",o:72,pb:9,ap:1,mvp:1,chp:2,y:16},
+{n:"Earl Thomas",p:"S",t:"SEA",o:72,pb:7,ap:3,mvp:0,chp:1,y:10},
+{n:"Antonio Gates",p:"TE",t:"SD",o:72,pb:8,ap:3,mvp:0,chp:0,y:16},
+{n:"Tyreek Hill",p:"WR",t:"KC",o:72,pb:8,ap:3,mvp:0,chp:1,y:10},
+{n:"Antonio Brown",p:"WR",t:"PIT",o:72,pb:7,ap:4,mvp:0,chp:1,y:12},
+{n:"Michael Strahan",p:"DL",t:"NYG",o:71,pb:7,ap:4,mvp:0,chp:1,y:15},
+{n:"Dick Butkus",p:"LB",t:"CHI",o:71,pb:8,ap:6,mvp:0,chp:0,y:9},
+{n:"LaDainian Tomlinson",p:"RB",t:"SD",o:71,pb:5,ap:3,mvp:1,chp:0,y:11},
+{n:"Marvin Harrison",p:"WR",t:"IND",o:71,pb:8,ap:3,mvp:0,chp:1,y:13},
+{n:"Deacon Jones",p:"DL",t:"LA",o:70,pb:8,ap:5,mvp:0,chp:0,y:14},
+{n:"Warren Sapp",p:"DL",t:"TB",o:70,pb:7,ap:4,mvp:0,chp:1,y:13},
+{n:"Kurt Warner",p:"QB",t:"STL",o:70,pb:4,ap:2,mvp:2,chp:1,y:12},
+{n:"Earl Campbell",p:"RB",t:"HOU",o:70,pb:5,ap:3,mvp:1,chp:0,y:8},
+{n:"Eric Dickerson",p:"RB",t:"LA",o:70,pb:6,ap:5,mvp:0,chp:0,y:11},
+{n:"John Lynch",p:"S",t:"TB",o:70,pb:9,ap:2,mvp:0,chp:1,y:15},
+{n:"Terrell Owens",p:"WR",t:"SF",o:70,pb:6,ap:5,mvp:0,chp:0,y:15},
+{n:"Randy Moss",p:"WR",t:"MIN",o:69,pb:6,ap:4,mvp:0,chp:0,y:14},
+{n:"Michael Irvin",p:"WR",t:"DAL",o:69,pb:5,ap:1,mvp:0,chp:3,y:12},
+{n:"Luke Kuechly",p:"LB",t:"CAR",o:68,pb:7,ap:5,mvp:0,chp:0,y:8},
+{n:"Drew Brees",p:"QB",t:"NO",o:68,pb:13,ap:1,mvp:0,chp:1,y:20},
+{n:"George Kittle",p:"TE",t:"SF",o:68,pb:6,ap:2,mvp:0,chp:0,y:9},
+{n:"DeAndre Hopkins",p:"WR",t:"HOU",o:68,pb:5,ap:3,mvp:0,chp:1,y:13},
+{n:"Larry Fitzgerald",p:"WR",t:"ARI",o:68,pb:11,ap:1,mvp:0,chp:0,y:17},
+{n:"Patrick Willis",p:"LB",t:"SF",o:67,pb:7,ap:5,mvp:0,chp:0,y:8},
+{n:"Dan Marino",p:"QB",t:"MIA",o:67,pb:9,ap:3,mvp:1,chp:0,y:17},
+{n:"Kellen Winslow Sr",p:"TE",t:"SD",o:67,pb:5,ap:3,mvp:0,chp:0,y:9},
+{n:"Julius Peppers",p:"DL",t:"CAR",o:66,pb:9,ap:3,mvp:0,chp:0,y:17},
+{n:"Brian Urlacher",p:"LB",t:"CHI",o:66,pb:8,ap:4,mvp:0,chp:0,y:13},
+{n:"Lamar Jackson",p:"QB",t:"BAL",o:66,pb:3,ap:2,mvp:2,chp:0,y:8},
+{n:"Rodney Harrison",p:"S",t:"NE",o:66,pb:2,ap:2,mvp:0,chp:2,y:15},
+{n:"Torry Holt",p:"WR",t:"STL",o:66,pb:7,ap:1,mvp:0,chp:1,y:11},
+{n:"Calvin Johnson",p:"WR",t:"DET",o:66,pb:6,ap:3,mvp:0,chp:0,y:9},
+{n:"Davante Adams",p:"WR",t:"GB",o:66,pb:6,ap:3,mvp:0,chp:0,y:12},
+{n:"J.J. Watt",p:"DL",t:"HOU",o:65,pb:5,ap:5,mvp:0,chp:0,y:12},
+{n:"Marshawn Lynch",p:"RB",t:"SEA",o:65,pb:5,ap:1,mvp:0,chp:1,y:12},
+{n:"Julio Jones",p:"WR",t:"ATL",o:65,pb:7,ap:2,mvp:0,chp:0,y:13},
+{n:"Cris Carter",p:"WR",t:"MIN",o:65,pb:8,ap:2,mvp:0,chp:0,y:16},
+{n:"Reggie Wayne",p:"WR",t:"IND",o:65,pb:6,ap:1,mvp:0,chp:1,y:14},
+{n:"Cooper Kupp",p:"WR",t:"LA",o:65,pb:3,ap:1,mvp:0,chp:1,y:9},
+{n:"T.J. Watt",p:"LB",t:"PIT",o:64,pb:7,ap:4,mvp:0,chp:0,y:9},
+{n:"Harry Carson",p:"LB",t:"NYG",o:64,pb:9,ap:2,mvp:0,chp:1,y:13},
+{n:"Eli Manning",p:"QB",t:"NYG",o:64,pb:4,ap:0,mvp:0,chp:2,y:16},
+{n:"Shaun Alexander",p:"RB",t:"SEA",o:64,pb:3,ap:1,mvp:1,chp:0,y:9},
+{n:"Priest Holmes",p:"RB",t:"KC",o:64,pb:3,ap:2,mvp:0,chp:1,y:10},
+{n:"Tony Dorsett",p:"RB",t:"DAL",o:64,pb:4,ap:1,mvp:0,chp:1,y:12},
+{n:"Tyrann Mathieu",p:"S",t:"ARI",o:64,pb:3,ap:2,mvp:0,chp:1,y:13},
+{n:"Howie Long",p:"DL",t:"OAK",o:63,pb:8,ap:2,mvp:0,chp:1,y:13},
+{n:"Willie Lanier",p:"LB",t:"KC",o:63,pb:8,ap:2,mvp:0,chp:1,y:11},
+{n:"Jalen Hurts",p:"QB",t:"PHI",o:63,pb:3,ap:1,mvp:0,chp:1,y:6},
+{n:"Derrick Henry",p:"RB",t:"TEN",o:63,pb:5,ap:2,mvp:0,chp:0,y:10},
+{n:"Budda Baker",p:"S",t:"ARI",o:63,pb:6,ap:2,mvp:0,chp:0,y:9},
+{n:"Minkah Fitzpatrick",p:"S",t:"PIT",o:63,pb:4,ap:3,mvp:0,chp:0,y:8},
+{n:"Jeremy Shockey",p:"TE",t:"NYG",o:63,pb:4,ap:0,mvp:0,chp:2,y:10},
+{n:"Ja'Marr Chase",p:"WR",t:"CIN",o:63,pb:4,ap:2,mvp:0,chp:0,y:5},
+{n:"Mike Evans",p:"WR",t:"TB",o:63,pb:5,ap:1,mvp:0,chp:1,y:12},
+{n:"Kellen Moore",p:"TE",t:"DAL",o:63,pb:3,ap:1,mvp:0,chp:0,y:8},
+{n:"Zach Ertz",p:"TE",t:"PHI",o:64,pb:3,ap:0,mvp:0,chp:1,y:12},
+{n:"Mark Andrews",p:"TE",t:"BAL",o:65,pb:3,ap:1,mvp:0,chp:0,y:7},
+{n:"Christian McCaffrey",p:"RB",t:"CAR",o:66,pb:3,ap:2,mvp:0,chp:0,y:8},
+{n:"Saquon Barkley",p:"RB",t:"NYG",o:65,pb:3,ap:1,mvp:0,chp:1,y:7},
+{n:"Micah Parsons",p:"LB",t:"DAL",o:65,pb:3,ap:2,mvp:0,chp:0,y:4},
+{n:"Nick Bosa",p:"DL",t:"SF",o:64,pb:3,ap:1,mvp:0,chp:0,y:6},
+{n:"Myles Garrett",p:"DL",t:"CLE",o:67,pb:4,ap:2,mvp:0,chp:0,y:8},
+{n:"Sauce Gardner",p:"CB",t:"NYJ",o:70,pb:2,ap:2,mvp:0,chp:0,y:3},
+{n:"Patrick Surtain II",p:"CB",t:"DEN",o:68,pb:3,ap:2,mvp:0,chp:0,y:5},
+{n:"Stephon Gilmore",p:"CB",t:"BUF",o:71,pb:5,ap:2,mvp:0,chp:1,y:14},
+{n:"Ronde Barber",p:"CB",t:"TB",o:75,pb:5,ap:3,mvp:0,chp:1,y:16},
+{n:"Aeneas Williams",p:"CB",t:"ARI",o:76,pb:8,ap:3,mvp:0,chp:0,y:14},
+{n:"Mike Haynes",p:"CB",t:"NE",o:79,pb:9,ap:2,mvp:0,chp:1,y:14},
+{n:"Larry Allen",p:"OL",t:"DAL",o:88,pb:11,ap:7,mvp:0,chp:1,y:14},
+{n:"Bruce Matthews",p:"OL",t:"HOU",o:93,pb:14,ap:7,mvp:0,chp:0,y:19},
+{n:"Anthony Munoz",p:"OL",t:"CIN",o:99,pb:11,ap:9,mvp:0,chp:0,y:13},
+{n:"Trent Williams",p:"OL",t:"WAS",o:82,pb:11,ap:3,mvp:0,chp:0,y:14},
+{n:"Willie Roaf",p:"OL",t:"NO",o:80,pb:11,ap:4,mvp:0,chp:0,y:13},
+{n:"Andre Johnson",p:"WR",t:"HOU",o:65,pb:7,ap:2,mvp:0,chp:0,y:14}
+  ];
+  // NOTE: a few offensive linemen (OL) are included so the pool has depth,
+  // but the simplified roster above has no dedicated OL slot — they simply
+  // won't be nominated because they fit no open slot. This keeps the pool
+  // rich without complicating the ten-slot layout.
+
+  /* ---- Valuation helpers ------------------------------------------- */
+
+  // Convert an overall rating into a market price. The exponent makes elite
+  // players cost dramatically more than average ones (a 99 is worth far more
+  // than three 80s), which is what forces real budget trade-offs.
+  function marketValue(p){
+    return Math.max(1, Math.round(Math.pow(Math.max(0, p.o - 52), 1.55) / 6));
+  }
+
+  /* ---- State -------------------------------------------------------- */
+  var state = null, busy = false;
+  var sel = { name:'', opp:2, diff:'medium', bid:0 };
+  var DIFF_NOTES = {
+    easy:'Easy — GMs value players loosely and leave obvious bargains on the board.',
+    medium:'Medium — GMs value players reasonably and spread their cap, with a little noise you can exploit.',
+    hard:'Hard — GMs price players tightly and rarely leave a clear bargain sitting.',
+    impossible:'Sharp — near-perfect valuations and disciplined cap management. They punish every mistake.'
+  };
+  // Difficulty tuning: `noise` is the random swing around a GM\'s target bid;
+  // `premium` is how much extra the tier pays to secure players it wants.
+  var DIFF_CFG = {
+    easy:       { noise:0.45, premium:0.98, aggrLo:0.80, aggrHi:1.10 },
+    medium:     { noise:0.26, premium:1.00, aggrLo:0.88, aggrHi:1.12 },
+    hard:       { noise:0.13, premium:1.03, aggrLo:0.95, aggrHi:1.12 },
+    impossible: { noise:0.05, premium:1.06, aggrLo:1.00, aggrHi:1.10 }
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ---- Setup interactions ------------------------------------------ */
+  var nameInput=$('name-input'), oppSeg=$('opp-seg'), diffSeg=$('diff-seg'), diffNote=$('diff-note');
+  try { var savedName = localStorage.getItem('bd_name'); if(savedName) nameInput.value = savedName; } catch(e){}
+
+  oppSeg.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
+    Array.prototype.forEach.call(oppSeg.children,function(c){c.classList.remove('selected');}); b.classList.add('selected'); sel.opp=parseInt(b.dataset.opp,10); });
+  diffSeg.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
+    Array.prototype.forEach.call(diffSeg.children,function(c){c.classList.remove('selected');}); b.classList.add('selected'); sel.diff=b.dataset.diff; diffNote.textContent=DIFF_NOTES[sel.diff]; });
+
+  /* ---- DOM refs ---------------------------------------------------- */
+  var setupEl=$('setup'), gameEl=$('game'), gmRow=$('gm-row'), boardStatus=$('board-status');
+  var auctionCard=$('auction-card'), bidStage=$('bid-stage'), bidVal=$('bid-val'), bidCap=$('bid-cap');
+  var bidMinus=$('bid-minus'), bidPlus=$('bid-plus'), quickbids=$('quickbids');
+  var bidBtn=$('bid-btn'), passBtn=$('pass-btn'), revealBox=$('reveal-box'), winBox=$('win-box');
+  var logEl=$('log'), rosterView=$('roster-view'), myrosterBtn=$('myroster-btn'), newgameBtn=$('newgame-btn');
+
+  /* ---- Start / reset ----------------------------------------------- */
+  $('start-btn').addEventListener('click', startGame);
+  newgameBtn.addEventListener('click', function(){ gameEl.classList.add('hidden'); setupEl.classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); });
+  myrosterBtn.addEventListener('click', function(){ rosterView.classList.toggle('hidden'); if(!rosterView.classList.contains('hidden')) renderRosterTable(); });
+
+  function startGame(){
+    sel.name = (nameInput.value.trim() || 'Your Franchise');
+    try { localStorage.setItem('bd_name', sel.name); } catch(e){}
+
+    var cfg = DIFF_CFG[sel.diff];
+    var gms = [ makeGM(sel.name, true, 1.0) ];
+    var names = shuffle(GM_NAMES).slice(0, sel.opp);
+    names.forEach(function(nm){
+      // each AI gets a fixed personality aggressiveness within the tier's range
+      var aggr = cfg.aggrLo + Math.random()*(cfg.aggrHi - cfg.aggrLo);
+      gms.push(makeGM(nm, false, aggr));
+    });
+
+    state = { gms:gms, pool:shuffle(POOL.slice()), diff:sel.diff, cfg:cfg, current:null };
+    setupEl.classList.add('hidden'); gameEl.classList.remove('hidden');
+    logEl.innerHTML=''; winBox.classList.add('hidden'); rosterView.classList.add('hidden');
+    pushLog('Draft begins — '+sel.name+' vs '+sel.opp+' GM'+(sel.opp>1?'s':'')+' ('+sel.diff+'). Everyone has $'+BUDGET+'.', 'system');
+    nominateNext();
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function makeGM(name, isHuman, aggr){
+    return { name:name, isHuman:isHuman, aggr:aggr, budget:BUDGET, roster:SLOTS.map(function(){ return null; }) };
+  }
+
+  /* ---- Roster / slot helpers --------------------------------------- */
+  function emptyCount(gm){ var c=0; gm.roster.forEach(function(x){ if(!x) c++; }); return c; }
+
+  // First open slot index that accepts `pos`, preferring a dedicated
+  // (single-position) slot over the flex so value drops into the flex.
+  function openSlotFor(gm, pos){
+    var flexIdx=-1;
+    for(var i=0;i<SLOTS.length;i++){
+      if(gm.roster[i]) continue;
+      if(SLOTS[i].pos.indexOf(pos)===-1) continue;
+      if(SLOTS[i].pos.length===1) return i;      // dedicated slot — take it
+      if(flexIdx===-1) flexIdx=i;                // remember flex as fallback
+    }
+    return flexIdx;
+  }
+  function canUse(gm, player){ return openSlotFor(gm, player.p) !== -1; }
+
+  // The most a GM may legally bid: it must keep $MIN_RESERVE for every OTHER
+  // still-empty slot, guaranteeing it can always complete a legal roster.
+  function maxBid(gm){
+    var empties = emptyCount(gm);
+    if(empties<=0) return 0;
+    return Math.max(1, gm.budget - (empties-1)*MIN_RESERVE);
+  }
+
+  /* ---- Nomination --------------------------------------------------- */
+  // Put the highest-rated remaining player that SOMEONE can still use on the
+  // block. Pool is pre-sorted-ish but we scan for the best usable each time.
+  function nominateNext(){
+    revealBox.classList.add('hidden');
+    // remove players nobody can use anymore (keeps the board honest)
+    state.pool = state.pool.filter(function(p){
+      return state.gms.some(function(gm){ return canUse(gm, p); });
+    });
+    if(state.pool.length===0 || state.gms.every(function(gm){ return emptyCount(gm)===0; })){
+      return endDraft();
+    }
+    // pick highest overall among usable players
+    var best=null;
+    state.pool.forEach(function(p){
+      if(state.gms.some(function(gm){ return canUse(gm,p); })){
+        if(!best || p.o>best.o) best=p;
+      }
+    });
+    state.current = best;
+    sel.bid = 0;
+    renderBoard();
+    renderAuctionCard(best);
+    // human may or may not be able to use this player
+    var human = state.gms[0];
+    if(canUse(human, best) && emptyCount(human)>0){
+      bidStage.classList.remove('hidden');
+      setBid(suggestedOpeningBid(human, best));
+      setControlsEnabled(true);
+    } else {
+      // human can't use this player — auto-run the AI-only auction
+      bidStage.classList.add('hidden');
+      pushLog('<span class="who">'+human.name+'</span> can\'t use '+best.n+' ('+best.p+') — no open slot.');
+      setTimeout(function(){ resolveAuction(null); }, 700);
+    }
+  }
+
+  function suggestedOpeningBid(gm, p){
+    // a gentle default so the human isn't starting from zero on stars
+    var mv = marketValue(p);
+    return Math.max(0, Math.min(maxBid(gm), Math.round(mv*0.6)));
+  }
+
+  /* ---- Bid controls (human) ---------------------------------------- */
+  function setBid(v){
+    var mx = maxBid(state.gms[0]);
+    if(v<0) v=0; if(v>mx) v=mx;
+    sel.bid=v; bidVal.textContent=v;
+    bidCap.textContent='Cap space: $'+state.gms[0].budget+'  ·  Max legal bid: $'+mx+'  (must keep $1 for each empty slot)';
+  }
+  bidMinus.addEventListener('click', function(){ if(busy) return; setBid(sel.bid-1); });
+  bidPlus.addEventListener('click', function(){ if(busy) return; setBid(sel.bid+1); });
+
+  function buildQuickBids(){
+    quickbids.innerHTML='';
+    var mx = maxBid(state.gms[0]);
+    [5,10,15,25].forEach(function(inc){
+      var b=document.createElement('button'); b.textContent='+$'+inc;
+      b.addEventListener('click', function(){ if(busy) return; setBid(sel.bid+inc); });
+      quickbids.appendChild(b);
+    });
+    var mxb=document.createElement('button'); mxb.textContent='Max $'+mx;
+    mxb.addEventListener('click', function(){ if(busy) return; setBid(maxBid(state.gms[0])); });
+    quickbids.appendChild(mxb);
+  }
+
+  bidBtn.addEventListener('click', function(){ if(busy) return; resolveAuction(sel.bid); });
+  passBtn.addEventListener('click', function(){ if(busy) return; resolveAuction(0); });
+
+  /* ---- AI bid ------------------------------------------------------- */
+  // Target = fair share of remaining cap, stretched by how elite the player
+  // is (tier), scaled by the GM's personality aggression, then jittered by
+  // the difficulty's noise. Always capped by maxBid() so the GM stays legal.
+  function computeAIBid(gm, p){
+    if(!canUse(gm, p)) return 0;
+    var empties = emptyCount(gm);
+    if(empties<=0) return 0;
+    var fairShare = gm.budget / empties;
+    var tier = Math.max(0, Math.min(1, (p.o - 63) / 36));   // 0 (role player) .. 1 (superstar)
+    var target = fairShare * (0.55 + tier*1.5);             // stretch up to ~2x for stars
+    target *= gm.aggr;
+    // difficulty noise (random swing) + premium for the sharp tiers
+    var cfg = state.cfg;
+    target *= (1 + (Math.random()*2-1)*cfg.noise);
+    target *= cfg.premium;
+    var cap = maxBid(gm);
+    var bid = Math.round(Math.min(target, cap));
+    // if the GM genuinely needs this slot and can afford it, never bid $0
+    if(bid < 1 && cap >= 1) bid = 1;
+    return Math.max(0, bid);
+  }
+
+  /* ---- Auction resolution ------------------------------------------ */
+  // humanBid is the human's blind bid (0 = pass), or null if the human can't
+  // use the player (AI-only auction).
+  function resolveAuction(humanBid){
+    busy=true; setControlsEnabled(false);
+    var p = state.current;
+    var bids = [];   // { gm, amount }
+    state.gms.forEach(function(gm, idx){
+      var amount;
+      if(idx===0){
+        amount = (humanBid===null) ? 0 : Math.min(humanBid, maxBid(gm));
+        if(!canUse(gm,p)) amount = 0;
+      } else {
+        amount = computeAIBid(gm, p);
+      }
+      bids.push({ gm:gm, amount:amount });
+    });
+
+    // winner = highest amount > 0; tie-break by most cap left, then random
+    var contenders = bids.filter(function(b){ return b.amount>0; });
+    var winner = null;
+    if(contenders.length){
+      contenders.sort(function(a,b){
+        if(b.amount!==a.amount) return b.amount-a.amount;
+        if(b.gm.budget!==a.gm.budget) return b.gm.budget-a.gm.budget;
+        return Math.random()-0.5;
+      });
+      winner = contenders[0];
+    }
+
+    // apply result
+    if(winner){
+      var slot = openSlotFor(winner.gm, p.p);
+      winner.gm.roster[slot] = { player:p, paid:winner.amount };
+      winner.gm.budget -= winner.amount;
+      state.pool = state.pool.filter(function(x){ return x!==p; });
+      pushLog('<span class="who">'+winner.gm.name+'</span> wins <strong>'+p.n+'</strong> ('+p.p+', '+p.o+' OVR) for <strong>$'+winner.amount+'</strong>.');
+    } else {
+      // nobody bid — player goes undrafted so we don't loop forever
+      state.pool = state.pool.filter(function(x){ return x!==p; });
+      pushLog(p.n+' ('+p.p+') drew no bids — goes undrafted.', 'system');
+    }
+
+    renderReveal(p, bids, winner);
+    renderBoard();
+    busy=false;
+  }
+
+  function renderReveal(p, bids, winner){
+    bidStage.classList.add('hidden');
+    var html = '<h3>'+p.n+' — '+(winner? (winner.gm.name+' wins for $'+winner.amount) : 'no bids')+'</h3>';
+    // sort bids high to low for display
+    var shown = bids.slice().sort(function(a,b){ return b.amount-a.amount; });
+    shown.forEach(function(b){
+      var isWin = winner && b.gm===winner.gm;
+      var label = b.amount>0 ? ('$'+b.amount) : (canUse(b.gm,p)?'passed':'—');
+      html += '<div class="bidline'+(isWin?' win':'')+'"><span>'+b.gm.name+(b.gm.isHuman?' (you)':'')+'</span><span class="amt">'+label+(isWin?'  ✓':'')+'</span></div>';
+    });
+    html += '<div class="btn-row" style="margin-top:12px;"><button class="btn btn-primary" id="next-btn" style="width:100%;justify-content:center;">Next player &rarr;</button></div>';
+    revealBox.innerHTML = html;
+    revealBox.classList.remove('hidden');
+    $('next-btn').addEventListener('click', function(){ nominateNext(); });
+  }
+
+  /* ---- End of draft + scoring -------------------------------------- */
+  function rosterTotal(gm){ return gm.roster.reduce(function(s,x){ return s + (x? x.player.o : 0); },0); }
+  function rosterSpent(gm){ return gm.roster.reduce(function(s,x){ return s + (x? x.paid : 0); },0); }
+
+  function endDraft(){
+    bidStage.classList.add('hidden'); revealBox.classList.add('hidden');
+    // rank by total OVR, tiebreak leftover cap
+    var ranked = state.gms.slice().sort(function(a,b){
+      var ta=rosterTotal(a), tb=rosterTotal(b);
+      if(tb!==ta) return tb-ta;
+      return b.budget-a.budget;
+    });
+    var winner = ranked[0];
+    var youWon = winner.isHuman;
+
+    var html = '<h3>'+(youWon?'🏆 You win the draft!':winner.name+' wins the draft')+'</h3>';
+    html += '<p style="color:var(--text-secondary);margin:0 0 4px;">Final roster ratings — highest total wins.</p>';
+    winBox.innerHTML = html;
+    winBox.classList.remove('hidden');
+
+    // full breakdown of every roster
+    var grid = '<div class="final-grid">';
+    ranked.forEach(function(gm){
+      grid += '<div class="final-team'+(gm===winner?' winner':'')+'">';
+      grid += '<h4><span>'+gm.name+(gm.isHuman?' (you)':'')+'</span><span class="tot">'+rosterTotal(gm)+' OVR · $'+gm.budget+' left</span></h4>';
+      grid += '<div class="roster-wrap"><table class="roster"><tbody>';
+      gm.roster.forEach(function(x,i){
+        if(x){
+          grid += '<tr><td class="slot">'+SLOTS[i].key+'</td><td>'+x.player.n+' <span style="color:var(--text-muted);font-size:12px;">'+x.player.p+'</span></td><td class="ovr">'+x.player.o+'</td><td class="paid">$'+x.paid+'</td></tr>';
+        } else {
+          grid += '<tr><td class="slot">'+SLOTS[i].key+'</td><td class="empty" colspan="3">— empty —</td></tr>';
+        }
+      });
+      grid += '</tbody></table></div></div>';
+    });
+    grid += '</div>';
+    winBox.innerHTML += grid;
+    winBox.innerHTML += '<div class="btn-row" style="margin-top:14px;justify-content:center;"><button class="btn btn-primary" id="again-btn" style="min-width:180px;">Draft again</button></div>';
+    $('again-btn').addEventListener('click', function(){ winBox.classList.add('hidden'); startGame(); });
+
+    pushLog(youWon? 'You win with '+rosterTotal(winner)+' total OVR!' : winner.name+' wins with '+rosterTotal(winner)+' total OVR.', 'system');
+    renderBoard();
+  }
+
+  /* ---- Rendering ---------------------------------------------------- */
+  function setControlsEnabled(on){
+    bidBtn.disabled=!on; passBtn.disabled=!on; bidMinus.disabled=!on; bidPlus.disabled=!on;
+    Array.prototype.forEach.call(quickbids.children,function(b){ b.disabled=!on; });
+  }
+
+  function renderBoard(){
+    if(!state) return;
+    var leader = state.gms.slice().sort(function(a,b){ return rosterTotal(b)-rosterTotal(a); })[0];
+    gmRow.innerHTML='';
+    state.gms.forEach(function(gm){
+      var card=document.createElement('div');
+      card.className='gm-card'+(gm.isHuman?' you':'')+((rosterTotal(gm)>0 && gm===leader)?' leader':'');
+      var filled = SLOTS.length - emptyCount(gm);
+      var pips=''; gm.roster.forEach(function(x){ pips+='<span class="slotpip'+(x?' filled':'')+'"></span>'; });
+      card.innerHTML =
+        '<div class="gm-name">'+gm.name+(gm.isHuman?' <span class="gm-badge">You</span>':'')+'</div>'+
+        '<div class="gm-stat"><span>Cap left</span><span class="big">$'+gm.budget+'</span></div>'+
+        '<div class="gm-stat"><span>Roster</span><span>'+filled+'/'+SLOTS.length+'</span></div>'+
+        '<div class="gm-stat"><span>Total OVR</span><span>'+rosterTotal(gm)+'</span></div>'+
+        '<div class="slotpips">'+pips+'</div>';
+      gmRow.appendChild(card);
+    });
+    if(!rosterView.classList.contains('hidden')) renderRosterTable();
+  }
+
+  function renderAuctionCard(p){
+    boardStatus.textContent = 'On the block  ·  '+state.pool.length+' players left';
+    var col = (POS_META[p.p]||{c:'#666'}).c;
+    var acc = function(v,k){ return '<div class="acc"><div class="v">'+v+'</div><div class="k">'+k+'</div></div>'; };
+    var human = state.gms[0];
+    var slotIdx = openSlotFor(human, p.p);
+    var fills = slotIdx>=0 ? ('Fills your '+SLOTS[slotIdx].label+' slot') : 'You have no open slot for this position';
+    auctionCard.innerHTML =
+      '<div class="ovr-badge" style="background:'+col+';"><span class="num">'+p.o+'</span><span class="lbl">OVR</span></div>'+
+      '<div class="pl-info">'+
+        '<div class="pl-name">'+p.n+'</div>'+
+        '<div class="pl-sub"><span class="pos-tag" style="background:'+col+';">'+p.p+'</span>'+p.t+' · '+p.y+' yrs</div>'+
+        '<div class="accolades">'+acc(p.pb,'Pro Bowls')+acc(p.ap,'All-Pro')+acc(p.mvp,'MVP')+acc(p.chp,'Titles')+'</div>'+
+        '<div class="fills-note">'+fills+'</div>'+
+      '</div>';
+    buildQuickBids();
+  }
+
+  function renderRosterTable(){
+    var gm=state.gms[0];
+    var html='<table class="roster"><thead><tr><th>Slot</th><th>Player</th><th>Pos</th><th>OVR</th><th>Paid</th></tr></thead><tbody>';
+    gm.roster.forEach(function(x,i){
+      if(x) html+='<tr><td class="slot">'+SLOTS[i].label+'</td><td>'+x.player.n+'</td><td>'+x.player.p+'</td><td class="ovr">'+x.player.o+'</td><td class="paid">$'+x.paid+'</td></tr>';
+      else html+='<tr><td class="slot">'+SLOTS[i].label+'</td><td class="empty" colspan="4">— open —</td></tr>';
+    });
+    html+='</tbody><tfoot><tr><td>Total</td><td></td><td></td><td class="ovr">'+rosterTotal(gm)+'</td><td class="paid">$'+rosterSpent(gm)+'</td></tr></tfoot></table>';
+    rosterView.innerHTML=html;
+  }
+
+  function pushLog(html, cls){ var d=document.createElement('div'); d.className='log-entry'+(cls?' '+cls:''); d.innerHTML=html; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; }
+
+  /* ---- Utility ------------------------------------------------------ */
+  function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+
+})();
+</script>
+</body>
+</html>
