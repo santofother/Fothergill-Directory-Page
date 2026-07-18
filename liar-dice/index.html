@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Play Liar's Dice Online — Free Single-Player Pirate Dice Game vs AI | Fothergill</title>
+<meta name="description" content="Play Liar's Dice free in your browser. Create your pirate captain, name your character, and out-bluff a crew of AI opponents across four difficulty levels. Pixel-art avatars, animated dice, wild ones — no download, no account. Full rules and strategy included.">
+<meta name="author" content="Fothergill">
+<meta name="keywords" content="liar's dice, play liars dice online, liars dice free, single player liars dice, pirate dice game, dice bluffing game, perudo, dudo, liars dice vs ai, browser dice game, create character">
+<link rel="canonical" href="https://fothergill.com/liar-dice/">
+<meta property="og:type" content="game">
+<meta property="og:title" content="Play Liar's Dice Online — Free Single-Player Pirate Dice Game vs AI">
+<meta property="og:description" content="Create your pirate, name your captain, and out-bluff a crew of AI opponents in a full single-player game of Liar's Dice. Pixel-art avatars, animated dice, no download or account.">
+<meta property="og:url" content="https://fothergill.com/liar-dice/">
+<link rel="stylesheet" href="../style.css">
+<style>
+  /* ---------- Liar's Dice game board (page-scoped) ---------- */
+  .game-shell{ max-width: 940px; margin: 0 auto 8px; padding: 0 24px; }
+  .game-panel{
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    padding: 22px;
+    margin: 18px 0;
+  }
+  .game-panel h2{ margin-top: 0; }
+  .hidden{ display:none !important; }
+  .label-cap{
+    font-family: var(--mono); font-size: 11px; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--text-muted);
+  }
+
+  /* ----- Character creation ----- */
+  .create-grid{ display:grid; gap:22px; grid-template-columns: 1fr; }
+  @media(min-width:720px){ .create-grid{ grid-template-columns: 240px 1fr; } }
+  .preview-col{ text-align:center; }
+  .preview-frame{
+    background: linear-gradient(160deg,#243244,#161b26);
+    border:1px solid var(--border);
+    border-radius:14px;
+    padding:20px;
+    display:flex; flex-direction:column; align-items:center; gap:10px;
+  }
+  .preview-frame img{
+    width:132px; height:132px; image-rendering:pixelated;
+    filter: drop-shadow(0 6px 10px rgba(0,0,0,.4));
+  }
+  .preview-name{ font-weight:700; font-size:18px; color:var(--text-primary); word-break:break-word; }
+  .name-input{
+    width:100%; padding:12px 14px; font-size:16px;
+    background: var(--surface); border:1px solid var(--border);
+    border-radius:8px; color:var(--text-primary); font-family:var(--sans);
+  }
+  .name-input:focus{ outline:none; border-color:var(--accent); }
+  .field-block{ margin-bottom:18px; }
+  .field-block > .label-cap{ display:block; margin-bottom:8px; }
+
+  .char-grid{
+    display:grid; grid-template-columns: repeat(auto-fill, minmax(58px,1fr));
+    gap:8px;
+  }
+  .char-cell{
+    background: var(--surface); border:1px solid var(--border-soft);
+    border-radius:10px; padding:6px; cursor:pointer; display:flex;
+    align-items:center; justify-content:center; transition:all .12s ease;
+  }
+  .char-cell img{ width:44px; height:44px; image-rendering:pixelated; }
+  .char-cell:hover{ border-color:var(--accent); }
+  .char-cell.selected{ border-color:var(--accent); box-shadow:0 0 0 2px var(--accent); background:var(--accent-soft); }
+
+  .swatch-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .swatch{
+    width:34px; height:34px; border-radius:8px; cursor:pointer;
+    border:2px solid var(--border); transition:transform .1s ease, box-shadow .12s ease;
+  }
+  .swatch.selected{ box-shadow:0 0 0 2px var(--accent); transform:translateY(-2px); }
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .chip{
+    padding:8px 12px; border-radius:20px; border:1px solid var(--border);
+    background:var(--surface); color:var(--text-secondary); cursor:pointer;
+    font-size:13px; text-transform:capitalize; transition:all .12s ease;
+  }
+  .chip:hover{ border-color:var(--accent); color:var(--text-primary); }
+  .chip.selected{ background:var(--accent-soft); border-color:var(--accent); color:var(--text-primary); font-weight:600; }
+
+  .setup-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin:6px 0; }
+  .seg{ display:flex; flex-wrap:wrap; gap:8px; }
+  .seg button{
+    flex:1; min-width:60px; padding:10px 8px; background:var(--surface);
+    border:1px solid var(--border); color:var(--text-secondary); border-radius:8px;
+    font-size:14px; cursor:pointer; transition:all .15s ease;
+  }
+  .seg button:hover{ border-color:var(--accent); color:var(--text-primary); }
+  .seg button.selected{ background:var(--accent-soft); border-color:var(--accent); color:var(--text-primary); font-weight:600; }
+  .diff-note{ margin-top:10px; font-size:13.5px; color:var(--text-secondary); min-height:20px; }
+
+  /* ----- Players row ----- */
+  .players-row{ display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin:4px 0 18px; }
+  .player-card{
+    background: var(--surface); border:1px solid var(--border-soft); border-radius:12px;
+    padding:12px 14px; transition:border-color .2s ease, box-shadow .2s ease; position:relative;
+  }
+  .player-card.active{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent), 0 6px 18px rgba(49,130,206,0.18); }
+  .player-card.out{ opacity:.42; filter:grayscale(0.6); }
+  .pc-top{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .pc-avatar{ width:46px; height:46px; image-rendering:pixelated; flex-shrink:0; }
+  .pc-meta{ min-width:0; }
+  .player-name{ font-weight:600; font-size:14px; color:var(--text-primary); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .player-tag{
+    font-family:var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase;
+    padding:1px 6px; border-radius:5px; background:var(--accent-soft); color:var(--text-secondary);
+  }
+  .player-tag.you{ background:rgba(72,187,120,0.16); color:#9ae6b4; }
+  .dice-count{ font-size:12px; color:var(--text-muted); font-family:var(--mono); margin-top:2px; }
+  .cup-row{ display:flex; flex-wrap:wrap; gap:5px; margin-top:8px; min-height:14px; }
+  .cup-die{ width:12px; height:12px; border-radius:3px; background:var(--border); }
+  .speech{
+    position:absolute; top:-12px; right:10px;
+    background:var(--accent); color:#fff; font-size:12px; font-weight:600;
+    padding:3px 9px; border-radius:12px; white-space:nowrap;
+    box-shadow:0 4px 10px rgba(0,0,0,.35); animation:pop .25s ease;
+  }
+  .speech.call{ background:#c53030; }
+  @keyframes pop{ from{ transform:scale(.6); opacity:0; } to{ transform:scale(1); opacity:1; } }
+
+  /* ----- Dice ----- */
+  .dice-tray{ display:flex; flex-wrap:wrap; gap:12px; margin:14px 0; min-height:54px; }
+  .die{
+    width:54px; height:54px; background:#f7fafc; border-radius:12px;
+    display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
+    padding:8px; box-shadow:inset 0 -3px 0 rgba(0,0,0,.12), 0 3px 6px rgba(0,0,0,.35);
+  }
+  .die.wild{ background:linear-gradient(135deg,#fefcbf,#faf089); }
+  .die.rolling{ animation:tumble .12s linear infinite; }
+  @keyframes tumble{ 0%{transform:rotate(-8deg) translateY(0);} 50%{transform:rotate(8deg) translateY(-4px);} 100%{transform:rotate(-8deg) translateY(0);} }
+  .die .pip{ width:8px; height:8px; border-radius:50%; background:#1a202c; align-self:center; justify-self:center; }
+  .p-tl{grid-area:1/1;} .p-tr{grid-area:1/3;} .p-ml{grid-area:2/1;} .p-mc{grid-area:2/2;}
+  .p-mr{grid-area:2/3;} .p-bl{grid-area:3/1;} .p-br{grid-area:3/3;}
+
+  /* ----- Bid banner ----- */
+  .bid-banner{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;
+    background:var(--surface); border:1px solid var(--border-soft); border-radius:10px;
+    padding:14px 16px; margin:8px 0 16px;
+  }
+  .bid-value{ font-size:20px; font-weight:700; color:var(--text-primary); }
+  .bid-value .num{ color:var(--accent); }
+  .turn-flag{ font-family:var(--mono); font-size:12px; color:var(--text-secondary); }
+  .turn-flag .dot{ display:inline-block; width:8px; height:8px; border-radius:50%; background:var(--status-live); margin-right:6px; animation:pulse 1.6s infinite; }
+  @keyframes pulse{ 0%,100%{opacity:1} 50%{opacity:.35} }
+
+  /* ----- Controls ----- */
+  .control-grid{ display:grid; grid-template-columns:1fr; gap:16px; }
+  @media(min-width:620px){ .control-grid{ grid-template-columns:1.2fr 1fr; } }
+  .control-box{ background:var(--surface); border:1px solid var(--border-soft); border-radius:10px; padding:16px; }
+  .control-box h3{ margin:0 0 12px; font-size:14px; font-family:var(--mono); letter-spacing:.04em; text-transform:uppercase; color:var(--text-secondary); }
+  .stepper{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .stepper button{ width:38px; height:38px; border-radius:8px; border:1px solid var(--border); background:var(--surface-hover); color:var(--text-primary); font-size:20px; line-height:1; cursor:pointer; }
+  .stepper button:hover{ border-color:var(--accent); }
+  .stepper .val{ min-width:44px; text-align:center; font-size:22px; font-weight:700; color:var(--text-primary); }
+  .stepper .cap{ font-size:12px; color:var(--text-muted); font-family:var(--mono); }
+  .face-picker{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+  .face-btn{
+    width:44px; height:44px; border-radius:10px; border:1px solid var(--border); background:#f7fafc;
+    cursor:pointer; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr);
+    padding:6px; transition:transform .1s ease, box-shadow .15s ease;
+  }
+  .face-btn .pip{ width:6px; height:6px; border-radius:50%; background:#1a202c; align-self:center; justify-self:center; }
+  .face-btn.selected{ box-shadow:0 0 0 2px var(--accent); transform:translateY(-2px); }
+  .face-btn.wildface{ background:linear-gradient(135deg,#fefcbf,#faf089); }
+  .btn-row{ display:flex; gap:10px; flex-wrap:wrap; }
+  .btn-danger{ background:#c53030; color:#fff; }
+  .btn-danger:hover{ background:#9b2c2c; }
+  .btn[disabled]{ opacity:.4; cursor:not-allowed; pointer-events:none; }
+  .form-error{ color:#feb2b2; font-size:13px; margin-top:10px; min-height:18px; }
+
+  /* ----- Log & reveal ----- */
+  .log{ margin-top:16px; max-height:210px; overflow-y:auto; background:var(--bg); border:1px solid var(--border-soft); border-radius:10px; padding:12px 14px; }
+  .log-entry{ font-size:13.5px; padding:5px 0; border-bottom:1px dashed var(--border-soft); color:var(--text-secondary); }
+  .log-entry:last-child{ border-bottom:none; }
+  .log-entry .who{ color:var(--text-primary); font-weight:600; }
+  .log-entry.system{ color:var(--accent); font-family:var(--mono); font-size:12.5px; }
+  .log-entry.reveal{ color:#9ae6b4; }
+  .log-entry.reveal.bad{ color:#feb2b2; }
+  .reveal-box{ background:var(--surface); border:1px solid var(--accent); border-radius:12px; padding:20px; margin-top:16px; }
+  .reveal-box h3{ margin:0 0 6px; font-size:18px; }
+  .reveal-line{ color:var(--text-secondary); margin:4px 0; }
+  .reveal-line strong{ color:var(--text-primary); }
+  .reveal-tray{ display:flex; flex-wrap:wrap; gap:12px; margin:12px 0; }
+  .mini-group{ display:flex; flex-direction:column; gap:4px; }
+  .mini-group .lbl{ font-size:11px; color:var(--text-muted); font-family:var(--mono); }
+  .mini-die{ width:34px; height:34px; background:#f7fafc; border-radius:8px; display:grid; grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(3,1fr); padding:5px; }
+  .mini-die.hit{ box-shadow:0 0 0 2px var(--status-live); }
+  .mini-die.wild{ background:linear-gradient(135deg,#fefcbf,#faf089); }
+  .mini-die .pip{ width:5px; height:5px; border-radius:50%; background:#1a202c; align-self:center; justify-self:center; }
+  .banner-win{ text-align:center; padding:26px 20px; background:linear-gradient(135deg,var(--accent-soft),transparent); border:1px solid var(--accent); border-radius:12px; margin-top:16px; }
+  .banner-win img{ width:96px; height:96px; image-rendering:pixelated; margin-bottom:8px; }
+  .banner-win h3{ font-size:24px; margin:0 0 8px; }
+  .scoreboard-note{ font-size:13px; color:var(--text-muted); margin-top:10px; }
+</style>
+</head>
+<body id="top">
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <a href="../index.html" class="brand"><span class="brand-mark">F</span>FOTHERGILL.COM</a>
+    <nav class="topnav" aria-label="Primary">
+      <a href="../index.html#projects">Projects</a>
+      <a href="../projects/liars-dice.html">Rules &amp; Strategy</a>
+      <a href="../about.html">About</a>
+      <a href="../contact.html">Contact</a>
+    </nav>
+    <div class="topbar-status"><span class="pulse-dot"></span><span class="status-text">LIVE</span></div>
+  </div>
+</div>
+
+<main>
+  <header class="subhead">
+    <div class="wrap-narrow">
+      <p class="breadcrumb"><a href="../index.html">Home</a> / <a href="../index.html#projects">Projects</a> / <a href="../projects/liars-dice.html">Liar's Dice</a> / Play</p>
+      <h1>Play Liar's Dice</h1>
+      <p class="lede">Create your pirate captain, name your character, and take a seat at the table for a full single-player game of Liar's Dice. Roll your cup, read the crew, and out-bluff a table of probability-driven AI opponents — all in your browser, with no download and no account.</p>
+      <div class="badge-row">
+        <span class="card-tag games">Game</span>
+        <span class="card-status"><span class="pulse-dot"></span>PLAYABLE HERE</span>
+        <a class="btn btn-ghost" href="#how-to-use">How the controls work</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============ THE GAME ============ -->
+  <div class="game-shell">
+
+    <!-- Character creation + setup -->
+    <section class="game-panel" id="setup">
+      <h2 style="font-size:22px;">Create your character</h2>
+      <p style="color:var(--text-secondary);margin:0 0 16px;">Name your pirate, pick a look, then choose your crew of opponents. Everyone starts with five dice hidden under a cup — lose them all and you're out; be the last one standing to win the pot.</p>
+
+      <div class="create-grid">
+        <!-- Live preview -->
+        <div class="preview-col">
+          <div class="preview-frame">
+            <img id="preview-img" alt="Your character preview">
+            <div class="preview-name" id="preview-name">Captain</div>
+            <div class="label-cap">Your captain</div>
+          </div>
+        </div>
+
+        <!-- Options -->
+        <div>
+          <div class="field-block">
+            <span class="label-cap">Your name</span>
+            <input class="name-input" id="name-input" type="text" maxlength="16" placeholder="Enter your name…" autocomplete="off">
+          </div>
+
+          <div class="field-block">
+            <span class="label-cap">Choose a character</span>
+            <div class="char-grid" id="char-grid"></div>
+          </div>
+
+          <div class="field-block">
+            <span class="label-cap">Skin tone</span>
+            <div class="swatch-row" id="skin-row"></div>
+          </div>
+
+          <div class="field-block">
+            <span class="label-cap">Hair colour</span>
+            <div class="chip-row" id="hair-row"></div>
+          </div>
+        </div>
+      </div>
+
+      <hr style="border:none;border-top:1px solid var(--border-soft);margin:20px 0;">
+
+      <div class="setup-grid">
+        <div>
+          <span class="label-cap" style="display:block;margin-bottom:8px;">Opponents</span>
+          <div class="seg" id="opp-seg" role="group" aria-label="Number of opponents">
+            <button data-opp="1">1</button>
+            <button data-opp="2" class="selected">2</button>
+            <button data-opp="3">3</button>
+            <button data-opp="4">4</button>
+          </div>
+        </div>
+        <div>
+          <span class="label-cap" style="display:block;margin-bottom:8px;">Difficulty</span>
+          <div class="seg" id="diff-seg" role="group" aria-label="AI difficulty">
+            <button data-diff="easy">Easy</button>
+            <button data-diff="medium" class="selected">Medium</button>
+            <button data-diff="hard">Hard</button>
+            <button data-diff="impossible">Impossible</button>
+          </div>
+          <p class="diff-note" id="diff-note">Medium — solid statistics and reasonable bluffs. A fair fight for players who know the rules.</p>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn btn-primary" id="start-btn" style="min-width:200px;">Set sail &amp; deal the dice &rarr;</button>
+      </div>
+    </section>
+
+    <!-- Active game -->
+    <section class="game-panel hidden" id="game">
+      <div class="players-row" id="players-row"></div>
+
+      <div class="bid-banner">
+        <div>
+          <div class="label-cap">Current bid on the table</div>
+          <div class="bid-value" id="bid-display">No bid yet — opening bid</div>
+        </div>
+        <div class="turn-flag" id="turn-flag"><span class="dot"></span><span id="turn-text">Your turn</span></div>
+      </div>
+
+      <div>
+        <div class="label-cap">Your dice (only you can see these)</div>
+        <div class="dice-tray" id="your-dice"></div>
+      </div>
+
+      <div class="controls" id="controls">
+        <div class="control-grid">
+          <div class="control-box">
+            <h3>Make a bid</h3>
+            <div class="stepper">
+              <button id="qty-minus" aria-label="Decrease quantity">&minus;</button>
+              <span class="val" id="qty-val">1</span>
+              <button id="qty-plus" aria-label="Increase quantity">+</button>
+              <span class="cap">dice showing</span>
+            </div>
+            <div class="face-picker" id="face-picker" aria-label="Choose a face value"></div>
+            <button class="btn btn-primary" id="bid-btn" style="width:100%;justify-content:center;">Place bid</button>
+            <div class="form-error" id="bid-error"></div>
+          </div>
+          <div class="control-box">
+            <h3>Or call a bluff</h3>
+            <p style="color:var(--text-secondary);font-size:13.5px;margin:0 0 14px;">If you think the last bid is higher than the real number of matching dice on the table, challenge it. Cups lift, dice are counted — and whoever was wrong loses a die.</p>
+            <button class="btn btn-danger" id="challenge-btn" style="width:100%;justify-content:center;">Call "Liar!"</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="reveal-box hidden" id="reveal-box"></div>
+      <div class="banner-win hidden" id="win-box"></div>
+
+      <div class="log" id="log" aria-live="polite"></div>
+
+      <div class="btn-row" style="margin-top:16px;">
+        <button class="btn btn-ghost" id="newgame-btn" style="min-width:170px;">Quit &amp; new table</button>
+      </div>
+    </section>
+
+    <p class="scoreboard-note" style="text-align:center;">New here? Read the full <a href="../projects/liars-dice.html">rules and strategy guide</a> before your first game.</p>
+  </div>
+
+  <!-- ============ TEXT CONTENT FOR READERS & CRAWLERS ============ -->
+  <article class="article">
+    <div class="wrap-narrow">
+
+      <h2 id="how-to-use">How to play on this page</h2>
+      <p>Everything you need to play a full game of Liar's Dice is built into the board above — there is nothing to install, no account to create, and no second player required. You begin by <strong>creating a character</strong>: type in a name, choose one of the pirate or naval portraits, and adjust the skin tone and hair colour until your captain looks the part. Your choice is remembered in your browser, so the next time you come back your character is already waiting for you.</p>
+      <p>When you press <strong>Set sail &amp; deal the dice</strong>, the game secretly rolls five dice for you and five for each computer opponent you selected, and seats the whole crew around the table. Your dice are shown face-up in the tray so only you can see them; every opponent's dice stay hidden under their cup, exactly as they would around a real table. From there, play moves around the table one decision at a time, until only one player still has dice.</p>
+      <p>On your turn you have exactly two choices, and the controls mirror them directly. The first is to <strong>make a bid</strong>: use the plus and minus buttons to set a quantity, tap one of the six dice faces to choose a value, and press <strong>Place bid</strong>. A bid is a public claim about how many dice of that value are showing across the <em>entire</em> table — every cup combined, not just your own. The second choice is to <strong>call "Liar!"</strong>, which challenges the bid made by the player immediately before you. You can only challenge once at least one bid exists, so the opening player of each round must always bid.</p>
+      <p>Because the game enforces the rules for you, you never have to remember whether a raise is legal. If you try to place a bid that isn't a valid increase over the standing bid, the board will tell you and let you adjust. Watch the little speech bubbles pop up over each opponent as they bid or call — that is the crew reacting in real time — and keep an eye on the running log beneath the table, which records every bid, challenge, and lost die so you can always retrace how the round unfolded.</p>
+
+      <h2 id="quick-rules">The rules in brief</h2>
+      <p>If you have never played before, here is the shortest version that still lets you win. A fuller treatment — history, math, and advanced tactics — lives on the dedicated <a href="../projects/liars-dice.html">Liar's Dice rules and strategy page</a>.</p>
+      <ul>
+        <li><strong>Every player rolls five hidden dice</strong> at the start of each round and looks only at their own.</li>
+        <li><strong>A bid names a quantity and a face</strong> — for example, "four fives" means the player claims there are at least four dice showing a five across all cups on the table.</li>
+        <li><strong>Each turn you must raise or challenge.</strong> A legal raise either increases the quantity, or keeps the quantity and increases the face value, or both. You can never bid something lower than or equal to the standing bid.</li>
+        <li><strong>Ones are wild.</strong> A die showing a one counts as <em>any</em> face value you like — so when someone bids on fives, every five and every one on the table counts toward that bid. The only exception is when the bid itself is on ones.</li>
+        <li><strong>Calling "Liar!" ends the round.</strong> All cups lift and the relevant dice are counted. If the real total meets or beats the bid, the bid was truthful and the challenger loses a die. If it falls short, the bidder was caught lying and <em>they</em> lose a die.</li>
+        <li><strong>Zero dice means elimination.</strong> The loser of each challenge shrinks to fewer dice; when a player hits zero they leave the table. The last player holding any dice wins the game.</li>
+      </ul>
+      <p>One consequence worth internalizing early: because the total number of dice falls every time someone loses one, the odds shift constantly. A bid of "eight sixes" is nearly safe when thirty dice are in play and reckless when there are only twelve. Good players re-estimate the expected count at the start of every single round rather than relying on a feeling carried over from the last one.</p>
+
+      <h2 id="characters">Creating your character</h2>
+      <p>The character creator is more than decoration — it gives you a captain to root for as the dice fall. Each portrait is hand-built pixel art rendered live in your browser, so there are no images to download and nothing to load from another server; the whole gallery is generated on the spot from a compact set of sprites. You can pick from a roster of pirates and officers — captains, first mates, deckhands, gunners, navigators, quartermasters, lookouts, and naval officers among them — and then recolour each one with three skin tones and five hair colours, giving a wide range of combinations to make your captain your own.</p>
+      <p>Your opponents are drawn as characters too, each with a pirate name and a distinct look, so the table feels populated rather than abstract. When a player is eliminated their card fades and greys out, and the last captain standing gets a victory portrait. It is a small touch, but it turns a spreadsheet of numbers into a game with faces at the table — which is exactly what makes bluffing feel personal.</p>
+
+      <h2 id="difficulty">Choosing a difficulty</h2>
+      <p>This version ships with four distinct AI personalities, each built on a different model of how much the computer knows and how much risk it is willing to take. They are not cosmetic labels — they are genuinely different opponents, ported directly from the multiplayer engine that powers the full Fothergill Liar's Dice server.</p>
+      <h3>Easy</h3>
+      <p>The Easy opponent understands the basics but is happy to make mistakes. It leans heavily on its own dice, bids conservatively, and only challenges when a bid looks clearly inflated — and even then, not every time. It rarely bluffs with intent, so if an Easy bot is bidding aggressively on a face, there's a decent chance it actually holds those dice. This is the right choice for a first game or for teaching someone the flow of play.</p>
+      <h3>Medium</h3>
+      <p>The Medium opponent adds real statistics. It estimates the expected number of matching dice across the table using the one-in-three rule of thumb, blends that with what it holds, and challenges when a bid drifts meaningfully above expectation. It will occasionally pick the second-best of its available bids to stay unpredictable, which makes it a fair, honest test for a player who knows the rules but is still developing a feel for the odds.</p>
+      <h3>Hard</h3>
+      <p>The Hard opponent plays close to the mathematics of the game. It models each face as a binomial distribution, computes an expected value <em>and</em> a standard deviation for the unseen dice, and uses those to decide both when to call and how far to push a raise. A bid that sits more than one and a half standard deviations above what the numbers support will almost always get challenged; a bid inside that band usually won't. It takes small, calculated risks and mixes in just enough randomness to avoid being predictable. Beating Hard consistently means your own estimates are genuinely good.</p>
+      <h3>Impossible</h3>
+      <p>The Impossible opponent is exactly what it sounds like: it can see every die on the table, including yours, and it plays perfectly on that information. It will never make a bid that isn't literally true, and it will challenge the instant your bid exceeds the real count. You cannot out-calculate it — the only way to survive is to force it into positions where any legal bid it could make is still a losing one, or to get lucky with the dice. It exists as a benchmark and a puzzle rather than a fair fight, and clawing a win out of it feels appropriately triumphant.</p>
+
+      <h2 id="odds">Reading the odds while you play</h2>
+      <p>The single most useful number in Liar's Dice is one-third. Because ones are wild, any unseen die has two ways to match a given face — it can show that face (a one-in-six chance) or show a one (another one-in-six chance) — for a combined probability of roughly one in three. That means that, on average, about a third of all the dice you cannot see will count toward any face you name.</p>
+      <p>Put that to work. Suppose there are fifteen dice on the table and you are holding two fours. Of the ten dice hidden from you, you can expect around three to be fours or wild ones, giving an expected total near five. So a bid of "five fours" sits right at the expectation, "four fours" is comfortably safe, and "seven fours" is a genuine gamble that needs an above-average roll to be true. When an opponent pushes a bid well past that expected line, the same arithmetic tells you it is probably time to call. The Hard and Impossible bots are effectively running this calculation every turn — playing against them is the fastest way to sharpen your own version of it.</p>
+
+      <h2 id="strategy">Strategy tips for winning</h2>
+      <h3>Anchor bids to dice you actually hold</h3>
+      <p>The safest raises lean on faces already sitting in your own cup. If you hold three sixes, bidding on sixes means you only need a little help from the rest of the table to be telling the truth. Bluffing on a face you own none of is high-variance — sometimes necessary, never your default.</p>
+      <h3>Bluff just above the expected value</h3>
+      <p>The most effective bluffs are the believable ones. A bid that sits a hair above the statistical expectation puts your opponent in an awkward spot: calling risks their die if the roll was even slightly generous, but letting it stand forces them to raise into thinner air. Wild, obvious overbids only work as a rare psychological weapon, not a strategy.</p>
+      <h3>Don't call "Liar!" too early</h3>
+      <p>This is the most common beginner mistake, and the wild ones are why. Honest bids are more likely than the raw numbers suggest, so a low bid early in a round is usually true. When in doubt on a small bid, raise instead of challenging — save your challenges for bids that have clearly outrun the math.</p>
+      <h3>Recount the table every round</h3>
+      <p>Eliminated dice change everything. Beginners keep bidding as if the table were still full; strong players recalculate the expected count each round and pounce the moment an opponent overbids a thinned-out table. Watch the dice counts on each opponent's card above — they shrink as the game goes on, and so should the bids.</p>
+      <blockquote>The whole game turns on a single tension: every bid is a small, public commitment, and every commitment is a piece of information your opponents can use against you. Say just enough to stay ahead, and no more.</blockquote>
+
+      <h2 id="how-ai-works">How the AI actually decides</h2>
+      <p>The opponents on this page are not scripted and they are not choosing raises at random. Each turn, an AI player builds a picture of the table: it counts its own dice as certain information, estimates the unseen dice using the probability described above, and compares the standing bid against that estimate. If the bid still looks plausible, it searches the space of legal raises and scores each one by how safe it is — favouring bids that its own dice and the expected value comfortably support. If the bid has climbed past what the math can defend, it calls "Liar!" instead.</p>
+      <p>The difference between difficulties is how sharp that picture is and how much risk the player accepts. Easy uses rough thresholds and forgives itself for mistakes; Medium tightens the statistics; Hard adds a full binomial model with standard deviations and takes deliberate, measured risks; Impossible discards the guessing entirely because it can see the whole table. A touch of controlled randomness in the lower difficulties keeps the bots from feeling robotic, so you still get the occasional human-feeling bluff or fearless call that keeps you honest.</p>
+
+      <h2 id="faq">Frequently asked questions</h2>
+      <div class="faq">
+        <details><summary>Is this Liar's Dice game really free?</summary><p>Yes. The complete single-player game runs free in your browser with no account, no download, and no in-game purchases. The site is supported by lightweight advertising, explained in full on the <a href="../privacy.html">privacy policy</a> page.</p></details>
+        <details><summary>Do I need to sign up or install anything?</summary><p>No. The entire game — including the character creator and pixel-art graphics — lives on this page and runs the moment it loads. There is nothing to install and no sign-up wall in front of the fun.</p></details>
+        <details><summary>Will the game remember my character?</summary><p>Yes. Your name and character choice are saved locally in your own browser, so your captain is waiting for you the next time you visit. Nothing is sent to a server.</p></details>
+        <details><summary>Can I play on my phone?</summary><p>Yes. The board is built to be responsive, with large tap targets for the dice, faces, and buttons. It works on modern phones, tablets, and desktops.</p></details>
+        <details><summary>Are ones always wild?</summary><p>Yes, this version uses the widely played standard ruleset where ones count as wild toward any face — except when the bid itself is on ones. It makes honest bids a little more likely than the raw numbers suggest.</p></details>
+        <details><summary>What's the difference between this and the multiplayer version?</summary><p>This page is a self-contained single-player experience against AI. The <a href="https://liarsdice.fothergill.com/" target="_blank" rel="noopener noreferrer">full multiplayer server</a> lets you play against friends online in shared rooms, with the same AI available to fill empty seats.</p></details>
+        <details><summary>Can I actually beat the Impossible AI?</summary><p>It is very hard by design — the Impossible opponent can see every die and never bids a falsehood. Winning generally requires the dice to force it into a corner where every legal bid it could make is already a loss. Treat it as a puzzle and a benchmark rather than a fair match.</p></details>
+      </div>
+
+      <div class="cta-row">
+        <div style="flex:1;min-width:220px;"><strong style="color:var(--text-primary);">Want the full write-up first?</strong><br><span style="color:var(--text-secondary);font-size:15px;">Read the complete rules, history, and strategy guide.</span></div>
+        <a class="btn btn-primary" href="../projects/liars-dice.html">Rules &amp; Strategy</a>
+        <a class="btn btn-ghost" href="#top">Back to the game</a>
+      </div>
+
+      <p style="margin-top:40px;"><a href="../index.html#projects">&larr; Back to all projects</a></p>
+    </div>
+  </article>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="footer-bottom" style="border-top:none;padding-top:0;">
+      <span>&copy; <span id="year"></span> Fothergill. All rights reserved.</span>
+      <span><a href="../privacy.html" style="color:var(--text-muted);">Privacy</a> &middot; <a href="../contact.html" style="color:var(--text-muted);">Contact</a></span>
+    </div>
+  </div>
+</footer>
+
+<script>
+document.getElementById('year').textContent = new Date().getFullYear();
+
+/* ================= PIXEL AVATAR ENGINE (self-contained, ported) ================= */
+var PA = (function(){
+  var BASE = {
+    '0':null,'1':'#111111','2':'#5c3018','3':'#8b5a2b','4':'#d4a574','5':'#f5deb3',
+    '6':'#ffffff','7':'#cc2222','8':'#ffd700','9':'#1a1a80','a':'#888888','b':'#336633',
+    'c':'#a0784a','d':'#6b4226','e':'#7b3f8e','f':'#4488cc'
+  };
+  var SKIN = {
+    light:{'4':'#d4a574','5':'#f5deb3'},
+    medium:{'4':'#a07848','5':'#c89860'},
+    dark:{'4':'#6b4226','5':'#8b6240'}
+  };
+  var HAIR = {
+    brown:{'2':'#5c3018'}, black:{'2':'#222222'}, red:{'2':'#8b2500'},
+    blonde:{'2':'#c8a050'}, grey:{'2':'#777777'}
+  };
+  var S = {
+    captain_m:['0000000000000000','0000012221000000','0000122222100000','0011222222211000','0000014441000000','0000414114000000','0000044540000000','0000014410000000','0000188881000000','0000177871000000','0001777877100000','0000177871000000','0000018810000000','0000011110000000','0000011011000000','0000000000000000'],
+    captain_f:['0000000000000000','0000012221000000','0000122222100000','0011222222211000','0002144441200000','0002414114200000','0000044540000000','0000214412000000','0000188881000000','0000177871000000','0001777877100000','0000177871000000','0000018810000000','0000011110000000','0000011011000000','0000000000000000'],
+    firstmate_m:['0000000000000000','0000000000000000','0000077770000000','0000777777000000','0000744447000000','0000414114000000','0000044540000000','0000014410000000','0000033330000000','0000364463000000','0000366663000000','0000133331000000','0000013310000000','0000011110000000','0000011011000000','0000000000000000'],
+    firstmate_f:['0000000000000000','0000000000000000','0000077770000000','0000777777000000','0002744447200000','0002414114200000','0000044540000000','0000214412000000','0000033330000000','0000364463000000','0000366663000000','0000133331000000','0000013310000000','0000011110000000','0000011011000000','0000000000000000'],
+    deckhand:['0000000000000000','0000000000000000','0000022020000000','0000022220000000','0000244442000000','0000414114000000','0000044540000000','0000014410000000','0000067670000000','0000676767000000','0000067670000000','0000167671000000','0000013310000000','0000099990000000','0000011011000000','0000000000000000'],
+    gunner:['0000000000000000','0000000000000000','0000011110000000','0000111111000000','0000144441000000','0000114114000000','0000044540000000','0000014410000000','0000033330000000','0000383833000000','0000338383000000','0000133331000000','0000018810000000','0000011110000000','0000011011000000','0000000000000000'],
+    navigator:['0000000000000000','0000033330000000','0000333333000000','0013333333310000','0000144441000000','0000414114000000','0000044540000000','0000014410000000','0000099990000000','0000999999000000','0000999989000000','0000199991000000','0000018810000000','0000011110000000','0000011011000000','0000000000000000'],
+    quartermaster:['0000000000000000','0000000000000000','0000022220000000','0000222222000000','0000144441000000','0000414114000000','0000044540000000','0000014410000000','0000033330000000','0000333333000000','0008333333000000','0000133331000000','0000083380000000','0000011110000000','0000011011000000','0000000000000000'],
+    lookout:['0000011110000000','0000011110000000','0000011110000000','0000111111000000','0000144441000000','0000414114000000','0000044540000000','0000014410000000','0000066660000000','0000366663000000','0000366663000000','0000133331000000','0000013310000000','0000011110000000','0000011011000000','0000000000000000'],
+    eic_officer:['0000000000000000','0000066660000000','0000666666000000','0000666666000000','0000644446000000','0000414114000000','0000044540000000','0000014410000000','0000088880000000','0000999899000000','0000999899000000','0000199991000000','0000088880000000','0000066660000000','0000011011000000','0000000000000000'],
+    redcoat:['0000000000000000','0000011110000000','0000011110000000','0000811118000000','0000144441000000','0000414114000000','0000044540000000','0000014410000000','0000068860000000','0000777877000000','0000777877000000','0000177771000000','0000088880000000','0000066660000000','0000011011000000','0000000000000000'],
+    naval_officer:['0000000000000000','0000099990000000','0000999999000000','0019999999910000','0000844448000000','0000414114000000','0000044540000000','0000014410000000','0000088880000000','0000999899000000','0000999899000000','0000199991000000','0000088880000000','0000099990000000','0000011011000000','0000000000000000']
+  };
+  var CHARS = [
+    {base:'captain_m', label:'Captain'},
+    {base:'captain_f', label:'Captain (F)'},
+    {base:'firstmate_m', label:'First Mate'},
+    {base:'firstmate_f', label:'First Mate (F)'},
+    {base:'deckhand', label:'Deckhand'},
+    {base:'gunner', label:'Gunner'},
+    {base:'navigator', label:'Navigator'},
+    {base:'quartermaster', label:'Quartermaster'},
+    {base:'lookout', label:'Lookout'},
+    {base:'eic_officer', label:'EIC Officer'},
+    {base:'redcoat', label:'Redcoat'},
+    {base:'naval_officer', label:'Naval Officer'}
+  ];
+  var cache = {};
+  function palette(skin, hair){
+    var p = Object.assign({}, BASE);
+    if(SKIN[skin]) Object.assign(p, SKIN[skin]);
+    if(HAIR[hair]) Object.assign(p, HAIR[hair]);
+    return p;
+  }
+  function render(base, skin, hair, scale){
+    scale = scale || 4;
+    var key = base+'|'+skin+'|'+hair+'|'+scale;
+    if(cache[key]) return cache[key];
+    var rows = S[base]; if(!rows) return '';
+    var pal = palette(skin, hair);
+    var size = 16;
+    var c = document.createElement('canvas');
+    c.width = size*scale; c.height = size*scale;
+    var ctx = c.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    for(var y=0; y<size; y++){
+      var row = rows[y]; if(!row) continue;
+      for(var x=0; x<size; x++){
+        var ch = row[x]; if(!ch || ch==='0') continue;
+        var col = pal[ch]; if(!col) continue;
+        ctx.fillStyle = col;
+        ctx.fillRect(x*scale, y*scale, scale, scale);
+      }
+    }
+    var url = c.toDataURL('image/png');
+    cache[key] = url;
+    return url;
+  }
+  return { render:render, CHARS:CHARS, SKINS:['light','medium','dark'], HAIRS:['brown','black','red','blonde','grey'] };
+})();
+
+/* ================= GAME ================= */
+(function(){
+  "use strict";
+
+  var PIPS = {1:['p-mc'],2:['p-tl','p-br'],3:['p-tl','p-mc','p-br'],4:['p-tl','p-tr','p-bl','p-br'],5:['p-tl','p-tr','p-mc','p-bl','p-br'],6:['p-tl','p-tr','p-ml','p-mr','p-bl','p-br']};
+  function pipHTML(f){ return PIPS[f].map(function(c){ return '<span class="pip '+c+'"></span>'; }).join(''); }
+
+  function rollDie(){ return 1 + Math.floor(Math.random()*6); }
+  function counter(dice){ var c={}; dice.forEach(function(d){ c[d]=(c[d]||0)+1; }); return c; }
+  function g(c,k){ return c[k]||0; }
+  function totalDiceInPlay(s){ return s.players.reduce(function(a,p){ return a+(p.numDice>0?p.numDice:0); },0); }
+  function countActual(s,face){ var t=0; s.players.forEach(function(p){ if(p.numDice>0) p.dice.forEach(function(d){ if(d===face||(d===1&&face!==1)) t++; }); }); return t; }
+  function isValidBid(s,qty,face){ if(qty<1||face<1||face>6) return false; if(qty>totalDiceInPlay(s)) return false; if(!s.currentBid) return true; var cq=s.currentBid.qty,cf=s.currentBid.face; if(qty>cq) return true; if(qty===cq&&face>cf) return true; return false; }
+
+  function aiEasy(s,player){
+    var my=counter(player.dice),ones=g(my,1);
+    if(!s.currentBid){ var bf=2,bv=-1; for(var f=2;f<=6;f++){var v=g(my,f)+ones; if(v>bv){bv=v;bf=f;}} var count=g(my,bf)+ones; return {action:'bid',qty:Math.max(1,count),face:bf}; }
+    var cq=s.currentBid.qty,cf=s.currentBid.face; var total=totalDiceInPlay(s),expected=total/3; var mm=g(my,cf)+(cf!==1?ones:0);
+    if(cq>expected+2 && mm<2){ var chance=Math.min(0.7,(cq-expected)/total); if(Math.random()<chance) return {action:'challenge'}; }
+    var bids=[];
+    for(var f2=1;f2<=6;f2++){ var m=g(my,f2); if(f2!==1)m+=ones; var nq=cq+1; if(nq<=total&&isValidBid(s,nq,f2)) bids.push([nq,f2,m/Math.max(1,nq)]); }
+    for(var f3=cf+1;f3<=6;f3++){ var m2=g(my,f3)+ones; if(isValidBid(s,cq,f3)) bids.push([cq,f3,m2/Math.max(1,cq)]); }
+    if(bids.length){ bids.sort(function(a,b){return b[2]-a[2];}); var top=bids.slice(0,3); var ch=top[Math.floor(Math.random()*top.length)]; return {action:'bid',qty:ch[0],face:ch[1]}; }
+    return {action:'challenge'};
+  }
+  function aiMedium(s,player){
+    var my=counter(player.dice),ones=g(my,1); var total=totalDiceInPlay(s),other=total-player.dice.length;
+    if(!s.currentBid){ var bf=2,bv=-1; for(var f=2;f<=6;f++){var v=g(my,f)+ones; if(v>bv){bv=v;bf=f;}} var mc=g(my,bf)+ones; var q=Math.max(1,Math.floor(mc+(other/3)*0.5)); return {action:'bid',qty:q,face:bf}; }
+    var cq=s.currentBid.qty,cf=s.currentBid.face; var mm=g(my,cf)+(cf!==1?ones:0); var et=mm+other/3;
+    if(cq>et+1){ var cp=Math.min(0.85,(cq-et)/(total*0.5)); if(Math.random()<cp) return {action:'challenge'}; }
+    var bids=[];
+    for(var f2=1;f2<=6;f2++){ var m=g(my,f2); if(f2!==1)m+=ones; var e=m+other/3; [cq,cq+1].forEach(function(q2){ if(isValidBid(s,q2,f2)&&q2<=total) bids.push([q2,f2,e/Math.max(1,q2)]); }); }
+    if(bids.length){ bids.sort(function(a,b){return b[2]-a[2];}); var top=bids.slice(0,2); var ch=top.length>1?top[Math.floor(Math.random()*top.length)]:top[0]; return {action:'bid',qty:ch[0],face:ch[1]}; }
+    return {action:'challenge'};
+  }
+  function aiHard(s,player){
+    var my=counter(player.dice),ones=g(my,1); var total=totalDiceInPlay(s),other=total-player.dice.length;
+    if(!s.currentBid){ var bf=null,be=0; for(var f=2;f<=6;f++){ var mc=g(my,f)+ones; var e=mc+other*(1/3); if(e>be){be=e;bf=f;} } var q=Math.max(1,Math.floor(be*0.85)); return {action:'bid',qty:q,face:bf||6}; }
+    var cq=s.currentBid.qty,cf=s.currentBid.face; var mm=g(my,cf)+(cf!==1?ones:0); var pp=cf!==1?1/3:1/6; var et=mm+other*pp; var std=Math.sqrt(other*pp*(1-pp));
+    if(cq>et+1.5*std){ if(Math.random()<0.9) return {action:'challenge'}; } else if(cq>et+0.5*std){ if(Math.random()<0.4) return {action:'challenge'}; }
+    var bb=null,bs=-1;
+    for(var f2=1;f2<=6;f2++){ var mc2=g(my,f2); if(f2!==1)mc2+=ones; var prob=f2!==1?1/3:1/6; var exp=mc2+other*prob; var sd=Math.sqrt(other*prob*(1-prob));
+      for(var q=cq;q<Math.min(cq+3,total+1);q++){ if(isValidBid(s,q,f2)){ var z=(exp-q)/Math.max(0.1,sd); var sc=z+(Math.random()*0.6-0.3); if(sc>bs){bs=sc;bb=[q,f2];} } } }
+    if(bb&&bs>-1) return {action:'bid',qty:bb[0],face:bb[1]};
+    return {action:'challenge'};
+  }
+  function aiImpossible(s,player){
+    var all={}; s.players.forEach(function(p){ if(p.numDice>0) p.dice.forEach(function(d){ all[d]=(all[d]||0)+1; }); }); var gg=function(k){return all[k]||0;};
+    if(!s.currentBid){ var bf=null,bc=0; for(var f=2;f<=6;f++){var c=gg(f)+gg(1); if(c>bc){bc=c;bf=f;}} return {action:'bid',qty:Math.max(1,bc),face:bf||6}; }
+    var cq=s.currentBid.qty,cf=s.currentBid.face; var act=gg(cf); if(cf!==1)act+=gg(1); if(act<cq) return {action:'challenge'};
+    var bb=null; for(var f2=1;f2<=6;f2++){ var cnt=gg(f2); if(f2!==1)cnt+=gg(1); for(var q=cq;q<=cnt;q++){ if(isValidBid(s,q,f2)){bb=[q,f2];break;} } if(bb)break; }
+    return bb?{action:'bid',qty:bb[0],face:bb[1]}:{action:'challenge'};
+  }
+  var AI = {easy:aiEasy, medium:aiMedium, hard:aiHard, impossible:aiImpossible};
+
+  function getAliveIdx(s){ var o=[]; s.players.forEach(function(p,i){ if(p.numDice>0) o.push(i); }); return o; }
+  function nextAlive(s,c){ var a=getAliveIdx(s); if(a.length<=1) return null; var p=a.indexOf(c); if(p===-1)p=0; return a[(p+1)%a.length]; }
+  function prevAlive(s,idx){ var a=getAliveIdx(s); var p=a.indexOf(idx); if(p===-1)p=0; return a[(p-1+a.length)%a.length]; }
+
+  /* -------- Opponent roster -------- */
+  var AI_ROSTER = [
+    {name:'Blackbeard', base:'captain_m', skin:'dark', hair:'black'},
+    {name:'Anne Bonny', base:'captain_f', skin:'light', hair:'red'},
+    {name:'Calico Jack', base:'firstmate_m', skin:'light', hair:'brown'},
+    {name:'Salty Pete', base:'deckhand', skin:'medium', hair:'brown'},
+    {name:'One-Eyed Willy', base:'gunner', skin:'light', hair:'brown'},
+    {name:'Davy Jones', base:'naval_officer', skin:'dark', hair:'black'},
+    {name:'Red Redmond', base:'redcoat', skin:'light', hair:'red'},
+    {name:'Old Barnaby', base:'quartermaster', skin:'light', hair:'grey'}
+  ];
+  function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
+
+  /* -------- State -------- */
+  var state=null, busy=false;
+  var me = { name:'Captain', base:'captain_m', skin:'light', hair:'brown' };
+  var sel = { opp:2, diff:'medium', qty:1, face:2 };
+  var DIFF_NOTES = {
+    easy:'Easy — knows the basics but bids cautiously and makes mistakes. Great for a first game.',
+    medium:'Medium — solid statistics and reasonable bluffs. A fair fight for players who know the rules.',
+    hard:'Hard — plays close to the real probabilities and takes calculated risks. A serious opponent.',
+    impossible:'Impossible — sees every die and never lies. A benchmark, not a fair fight. Good luck.'
+  };
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* -------- Load saved character -------- */
+  try {
+    var saved = JSON.parse(localStorage.getItem('ld_character') || 'null');
+    if(saved && saved.base){ me = Object.assign(me, saved); }
+  } catch(e){}
+
+  /* -------- Build character creator -------- */
+  var nameInput=$('name-input'), previewImg=$('preview-img'), previewName=$('preview-name');
+  var charGrid=$('char-grid'), skinRow=$('skin-row'), hairRow=$('hair-row');
+
+  nameInput.value = (me.name && me.name!=='Captain') ? me.name : '';
+  function currentName(){ return (nameInput.value.trim() || 'Captain'); }
+
+  function updatePreview(){
+    me.name = currentName();
+    previewImg.src = PA.render(me.base, me.skin, me.hair, 9);
+    previewName.textContent = me.name;
+  }
+  nameInput.addEventListener('input', updatePreview);
+
+  PA.CHARS.forEach(function(ch){
+    var cell=document.createElement('button');
+    cell.type='button'; cell.className='char-cell'+(ch.base===me.base?' selected':'');
+    cell.title=ch.label;
+    var img=document.createElement('img'); img.alt=ch.label; img.src=PA.render(ch.base, me.skin, me.hair, 4);
+    cell.appendChild(img);
+    cell.addEventListener('click', function(){
+      me.base=ch.base;
+      Array.prototype.forEach.call(charGrid.children,function(c){c.classList.remove('selected');});
+      cell.classList.add('selected');
+      updatePreview();
+    });
+    cell._img=img; cell._base=ch.base;
+    charGrid.appendChild(cell);
+  });
+  function refreshCharGrid(){
+    Array.prototype.forEach.call(charGrid.children,function(cell){
+      cell._img.src = PA.render(cell._base, me.skin, me.hair, 4);
+    });
+  }
+
+  var SKIN_HEX = { light:'#d4a574', medium:'#a07848', dark:'#6b4226' };
+  PA.SKINS.forEach(function(sk){
+    var sw=document.createElement('button');
+    sw.type='button'; sw.className='swatch'+(sk===me.skin?' selected':'');
+    sw.style.background=SKIN_HEX[sk]; sw.title=sk;
+    sw.addEventListener('click', function(){
+      me.skin=sk;
+      Array.prototype.forEach.call(skinRow.children,function(c){c.classList.remove('selected');});
+      sw.classList.add('selected');
+      refreshCharGrid(); updatePreview();
+    });
+    skinRow.appendChild(sw);
+  });
+
+  var HAIR_HEX = { brown:'#5c3018', black:'#222222', red:'#8b2500', blonde:'#c8a050', grey:'#777777' };
+  PA.HAIRS.forEach(function(h){
+    var chip=document.createElement('button');
+    chip.type='button'; chip.className='chip'+(h===me.hair?' selected':'');
+    chip.innerHTML='<span style="display:inline-block;width:11px;height:11px;border-radius:50%;background:'+HAIR_HEX[h]+';margin-right:6px;vertical-align:middle;"></span>'+h;
+    chip.addEventListener('click', function(){
+      me.hair=h;
+      Array.prototype.forEach.call(hairRow.children,function(c){c.classList.remove('selected');});
+      chip.classList.add('selected');
+      refreshCharGrid(); updatePreview();
+    });
+    hairRow.appendChild(chip);
+  });
+
+  updatePreview();
+
+  /* -------- Setup segments -------- */
+  var oppSeg=$('opp-seg'), diffSeg=$('diff-seg'), diffNote=$('diff-note');
+  oppSeg.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
+    Array.prototype.forEach.call(oppSeg.children,function(c){c.classList.remove('selected');}); b.classList.add('selected'); sel.opp=parseInt(b.dataset.opp,10); });
+  diffSeg.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
+    Array.prototype.forEach.call(diffSeg.children,function(c){c.classList.remove('selected');}); b.classList.add('selected'); sel.diff=b.dataset.diff; diffNote.textContent=DIFF_NOTES[sel.diff]; });
+
+  /* -------- Face picker & stepper -------- */
+  var facePicker=$('face-picker'), qtyVal=$('qty-val'), qtyMinus=$('qty-minus'), qtyPlus=$('qty-plus');
+  for(var fi=1; fi<=6; fi++){ (function(face){
+    var btn=document.createElement('button'); btn.type='button';
+    btn.className='face-btn'+(face===1?' wildface':'')+(face===sel.face?' selected':'');
+    btn.innerHTML=pipHTML(face); btn.setAttribute('aria-label', face+(face===1?' (wild)':''));
+    btn.addEventListener('click', function(){ sel.face=face; Array.prototype.forEach.call(facePicker.children,function(c){c.classList.remove('selected');}); btn.classList.add('selected'); clampQty(); });
+    facePicker.appendChild(btn);
+  })(fi); }
+
+  function minQty(){ if(!state||!state.currentBid) return 1; var cq=state.currentBid.qty,cf=state.currentBid.face; if(sel.face>cf) return cq; return cq+1; }
+  function maxQty(){ return state ? totalDiceInPlay(state) : 1; }
+  function clampQty(){ var mn=minQty(),mx=maxQty(); if(sel.qty<mn)sel.qty=mn; if(sel.qty>mx)sel.qty=mx; qtyVal.textContent=sel.qty; var cap=document.querySelector('.stepper .cap'); if(cap) cap.textContent='of '+mx+' dice'; }
+  qtyMinus.addEventListener('click', function(){ sel.qty--; clampQty(); });
+  qtyPlus.addEventListener('click', function(){ sel.qty++; clampQty(); });
+
+  /* -------- Start / new game -------- */
+  var setupEl=$('setup'), gameEl=$('game'), playersRow=$('players-row');
+  var bidDisplay=$('bid-display'), turnFlag=$('turn-flag'), turnText=$('turn-text');
+  var yourDice=$('your-dice'), controls=$('controls'), bidBtn=$('bid-btn'), bidError=$('bid-error');
+  var challengeBtn=$('challenge-btn'), revealBox=$('reveal-box'), winBox=$('win-box'), logEl=$('log');
+
+  $('start-btn').addEventListener('click', startGame);
+  $('newgame-btn').addEventListener('click', function(){ gameEl.classList.add('hidden'); setupEl.classList.remove('hidden'); window.scrollTo({top:0,behavior:'smooth'}); });
+
+  function startGame(){
+    me.name = currentName();
+    try { localStorage.setItem('ld_character', JSON.stringify(me)); } catch(e){}
+
+    var players=[{ name:me.name, dice:[], numDice:5, isHuman:true, av:{base:me.base,skin:me.skin,hair:me.hair} }];
+    var roster = shuffle(AI_ROSTER).slice(0, sel.opp);
+    roster.forEach(function(r){ players.push({ name:r.name, dice:[], numDice:5, isHuman:false, diff:sel.diff, av:{base:r.base,skin:r.skin,hair:r.hair} }); });
+
+    state = { players:players, currentBid:null, current:0, roundStarter:0, phase:'bidding' };
+    setupEl.classList.add('hidden'); gameEl.classList.remove('hidden'); logEl.innerHTML='';
+    pushLog('New game — '+me.name+' vs '+sel.opp+' opponent'+(sel.opp>1?'s':'')+' on '+sel.diff+'.', 'system');
+    startRound(true);
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+
+  function startRound(){
+    state.players.forEach(function(p){ if(p.numDice>0){ p.dice=[]; for(var i=0;i<p.numDice;i++) p.dice.push(rollDie()); } else p.dice=[]; });
+    state.currentBid=null; state.phase='bidding';
+    var alive=getAliveIdx(state);
+    if(state.roundStarter===undefined || state.players[state.roundStarter].numDice<=0) state.roundStarter=alive[0];
+    state.current=state.roundStarter;
+    revealBox.classList.add('hidden');
+    state.players.forEach(function(p){ p.speech=null; });
+    pushLog('&mdash; New round: '+totalDiceInPlay(state)+' dice on the table &mdash;', 'system');
+    render();
+    rollAnimation();
+    if(!state.players[state.current].isHuman) scheduleAI();
+  }
+
+  function rollAnimation(){
+    var dice = yourDice.querySelectorAll('.die');
+    dice.forEach(function(d){ d.classList.add('rolling'); });
+    setTimeout(function(){ dice.forEach(function(d){ d.classList.remove('rolling'); }); }, 500);
+  }
+
+  function advance(){ state.current=nextAlive(state, state.current); render(); if(state.phase==='bidding' && !state.players[state.current].isHuman) scheduleAI(); }
+
+  function scheduleAI(){
+    busy=true; render();
+    var idx=state.current, player=state.players[idx];
+    turnText.textContent = player.name+' is thinking…';
+    setTimeout(function(){
+      if(!state || state.phase!=='bidding' || state.current!==idx){ busy=false; return; }
+      var fn=AI[player.diff]||aiMedium; var move=fn(state, player);
+      if(move.action==='challenge' && state.currentBid){
+        var bidder=prevAlive(state, idx);
+        setSpeech(idx, 'Liar!', true);
+        pushLog('<span class="who">'+player.name+'</span> calls "Liar!" on '+state.players[bidder].name+'.');
+        busy=false; render();
+        setTimeout(function(){ doChallenge(idx, bidder); }, 550);
+      } else {
+        if(move.action==='challenge'){ move={action:'bid',qty:1,face:2}; }
+        if(!isValidBid(state, move.qty, move.face)){ var fb=firstLegalBid(); if(!fb){ var b2=prevAlive(state,idx); busy=false; doChallenge(idx,b2); return; } move=fb; }
+        state.currentBid={qty:move.qty, face:move.face};
+        setSpeech(idx, move.qty+'×'+faceShort(move.face), false);
+        pushLog('<span class="who">'+player.name+'</span> bids <strong>'+move.qty+' &times; '+faceWord(move.face)+'</strong>.');
+        busy=false; advance();
+      }
+    }, 850 + Math.random()*650);
+  }
+  function firstLegalBid(){ for(var f=1;f<=6;f++){ for(var q=1;q<=totalDiceInPlay(state);q++){ if(isValidBid(state,q,f)) return {action:'bid',qty:q,face:f}; } } return null; }
+
+  function setSpeech(idx, text, isCall){ state.players.forEach(function(p){ p.speech=null; }); state.players[idx].speech={text:text, call:isCall}; }
+
+  /* -------- Human actions -------- */
+  bidBtn.addEventListener('click', function(){
+    if(busy||!state||state.phase!=='bidding'||!state.players[state.current].isHuman) return;
+    if(!isValidBid(state, sel.qty, sel.face)){ bidError.textContent='That bid isn’t a legal raise. Increase the quantity, or keep it and choose a higher face.'; return; }
+    bidError.textContent=''; state.currentBid={qty:sel.qty, face:sel.face};
+    setSpeech(0, sel.qty+'×'+faceShort(sel.face), false);
+    pushLog('<span class="who">You</span> bid <strong>'+sel.qty+' &times; '+faceWord(sel.face)+'</strong>.');
+    advance();
+  });
+  challengeBtn.addEventListener('click', function(){
+    if(busy||!state||state.phase!=='bidding'||!state.players[state.current].isHuman) return;
+    if(!state.currentBid){ bidError.textContent='There is no bid to challenge yet — you must open with a bid.'; return; }
+    bidError.textContent=''; var bidder=prevAlive(state, state.current);
+    setSpeech(0,'Liar!',true);
+    pushLog('<span class="who">You</span> call "Liar!" on '+state.players[bidder].name+'.');
+    render();
+    setTimeout(function(){ doChallenge(state.current, bidder); }, 400);
+  });
+
+  /* -------- Challenge resolution -------- */
+  function doChallenge(challengerIdx, bidderIdx){
+    state.phase='reveal';
+    var qty=state.currentBid.qty, face=state.currentBid.face;
+    var actual=countActual(state, face);
+    var challenger=state.players[challengerIdx], bidder=state.players[bidderIdx];
+    var loserIdx, truthful=(actual>=qty);
+    if(truthful){ challenger.numDice-=1; loserIdx=challengerIdx; } else { bidder.numDice-=1; loserIdx=bidderIdx; }
+    renderReveal(qty, face, actual, challenger, bidder, truthful, loserIdx);
+    var msg = truthful
+      ? 'The bid of '+qty+' &times; '+faceWord(face)+' was TRUE ('+actual+' on the table). '+challenger.name+' loses a die.'
+      : 'LIAR! Only '+actual+' &times; '+faceWord(face)+' on the table (bid was '+qty+'). '+bidder.name+' loses a die.';
+    pushLog(msg, truthful?'reveal bad':'reveal');
+    var alive=getAliveIdx(state);
+    if(alive.length<=1){ state.phase='game_over'; showWin(state.players[alive[0]]); return; }
+    state.roundStarter = (state.players[loserIdx].numDice>0) ? loserIdx : nextAlive(state, loserIdx);
+    render();
+  }
+
+  function renderReveal(qty, face, actual, challenger, bidder, truthful, loserIdx){
+    controls.classList.add('hidden');
+    var html = '<h3>'+(truthful?'Bid was true':'Caught lying!')+'</h3>';
+    html += '<p class="reveal-line">Bid: <strong>'+qty+' &times; '+faceWord(face)+'</strong> &nbsp;|&nbsp; Actually on the table: <strong>'+actual+'</strong> (ones are wild)</p>';
+    html += '<p class="reveal-line">'+challenger.name+' challenged '+bidder.name+' &rarr; <strong>'+state.players[loserIdx].name+' loses a die.</strong></p>';
+    html += '<div class="reveal-tray">';
+    state.players.forEach(function(p){
+      if(!p.dice.length) return;
+      html += '<div class="mini-group"><span class="lbl">'+p.name+'</span><div style="display:flex;gap:4px;flex-wrap:wrap;">';
+      p.dice.forEach(function(d){ var hit=(d===face||(d===1&&face!==1)); html += '<div class="mini-die'+(hit?' hit':'')+(d===1?' wild':'')+'">'+pipHTML(d)+'</div>'; });
+      html += '</div></div>';
+    });
+    html += '</div>';
+    html += '<button class="btn btn-primary" id="continue-btn" style="margin-top:6px;">Next round &rarr;</button>';
+    revealBox.innerHTML=html; revealBox.classList.remove('hidden');
+    $('continue-btn').addEventListener('click', function(){ controls.classList.remove('hidden'); startRound(false); });
+  }
+
+  function showWin(winner){
+    controls.classList.add('hidden'); revealBox.classList.add('hidden');
+    var youWon = winner.isHuman;
+    var av = winner.av;
+    winBox.innerHTML = '<img src="'+PA.render(av.base, av.skin, av.hair, 6)+'" alt="Winner">'
+      + '<h3>'+(youWon?'🏆 You win!':winner.name+' wins')+'</h3>'
+      + '<p style="color:var(--text-secondary);margin:0 0 14px;">'
+      + (youWon ? 'You were the last captain with dice on the table. A clean sweep of bluffs and reads.'
+                : 'You were eliminated. '+winner.name+' out-bluffed the table this time — run it back?')
+      + '</p><button class="btn btn-primary" id="again-btn">Play again</button>';
+    winBox.classList.remove('hidden');
+    pushLog((youWon?'You win the game!':winner.name+' wins the game.'), 'system');
+    $('again-btn').addEventListener('click', function(){ winBox.classList.add('hidden'); controls.classList.remove('hidden'); startGame(); });
+    render();
+  }
+
+  /* -------- Rendering -------- */
+  function faceWord(f){ return f===1 ? '1 (wild)' : String(f); }
+  function faceShort(f){ return f===1 ? '1★' : String(f); }
+
+  function pushLog(html, cls){ var d=document.createElement('div'); d.className='log-entry'+(cls?' '+cls:''); d.innerHTML=html; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; }
+
+  function render(){
+    if(!state) return;
+    playersRow.innerHTML='';
+    state.players.forEach(function(p,i){
+      var card=document.createElement('div');
+      card.className='player-card'+(i===state.current&&state.phase==='bidding'?' active':'')+(p.numDice<=0?' out':'');
+      var tag = p.isHuman ? '<span class="player-tag you">You</span>' : '<span class="player-tag">'+(p.diff||'ai')+'</span>';
+      var cups=''; for(var d=0; d<p.numDice; d++) cups+='<span class="cup-die"></span>';
+      var speech = p.speech ? '<div class="speech'+(p.speech.call?' call':'')+'">'+p.speech.text+'</div>' : '';
+      card.innerHTML =
+        speech +
+        '<div class="pc-top">'+
+          '<img class="pc-avatar" src="'+PA.render(p.av.base,p.av.skin,p.av.hair,3)+'" alt="'+p.name+'">'+
+          '<div class="pc-meta"><div class="player-name">'+p.name+'</div>'+tag+
+            '<div class="dice-count">'+(p.numDice>0?(p.numDice+' dice left'):'eliminated')+'</div></div>'+
+        '</div>'+
+        '<div class="cup-row">'+cups+'</div>';
+      playersRow.appendChild(card);
+    });
+
+    bidDisplay.innerHTML = state.currentBid ? ('<span class="num">'+state.currentBid.qty+'</span> &times; '+faceWord(state.currentBid.face)) : 'No bid yet — opening bid';
+
+    if(state.phase==='bidding'){
+      turnFlag.classList.remove('hidden');
+      var cp=state.players[state.current];
+      turnText.textContent = cp.isHuman ? 'Your turn' : (cp.name+(busy?' is thinking…':'’s turn'));
+    } else { turnFlag.classList.add('hidden'); }
+
+    var you=state.players[0];
+    yourDice.innerHTML='';
+    if(you.numDice>0){ you.dice.forEach(function(d){ var die=document.createElement('div'); die.className='die'+(d===1?' wild':''); die.innerHTML=pipHTML(d); yourDice.appendChild(die); }); }
+    else { yourDice.innerHTML='<p style="color:var(--text-muted);font-size:14px;">You have been eliminated — watching the rest play out.</p>'; }
+
+    var myTurn = state.phase==='bidding' && state.players[state.current].isHuman && !busy;
+    bidBtn.disabled=!myTurn; challengeBtn.disabled=!(myTurn && state.currentBid);
+    qtyMinus.disabled=!myTurn; qtyPlus.disabled=!myTurn;
+    if(myTurn){ clampQty(); bidError.textContent=''; }
+  }
+
+})();
+</script>
+</body>
+</html>
