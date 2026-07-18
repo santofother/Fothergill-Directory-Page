@@ -1,0 +1,2249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Tiny Town Traffic</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{overflow:hidden;background:#1a1a2e;font-family:'Segoe UI',Tahoma,sans-serif;touch-action:none;user-select:none;}
+#gameCanvas{display:block;cursor:crosshair;}
+#mainMenu{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;overflow:hidden;animation:skyDayNight 60s ease-in-out infinite;}
+@keyframes skyDayNight{
+0%{background:linear-gradient(180deg,#87ceeb 0%,#6bb3d9 30%,#4a90b8 60%,#3a7ca5 100%);}
+30%{background:linear-gradient(180deg,#87ceeb 0%,#6bb3d9 30%,#4a90b8 60%,#3a7ca5 100%);}
+40%{background:linear-gradient(180deg,#5b86c5 0%,#4a72a0 20%,#6b5b8a 50%,#8b6e7a 75%,#c4956a 100%);}
+50%{background:linear-gradient(180deg,#2c1810 0%,#6b3520 15%,#d4845a 35%,#e8a87c 55%,#8b4570 80%,#4a2040 100%);}
+60%{background:linear-gradient(180deg,#2d1b4e 0%,#4a2c6a 25%,#6d3a7a 45%,#3a2050 70%,#1a1028 100%);}
+70%{background:linear-gradient(180deg,#0f1a2e 0%,#1a2540 30%,#0d1520 70%,#080e18 100%);}
+88%{background:linear-gradient(180deg,#0d1b2a 0%,#1b2838 30%,#0d1520 60%,#080e18 100%);}
+94%{background:linear-gradient(180deg,#1a1520 0%,#2c1810 20%,#8b4513 45%,#d4845a 70%,#4a90b8 100%);}
+100%{background:linear-gradient(180deg,#87ceeb 0%,#6bb3d9 30%,#4a90b8 60%,#3a7ca5 100%);}
+}
+#mainMenu::before{content:'';position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(ellipse at 30% 80%,rgba(78,140,80,0.12) 0%,transparent 50%),radial-gradient(ellipse at 70% 20%,rgba(212,165,116,0.08) 0%,transparent 40%);pointer-events:none;}
+#mainMenu h1{font-size:3.5em;color:#e8d5b7;text-shadow:0 0 40px rgba(232,213,183,0.25),0 4px 20px rgba(232,213,183,0.3);margin-bottom:6px;letter-spacing:4px;animation:titlePulse 6s ease-in-out infinite;position:relative;z-index:2;}
+@keyframes titlePulse{0%,100%{text-shadow:0 0 40px rgba(232,213,183,0.25),0 4px 20px rgba(232,213,183,0.3);}50%{text-shadow:0 0 60px rgba(232,213,183,0.4),0 4px 30px rgba(232,213,183,0.5);}}
+#mainMenu .subtitle{color:#a89070;font-size:1.1em;margin-bottom:8px;font-style:italic;position:relative;z-index:2;}
+#mainMenu .menu-icons{font-size:2em;margin-bottom:28px;letter-spacing:16px;display:flex;gap:4px;position:relative;z-index:2;}
+.menu-icon-char{display:inline-block;animation:iconWaveBob 4s ease-in-out infinite;}
+@keyframes iconWaveBob{0%,100%{transform:translateY(0);}35%,55%{transform:translateY(-6px);}}
+.menu-btn{border:none;padding:15px 50px;margin:8px;font-size:1.1em;border-radius:8px;cursor:pointer;font-weight:600;transition:all 0.3s;min-width:250px;position:relative;z-index:2;}
+.menu-btn:hover{transform:scale(1.05);}
+.menu-btn.secondary{background:linear-gradient(135deg,#4a6741,#3d5a35);color:#e8d5b7;}
+.menu-btn.secondary:hover{box-shadow:0 4px 20px rgba(78,140,80,0.4);}
+.menu-btn.btn-normal{background:linear-gradient(135deg,#e8d5b7,#d4a574);color:#1a1a2e;}
+.menu-btn.btn-normal:hover{box-shadow:0 4px 20px rgba(232,213,183,0.5);}
+.menu-btn.btn-endless{background:linear-gradient(135deg,#7eb8da,#4a90b8);color:#0d1b2a;}
+.menu-btn.btn-endless:hover{box-shadow:0 4px 20px rgba(126,184,218,0.5);}
+.menu-btn.btn-creative{background:linear-gradient(135deg,#c49bde,#9b6bbf);color:#1a102e;}
+.menu-btn.btn-creative:hover{box-shadow:0 4px 20px rgba(196,155,222,0.5);}
+.menu-btn .btn-icon{display:inline-block;transition:transform 0.3s;margin-right:4px;}
+.menu-btn:hover .btn-icon{animation:btnIconWiggle 0.8s ease-in-out infinite;}
+@keyframes btnIconWiggle{0%,100%{transform:rotate(0deg);}25%{transform:rotate(-8deg);}75%{transform:rotate(8deg);}}
+.iso-cube-wrap{position:absolute;top:50%;left:50%;transform:translate(-50%,-58%);z-index:1;perspective:600px;pointer-events:none;}
+.iso-cube{width:120px;height:120px;position:relative;transform-style:preserve-3d;animation:cubeRotate 30s linear infinite;}
+@keyframes cubeRotate{0%{transform:rotateX(-25deg) rotateY(0deg);}100%{transform:rotateX(-25deg) rotateY(360deg);}}
+.iso-cube-face{position:absolute;width:120px;height:120px;border:2px solid rgba(212,165,116,0.25);border-radius:4px;opacity:0.5;}
+.iso-cube-face.front{transform:translateZ(60px);background:repeating-linear-gradient(45deg,rgba(140,120,90,0.3),rgba(140,120,90,0.3) 8px,rgba(100,90,70,0.3) 8px,rgba(100,90,70,0.3) 16px);}
+.iso-cube-face.back{transform:rotateY(180deg) translateZ(60px);background:repeating-linear-gradient(45deg,rgba(120,100,80,0.25),rgba(120,100,80,0.25) 8px,rgba(90,80,60,0.25) 8px,rgba(90,80,60,0.25) 16px);}
+.iso-cube-face.right{transform:rotateY(90deg) translateZ(60px);background:repeating-linear-gradient(-45deg,rgba(130,110,85,0.3),rgba(130,110,85,0.3) 8px,rgba(95,85,65,0.3) 8px,rgba(95,85,65,0.3) 16px);}
+.iso-cube-face.left{transform:rotateY(-90deg) translateZ(60px);background:repeating-linear-gradient(-45deg,rgba(110,95,75,0.25),rgba(110,95,75,0.25) 8px,rgba(80,70,55,0.25) 8px,rgba(80,70,55,0.25) 16px);}
+.iso-cube-face.top{transform:rotateX(90deg) translateZ(60px);background:linear-gradient(135deg,rgba(78,140,80,0.35),rgba(65,120,60,0.25));border-color:rgba(78,140,80,0.3);}
+.iso-cube-face.bottom{transform:rotateX(-90deg) translateZ(60px);background:rgba(40,35,30,0.3);}
+#loreTicker{position:absolute;bottom:20px;left:0;width:100%;overflow:hidden;z-index:2;pointer-events:none;}
+#loreTickerInner{display:inline-block;white-space:nowrap;animation:tickerScroll 45s linear infinite;color:rgba(168,144,112,0.6);font-size:12px;font-style:italic;letter-spacing:0.5px;padding:6px 0;}
+#hud{position:fixed;top:10px;left:10px;z-index:100;pointer-events:none;}
+#hud>div{pointer-events:auto;}
+.hud-bar{background:rgba(26,26,46,0.88);border-radius:10px;padding:8px 14px;color:#e8d5b7;font-size:13px;display:flex;gap:14px;align-items:center;backdrop-filter:blur(6px);border:1px solid rgba(232,213,183,0.15);margin-bottom:6px;}
+.hud-bar .label{color:#a89070;font-size:11px;}
+.hud-bar .value{font-weight:700;font-size:14px;}
+.speed-btn{background:rgba(232,213,183,0.15);border:1px solid rgba(232,213,183,0.3);color:#e8d5b7;padding:4px 10px;border-radius:5px;cursor:pointer;font-size:12px;transition:all 0.2s;}
+.speed-btn.active{background:rgba(232,213,183,0.4);border-color:#e8d5b7;}
+.speed-btn:hover{background:rgba(232,213,183,0.3);}
+.collapse-btn{min-width:36px;min-height:36px;background:rgba(26,26,46,0.88);border:1px solid rgba(232,213,183,0.25);color:#a89070;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;pointer-events:auto;transition:background 0.2s;flex-shrink:0;}
+.collapse-btn:hover{background:rgba(232,213,183,0.2);color:#e8d5b7;}
+.hud-bar{transition:opacity 0.25s,max-width 0.3s;}
+.hud-bar.collapsed .hud-inner{display:none;}
+.hud-inner{display:flex;gap:14px;align-items:center;overflow:visible;transition:opacity 0.25s;}
+#sidePanel{position:fixed;top:10px;right:10px;width:200px;z-index:100;display:flex;flex-direction:column;gap:6px;max-height:calc(100vh - 20px);overflow-y:auto;scrollbar-width:thin;}
+#sidePanel.collapsed{width:auto;overflow:visible;}
+#sidePanel.collapsed .panel-section{display:none;}
+#sidePanel::-webkit-scrollbar{width:4px;}
+#sidePanel::-webkit-scrollbar-thumb{background:rgba(232,213,183,0.3);border-radius:2px;}
+.panel-section{background:rgba(26,26,46,0.88);border-radius:10px;padding:10px;color:#e8d5b7;backdrop-filter:blur(6px);border:1px solid rgba(232,213,183,0.15);}
+#lateReportPanel{position:fixed;top:10px;right:210px;width:320px;max-height:calc(100vh - 20px);overflow-y:auto;z-index:150;background:rgba(26,26,46,0.95);border:1px solid rgba(232,213,183,0.2);border-radius:12px;padding:14px;color:#e8d5b7;font-size:11px;scrollbar-width:thin;box-shadow:0 4px 20px rgba(0,0,0,0.4);}
+#lateReportPanel h2{color:#d4a574;font-size:14px;margin:0 0 8px 0;}
+.lr-tabs{display:flex;gap:6px;margin-bottom:8px;}
+.lr-tab{background:rgba(232,213,183,0.1);border:1px solid rgba(232,213,183,0.2);color:#a89070;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;transition:all 0.2s;}
+.lr-tab.active{background:rgba(232,213,183,0.25);color:#e8d5b7;border-color:rgba(232,213,183,0.4);}
+.lr-tab:hover{background:rgba(232,213,183,0.18);}
+.lr-toggle{display:flex;gap:6px;margin-bottom:10px;}
+.lr-toggle-btn{background:rgba(232,213,183,0.08);border:1px solid rgba(232,213,183,0.15);color:#8a7a60;padding:3px 8px;border-radius:4px;cursor:pointer;font-size:10px;transition:all 0.2s;}
+.lr-toggle-btn.active{background:rgba(212,165,116,0.2);color:#d4a574;border-color:rgba(212,165,116,0.4);}
+.lr-section{margin-bottom:6px;border:1px solid rgba(232,213,183,0.1);border-radius:8px;overflow:hidden;}
+.lr-section-hdr{display:flex;justify-content:space-between;align-items:center;padding:7px 10px;cursor:pointer;background:rgba(232,213,183,0.05);transition:background 0.15s;}
+.lr-section-hdr:hover{background:rgba(232,213,183,0.1);}
+.lr-section-hdr .lr-name{font-weight:600;font-size:11px;flex:1;}
+.lr-badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;color:#1a1a2e;}
+.lr-badge-yellow{background:#f0c040;}
+.lr-badge-orange{background:#e08030;}
+.lr-badge-red{background:#cf6679;}
+.lr-rows{padding:4px 10px 6px 10px;}
+.lr-row{display:flex;align-items:center;gap:5px;padding:2px 0;font-size:11px;color:#c4b49a;cursor:pointer;transition:color 0.15s;}
+.lr-row:hover{color:#e8d5b7;}
+.lr-row .lr-arrow{color:#6a7a5a;}
+.lr-close{position:absolute;top:12px;right:14px;background:none;border:1px solid rgba(232,213,183,0.2);color:#a89070;padding:4px 10px;border-radius:4px;cursor:pointer;font-size:12px;transition:all 0.2s;}
+.lr-close:hover{color:#e8d5b7;border-color:rgba(232,213,183,0.4);}
+.panel-section h3{font-size:12px;color:#a89070;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;}
+.tool-btn{width:100%;background:rgba(232,213,183,0.1);border:1px solid rgba(232,213,183,0.2);color:#e8d5b7;padding:6px 8px;border-radius:6px;cursor:pointer;font-size:12px;text-align:left;margin-bottom:4px;transition:all 0.2s;display:flex;justify-content:space-between;align-items:center;}
+.tool-btn:hover{background:rgba(232,213,183,0.2);}
+.tool-btn.active{background:rgba(78,140,80,0.4);border-color:#4e8c50;}
+.tool-btn .cost{color:#a89070;font-size:11px;}
+.upkeep-btn{width:100%;background:rgba(232,213,183,0.08);border:1px solid rgba(232,213,183,0.15);color:#e8d5b7;padding:5px 8px;border-radius:5px;cursor:pointer;font-size:11px;margin-bottom:3px;transition:all 0.2s;}
+.upkeep-btn.active{background:rgba(78,140,80,0.3);border-color:#4e8c50;}
+#infoPanel{position:fixed;bottom:10px;left:50%;transform:translateX(-50%);z-index:100;display:none;}
+.info-card{background:rgba(26,26,46,0.92);border-radius:12px;padding:14px 18px;color:#e8d5b7;backdrop-filter:blur(8px);border:1px solid rgba(232,213,183,0.2);min-width:300px;max-width:450px;max-height:300px;overflow-y:auto;position:relative;}
+.info-card h3{margin-bottom:8px;color:#d4a574;}
+.info-card p{font-size:12px;margin-bottom:4px;color:#c4b49a;}
+.info-card .close-btn{position:absolute;top:8px;right:12px;background:none;border:none;color:#a89070;cursor:pointer;font-size:16px;}
+.info-card .trait{display:inline-block;background:rgba(232,213,183,0.12);padding:2px 8px;border-radius:10px;font-size:11px;margin:2px;}
+#notification{position:fixed;top:60px;left:50%;transform:translateX(-50%);z-index:200;display:none;background:rgba(26,26,46,0.95);border-radius:10px;padding:12px 24px;color:#e8d5b7;text-align:center;border:1px solid rgba(232,213,183,0.3);backdrop-filter:blur(10px);max-width:600px;font-size:13px;}
+#weekSummary{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:200;display:none;background:rgba(26,26,46,0.95);border-radius:14px;padding:20px 28px;color:#e8d5b7;text-align:center;border:1px solid rgba(232,213,183,0.3);backdrop-filter:blur(10px);min-width:320px;}
+#weekSummary h2{color:#d4a574;margin-bottom:12px;}
+#weekSummary .line{display:flex;justify-content:space-between;padding:4px 0;font-size:13px;border-bottom:1px solid rgba(232,213,183,0.1);}
+#weekSummary .line .pos{color:#6abf69;}
+#weekSummary .line .neg{color:#cf6679;}
+#settingsModal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:300;display:none;background:rgba(26,26,46,0.97);border-radius:14px;padding:24px;color:#e8d5b7;border:1px solid rgba(232,213,183,0.3);min-width:300px;}
+#settingsModal h2{color:#d4a574;margin-bottom:16px;}
+#settingsModal label{display:block;margin:10px 0 4px;font-size:13px;color:#a89070;}
+#settingsModal input[type=range]{width:100%;accent-color:#d4a574;}
+#overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:250;display:none;}
+#loreJournal{position:fixed;top:70px;left:10px;z-index:300;display:none;background:rgba(26,26,46,0.97);border-radius:14px;padding:24px 28px;color:#e8d5b7;border:1px solid rgba(212,165,116,0.4);min-width:380px;max-width:520px;max-height:75vh;overflow-y:auto;scrollbar-width:thin;}
+#loreJournal h2{color:#d4a574;margin-bottom:16px;text-align:center;}
+.journal-category{margin-bottom:14px;}
+.journal-category h3{color:#a89070;font-size:13px;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;border-bottom:1px solid rgba(232,213,183,0.15);padding-bottom:4px;}
+.journal-category h3 .count{color:#6abf69;font-size:11px;margin-left:6px;}
+.journal-entry{font-size:12px;color:#c4b49a;padding:5px 8px;margin-bottom:3px;background:rgba(232,213,183,0.05);border-radius:5px;border-left:3px solid transparent;}
+.journal-entry.new-entry{border-left-color:#4e8c50;}
+.journal-entry .entry-day{color:#a89070;font-size:10px;float:right;}
+.empty-category{font-size:11px;color:#706050;font-style:italic;padding:4px 8px;}
+#gameOver{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1000;display:none;background:rgba(26,26,46,0.97);border-radius:16px;padding:30px;color:#e8d5b7;text-align:center;border:2px solid rgba(207,102,121,0.5);}
+#gameOver h2{color:#cf6679;font-size:2em;margin-bottom:10px;}
+#minimap{position:fixed;bottom:10px;right:10px;border:2px solid rgba(232,213,183,0.3);border-radius:8px;z-index:100;background:rgba(26,26,46,0.7);cursor:pointer;}
+.toggle-row{display:flex;gap:4px;margin-bottom:4px;}
+.toggle-row .tool-btn{width:50%;margin-bottom:0;}
+#tutorialModal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:300;display:none;background:rgba(26,26,46,0.97);border-radius:14px;padding:24px 28px;color:#e8d5b7;border:1px solid rgba(212,165,116,0.4);width:520px;max-height:80vh;overflow-y:auto;scrollbar-width:thin;}
+#tutorialModal h2{color:#d4a574;margin-bottom:4px;text-align:center;}
+.tut-subtitle{color:#a89070;font-size:12px;text-align:center;margin-bottom:16px;font-style:italic;}
+.tut-page-icon{font-size:2.2em;text-align:center;margin-bottom:8px;}
+.tut-title{font-size:1.2em;font-weight:700;color:#e8d5b7;text-align:center;margin-bottom:10px;}
+.tut-body{font-size:13px;color:#c4b49a;line-height:1.6;margin-bottom:12px;}
+.tut-body b{color:#e8d5b7;}
+.tut-body kbd{display:inline-block;background:rgba(232,213,183,0.15);border:1px solid rgba(232,213,183,0.3);border-radius:4px;padding:1px 6px;font-family:monospace;font-size:12px;color:#e8d5b7;margin:0 2px;}
+.tut-hint{font-size:11px;color:#8a7a60;font-style:italic;border-left:3px solid rgba(212,165,116,0.3);padding:6px 10px;margin-top:8px;background:rgba(212,165,116,0.05);border-radius:0 6px 6px 0;}
+.tut-nav{display:flex;align-items:center;justify-content:space-between;margin-top:16px;padding-top:12px;border-top:1px solid rgba(232,213,183,0.15);}
+.tut-nav button{background:linear-gradient(135deg,#4a6741,#3d5a35);color:#e8d5b7;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-size:13px;transition:all 0.2s;}
+.tut-nav button:hover{transform:scale(1.05);box-shadow:0 2px 10px rgba(78,140,80,0.3);}
+.tut-nav button:disabled{opacity:0.3;cursor:default;transform:none;box-shadow:none;}
+.tut-nav span{color:#a89070;font-size:12px;}
+#tutorialPopup{position:fixed;top:10px;right:250px;transform:none;z-index:200;background:rgba(26,26,46,0.95);border-radius:12px;padding:16px 20px;color:#e8d5b7;border:1px solid rgba(78,140,80,0.5);width:320px;box-shadow:0 4px 20px rgba(0,0,0,0.4);pointer-events:auto;}
+.tut-pop-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+.tut-pop-step{font-size:11px;color:#8a7a60;font-weight:600;}
+.tut-pop-skip{background:none;border:1px solid rgba(232,213,183,0.2);color:#a89070;padding:3px 10px;border-radius:4px;cursor:pointer;font-size:11px;transition:all 0.2s;}
+.tut-pop-skip:hover{color:#e8d5b7;border-color:rgba(232,213,183,0.4);}
+.tut-pop-title{font-size:16px;font-weight:700;color:#d4a574;margin-bottom:6px;}
+.tut-pop-text{font-size:13px;color:#c4b49a;line-height:1.5;margin-bottom:10px;}
+.tut-pop-footer{display:flex;justify-content:space-between;align-items:center;}
+.tut-pop-hint{font-size:11px;color:#6a7a5a;font-style:italic;flex:1;}
+.tut-pop-next{background:linear-gradient(135deg,#4a6741,#3d5a35);color:#e8d5b7;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;transition:all 0.2s;}
+.tut-pop-next:hover{transform:scale(1.05);box-shadow:0 2px 10px rgba(78,140,80,0.3);}
+.tut-pop-next.waiting{background:rgba(232,213,183,0.1);color:#6a7a5a;cursor:default;transform:none;box-shadow:none;}
+.tool-btn.tut-highlight{animation:tutPulse 1.2s ease-in-out infinite;border-color:rgba(78,140,80,0.8)!important;box-shadow:0 0 12px rgba(78,140,80,0.4)!important;}
+@keyframes tutPulse{0%,100%{box-shadow:0 0 6px rgba(78,140,80,0.3);}50%{box-shadow:0 0 16px rgba(78,140,80,0.6);}}
+.kb-hint{display:inline-block;background:rgba(232,213,183,0.15);border:1px solid rgba(232,213,183,0.25);border-radius:3px;padding:0 4px;font-family:monospace;font-size:10px;color:#a89070;margin-left:4px;line-height:1.6;vertical-align:middle;}
+.tool-btn .btn-right{display:flex;align-items:center;gap:4px;}
+#keybindsCard{display:none;margin-top:12px;max-height:50vh;overflow-y:auto;scrollbar-width:thin;}
+#keybindsCard.visible{display:block;}
+.kb-section{margin-bottom:10px;}
+.kb-section h4{font-size:11px;color:#a89070;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;border-bottom:1px solid rgba(232,213,183,0.1);padding-bottom:3px;}
+.kb-row{display:flex;justify-content:space-between;padding:3px 0;font-size:12px;}
+.kb-key{display:inline-block;background:rgba(232,213,183,0.12);border:1px solid rgba(232,213,183,0.25);border-radius:4px;padding:1px 7px;font-family:monospace;font-size:11px;color:#e8d5b7;min-width:28px;text-align:center;}
+.kb-action{color:#c4b49a;}
+#artifactPopup{position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:210;display:none;background:rgba(26,26,46,0.97);border-radius:14px;padding:18px 28px;color:#e8d5b7;text-align:center;border:2px solid rgba(212,165,116,0.6);backdrop-filter:blur(12px);width:420px;max-width:90vw;box-shadow:0 8px 40px rgba(212,165,116,0.25),0 0 60px rgba(212,165,116,0.1);animation:artifactSlideDown 0.6s ease-out;}
+#artifactPopup h3{color:#d4a574;font-size:1.15em;margin-bottom:8px;text-shadow:0 0 12px rgba(212,165,116,0.4);}
+#artifactPopup p{color:#c4b49a;font-size:12px;line-height:1.5;margin-bottom:10px;}
+#artifactPopup .dismiss-btn{background:linear-gradient(135deg,#4a6741,#3d5a35);color:#e8d5b7;border:none;padding:6px 18px;border-radius:6px;cursor:pointer;font-size:12px;transition:all 0.2s;}
+#artifactPopup .dismiss-btn:hover{transform:scale(1.05);box-shadow:0 2px 10px rgba(78,140,80,0.3);}
+@keyframes artifactSlideDown{0%{opacity:0;transform:translateX(-50%) translateY(-30px);}100%{opacity:1;transform:translateX(-50%) translateY(0);}}
+@keyframes tickerScroll{0%{transform:translateX(100vw);}100%{transform:translateX(-100%);}}
+.journal-tabs{display:flex;gap:4px;margin-bottom:14px;border-bottom:1px solid rgba(212,165,116,0.3);padding-bottom:8px;}
+.journal-tab{flex:1;padding:7px 10px;border:1px solid rgba(212,165,116,0.25);border-radius:8px 8px 0 0;background:rgba(232,213,183,0.06);color:#a89070;font-size:12px;cursor:pointer;text-align:center;transition:all 0.2s;}
+.journal-tab:hover{background:rgba(232,213,183,0.12);color:#d4a574;}
+.journal-tab.active{background:rgba(212,165,116,0.2);color:#d4a574;border-color:rgba(212,165,116,0.5);font-weight:600;}
+.pin-btn{display:inline-block;cursor:pointer;font-size:13px;margin-left:6px;opacity:0.4;transition:all 0.2s;vertical-align:middle;}
+.pin-btn:hover{opacity:0.8;transform:scale(1.2);}
+.pin-btn.pinned{opacity:1;color:#d4a574;}
+.evidence-card{background:rgba(232,213,183,0.08);border:2px solid rgba(212,165,116,0.2);border-radius:8px;padding:8px 10px;margin-bottom:6px;font-size:11px;color:#c4b49a;cursor:pointer;transition:all 0.2s;position:relative;}
+.evidence-card:hover{border-color:rgba(212,165,116,0.5);background:rgba(232,213,183,0.12);}
+.evidence-card.selected{border-color:#d4a574;background:rgba(212,165,116,0.15);box-shadow:0 0 10px rgba(212,165,116,0.2);}
+.evidence-card .unpin-btn{position:absolute;top:4px;right:6px;cursor:pointer;font-size:12px;color:#a89070;opacity:0.5;transition:opacity 0.2s;}
+.evidence-card .unpin-btn:hover{opacity:1;color:#e07070;}
+.connection-item{display:flex;align-items:center;gap:8px;padding:6px 8px;margin-bottom:4px;background:rgba(232,213,183,0.05);border-radius:6px;font-size:11px;color:#a89070;border-left:3px solid rgba(212,165,116,0.4);}
+.connection-item .disconnect-btn{cursor:pointer;color:#a89070;opacity:0.5;transition:opacity 0.2s;margin-left:auto;font-size:10px;}
+.connection-item .disconnect-btn:hover{opacity:1;color:#e07070;}
+.deduction-card{background:rgba(120,80,180,0.12);border:1px solid rgba(150,100,200,0.3);border-radius:10px;padding:12px 14px;margin-bottom:10px;}
+.deduction-card h4{color:#c4a0e0;font-size:13px;margin-bottom:8px;}
+.deduction-card .difficulty{color:#a89070;font-size:11px;margin-bottom:6px;}
+.deduction-card p{color:#c4b49a;font-size:12px;line-height:1.5;margin-bottom:10px;}
+.deduction-choice{display:block;width:100%;padding:7px 12px;margin-bottom:5px;background:rgba(232,213,183,0.08);border:1px solid rgba(212,165,116,0.2);border-radius:6px;color:#c4b49a;font-size:11px;cursor:pointer;text-align:left;transition:all 0.2s;}
+.deduction-choice:hover{background:rgba(232,213,183,0.15);border-color:rgba(212,165,116,0.4);}
+.deduction-choice.correct{background:rgba(78,140,80,0.25);border-color:#4e8c50;color:#6abf69;}
+.deduction-choice.wrong{background:rgba(200,60,60,0.2);border-color:#c83c3c;color:#e07070;}
+.deduction-solved{background:rgba(78,140,80,0.1);border:1px solid rgba(78,140,80,0.3);border-radius:10px;padding:10px 14px;margin-bottom:8px;}
+.deduction-solved h4{color:#6abf69;font-size:12px;margin-bottom:6px;}
+.deduction-solved p{color:#a89070;font-size:11px;line-height:1.4;}
+.hint-text{font-style:italic;color:#c4a0e0;font-size:11px;margin-top:6px;padding:6px 8px;background:rgba(120,80,180,0.08);border-radius:5px;}
+.collection-hidden{display:inline-block;background:rgba(100,100,120,0.2);border:1px solid rgba(100,100,120,0.3);border-radius:10px;padding:0 6px;font-size:10px;color:#706070;margin-left:4px;}
+.collection-revealed{display:inline-block;background:rgba(212,165,116,0.15);border:1px solid rgba(212,165,116,0.3);border-radius:10px;padding:0 6px;font-size:10px;color:#a89070;margin-left:4px;animation:collectionReveal 0.6s ease-out;}
+@keyframes collectionReveal{0%{opacity:0;transform:scale(0.8);}50%{transform:scale(1.1);}100%{opacity:1;transform:scale(1);}}
+</style>
+</head>
+<body>
+<div id="mainMenu">
+<canvas id="menuBgCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;"></canvas>
+<div class="iso-cube-wrap"><div class="iso-cube">
+<div class="iso-cube-face front"></div><div class="iso-cube-face back"></div>
+<div class="iso-cube-face right"></div><div class="iso-cube-face left"></div>
+<div class="iso-cube-face top"></div><div class="iso-cube-face bottom"></div>
+</div></div>
+<h1>Tiny Town Traffic</h1>
+<p class="subtitle">Build roads. Grow towns. Survive the commute.</p>
+<div class="menu-icons" id="menuIcons"></div>
+<button class="menu-btn btn-normal" onclick="startGame('normal')"><span class="btn-icon">🏘️</span> New Game</button>
+<button class="menu-btn btn-endless" onclick="startGame('endless')"><span class="btn-icon">♾️</span> Endless Mode</button>
+<button class="menu-btn btn-creative" onclick="startGame('creative')"><span class="btn-icon">🎨</span> Creative Mode</button>
+<button class="menu-btn secondary" onclick="loadGame()"><span class="btn-icon">💾</span> Continue</button>
+<button class="menu-btn secondary" onclick="showSettings()"><span class="btn-icon">⚙️</span> Settings</button>
+<button class="menu-btn secondary" onclick="startTutorial()"><span class="btn-icon">🎓</span> Tutorial</button>
+<p style="color:#6a7a8a;margin-top:30px;font-size:11px;position:relative;z-index:2;">A cozy traffic sim — Santo's project</p>
+<div id="loreTicker"><div id="loreTickerInner"></div></div>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+<canvas id="minimap" width="180" height="130"></canvas>
+
+<div id="hud" style="display:none;">
+<div class="hud-bar">
+<div class="hud-inner">
+<div><span class="label">Day</span><br><span class="value" id="dayCount">1</span></div>
+<div><span class="label">Time</span><br><span class="value" id="timeDisplay">6:00 AM</span></div>
+<div><span class="label">Balance</span><br><span class="value" id="balance">$1,000</span></div>
+<div><span class="label">Weekly Rev</span><br><span class="value" id="weeklyRev">$0</span></div>
+<div id="debtIndicator" style="display:none;" title="Total outstanding loan debt"><span class="label">💰 Debt</span><br><span class="value" id="debtAmount">$0</span></div>
+<div id="vossBonusIndicator" style="display:none;" title="Voss bonus active"><span class="label" id="vossBonusLabel">📊 Voss</span><br><span class="value" id="vossBonusDays" style="color:#88ccff;">-</span></div>
+<div id="tollIndicator" style="display:none;" title="Paid road percentage — above 20% workers may strike"><span class="label">Toll %</span><br><span class="value" id="tollPercent">0%</span></div>
+<div id="disconnectIndicator" style="display:none;cursor:pointer;" title="Click to find disconnected houses" onclick="cycleDisconnectedHouse()"><span class="label">🏚️</span><br><span class="value" id="disconnectCount">0</span></div>
+<div id="disconnectOfficeIndicator" style="display:none;cursor:pointer;" title="Click to find disconnected offices" onclick="cycleDisconnectedBuilding('office')"><span class="label">🏢</span><br><span class="value" id="disconnectOfficeCount">0</span></div>
+<div id="disconnectRestIndicator" style="display:none;cursor:pointer;" title="Click to find disconnected restaurants" onclick="cycleDisconnectedBuilding('restaurant')"><span class="label">🍽️</span><br><span class="value" id="disconnectRestCount">0</span></div>
+<div>
+<button class="speed-btn" id="pauseBtn" onclick="setSpeed(0)">⏸</button>
+<button class="speed-btn active" id="playBtn" onclick="setSpeed(1)">▶</button>
+<button class="speed-btn" id="fastBtn" onclick="setSpeed(2)">▶▶</button>
+<button class="speed-btn" id="fastBtn2" onclick="setSpeed(4)">▶▶▶</button>
+</div>
+<button class="speed-btn" onclick="showSettings()" title="Settings">⚙</button>
+<button class="speed-btn" onclick="openLoreJournal()" title="Lore Journal">📜</button>
+<button class="speed-btn" id="lateReportBtn" onclick="showLateReport()" title="Late Report [Z]">⏰ <span style="font-size:9px;opacity:0.6;">[Z]</span></button>
+<div style="position:relative;">
+<input id="searchBar" type="text" placeholder="🔍 Search..." oninput="updateSearchSuggestions()" onkeydown="handleSearchKey(event)" onfocus="updateSearchSuggestions()" onblur="setTimeout(()=>hideSearch(),200)" style="background:rgba(232,213,183,0.12);border:1px solid rgba(232,213,183,0.25);color:#e8d5b7;padding:4px 8px;border-radius:5px;font-size:12px;width:150px;outline:none;">
+<div id="searchDropdown" style="display:none;position:absolute;top:100%;left:0;width:220px;max-height:250px;overflow-y:auto;background:rgba(26,26,46,0.97);border:1px solid rgba(232,213,183,0.25);border-radius:8px;margin-top:4px;z-index:500;scrollbar-width:thin;"></div>
+</div>
+<button class="speed-btn" onclick="returnToCenter()" title="Return to center of map">⌖</button>
+</div>
+<button class="collapse-btn" id="hudCollapseBtn" onclick="toggleHudCollapse()" title="Collapse HUD">◀</button>
+</div>
+</div>
+
+<div id="sidePanel" style="display:none;">
+<button class="collapse-btn" id="panelCollapseBtn" onclick="togglePanelCollapse()" title="Collapse Panel" style="align-self:flex-end;">▶</button>
+<div class="panel-section">
+<h3>Roads</h3>
+<button class="tool-btn" onclick="selectTool('road_1lane')" data-tool="road_1lane">Dirt Road<span class="btn-right"><span class="cost">$10</span><span class="kb-hint">R</span></span></button>
+<button class="tool-btn" onclick="selectTool('road_2lane')" data-tool="road_2lane">Two-Lane Road<span class="btn-right"><span class="cost">$25</span><span class="kb-hint">T</span></span></button>
+<button class="tool-btn" onclick="selectTool('road_oneway')" data-tool="road_oneway">One-Way Road<span class="btn-right"><span class="cost">$30</span><span class="kb-hint">V</span></span></button>
+<button class="tool-btn" onclick="selectTool('road_multi')" data-tool="road_multi">Multi-Lane<span class="btn-right"><span class="cost">$50</span><span class="kb-hint">Y</span></span></button>
+<button class="tool-btn" onclick="selectTool('road_highway')" data-tool="road_highway">Highway<span class="btn-right"><span class="cost">$150+$15/tile</span><span class="kb-hint">H</span></span></button>
+<button class="tool-btn" onclick="selectTool('road_flyover')" data-tool="road_flyover">Flyover<span class="btn-right"><span class="cost">$75</span><span class="kb-hint">B</span></span></button>
+<button class="tool-btn" onclick="selectTool('road_tunnel')" data-tool="road_tunnel">Tunnel<span class="btn-right"><span class="cost">$120</span><span class="kb-hint">U</span></span></button>
+</div>
+<div class="panel-section">
+<h3>Paid Roads</h3>
+<p style="font-size:10px;color:#cc8844;margin-bottom:5px;">⚠ Keep under 20% of total roads to avoid worker strikes</p>
+<button class="tool-btn" onclick="selectTool('paid_2lane')" data-tool="paid_2lane">Paid 2-Lane<span class="btn-right"><span class="cost">$40</span><span class="kb-hint">4</span></span></button>
+<button class="tool-btn" onclick="selectTool('paid_multi')" data-tool="paid_multi">Paid Multi<span class="btn-right"><span class="cost">$70</span><span class="kb-hint">5</span></span></button>
+<button class="tool-btn" onclick="selectTool('paid_highway')" data-tool="paid_highway">Paid Highway<span class="btn-right"><span class="cost">$200+$20/tile</span><span class="kb-hint">6</span></span></button>
+</div>
+<div class="panel-section">
+<h3>Buildings</h3>
+<button class="tool-btn" onclick="selectTool('parking')" data-tool="parking">Parking Lot<span class="btn-right"><span class="cost">$60</span><span class="kb-hint">K</span></span></button>
+<button class="tool-btn" onclick="selectTool('maintenance')" data-tool="maintenance">Maintenance<span class="btn-right"><span class="cost">$200</span><span class="kb-hint">M</span></span></button>
+</div>
+<div class="panel-section">
+<h3>Tools</h3>
+<div class="toggle-row">
+<button class="tool-btn" onclick="selectTool('demolish')" data-tool="demolish">🔨 Demolish<span class="kb-hint">X</span></button>
+<button class="tool-btn" onclick="selectTool('inspect')" data-tool="inspect">🔍 Inspect<span class="kb-hint">I</span></button>
+</div>
+<button class="tool-btn" onclick="selectTool('traffic')" data-tool="traffic">🚦 Traffic Ctrl<span class="kb-hint">F</span></button>
+<button class="tool-btn" onclick="toggleStraight()" id="straightBtn">📏 <span id="straightLabel">Straight Line: ON</span><span class="kb-hint">L</span></button>
+</div>
+<div class="panel-section">
+<h3>Road Upkeep</h3>
+<button class="upkeep-btn" onclick="setUpkeep(1)" id="upkeep1">Low — $2/road/wk <span class="kb-hint">7</span></button>
+<button class="upkeep-btn active" onclick="setUpkeep(2)" id="upkeep2">Medium — $5/road/wk <span class="kb-hint">8</span></button>
+<button class="upkeep-btn" onclick="setUpkeep(3)" id="upkeep3">High — $10/road/wk <span class="kb-hint">9</span></button>
+</div>
+</div>
+
+<div id="infoPanel"><div class="info-card" id="infoContent"></div></div>
+<div id="notification"></div>
+<div id="artifactPopup"><h3 id="artifactPopupTitle"></h3><p id="artifactPopupText"></p><button class="dismiss-btn" onclick="closeArtifactPopup()">Dismiss</button></div>
+<div id="weekSummary"></div>
+<div id="lateReportPanel" style="display:none;"></div>
+<div id="loreJournal"></div>
+<div id="tutorialPopup" style="display:none;">
+<div class="tut-pop-header">
+<span class="tut-pop-step" id="tutPopStep">Step 1/8</span>
+<button class="tut-pop-skip" onclick="skipTutorial()">End Tutorial</button>
+</div>
+<div class="tut-pop-title" id="tutPopTitle">Welcome!</div>
+<div class="tut-pop-text" id="tutPopText">Tutorial text here</div>
+<div class="tut-pop-footer">
+<span class="tut-pop-hint" id="tutPopHint"></span>
+<button class="tut-pop-next" id="tutPopNext" onclick="advanceTutorialStep()">Next →</button>
+</div>
+</div>
+<div id="overlay" onclick="closeModals()"></div>
+<div id="tutorialModal">
+<h2>How to Play</h2>
+<p class="tut-subtitle">Commissioner's Handbook</p>
+<div id="tutorialContent"></div>
+<div class="tut-nav">
+<button id="tutPrevBtn" onclick="tutorialPrev()">← Back</button>
+<span id="tutPageIndicator">1 / 10</span>
+<button id="tutNextBtn" onclick="tutorialNext()">Next →</button>
+</div>
+</div>
+<div id="settingsModal">
+<h2>Settings</h2>
+<label>Music Volume</label><input type="range" id="musicVol" min="0" max="100" value="50">
+<label>SFX Volume</label><input type="range" id="sfxVol" min="0" max="100" value="70">
+<br><br>
+<button class="menu-btn" onclick="closeModals()" style="padding:8px 20px;font-size:13px;">Close</button>
+<button class="menu-btn secondary" onclick="returnToMenu()" style="padding:8px 20px;font-size:13px;">Main Menu</button>
+<br>
+<button class="menu-btn secondary" onclick="toggleKeybindsCard()" style="padding:8px 20px;font-size:13px;margin-top:4px;">⌨ View Keybinds</button>
+<div id="keybindsCard">
+<div class="kb-section"><h4>General</h4>
+<div class="kb-row"><span class="kb-key">Space</span><span class="kb-action">Pause / Resume</span></div>
+<div class="kb-row"><span class="kb-key">P</span><span class="kb-action">Pause / Resume</span></div>
+<div class="kb-row"><span class="kb-key">1</span><span class="kb-action">Normal Speed</span></div>
+<div class="kb-row"><span class="kb-key">2</span><span class="kb-action">Fast Speed</span></div>
+<div class="kb-row"><span class="kb-key">3</span><span class="kb-action">Fastest Speed</span></div>
+<div class="kb-row"><span class="kb-key">Esc</span><span class="kb-action">Deselect Tool</span></div>
+<div class="kb-row"><span class="kb-key">`</span><span class="kb-action">Debug Menu</span></div>
+</div>
+<div class="kb-section"><h4>Camera</h4>
+<div class="kb-row"><span class="kb-key">↑↓←→</span><span class="kb-action">Pan Camera</span></div>
+<div class="kb-row"><span class="kb-key">+ / -</span><span class="kb-action">Zoom In / Out</span></div>
+<div class="kb-row"><span class="kb-key">Q / E</span><span class="kb-action">Rotate Camera</span></div>
+<div class="kb-row"><span class="kb-key">C</span><span class="kb-action">Center Camera</span></div>
+</div>
+<div class="kb-section"><h4>Roads</h4>
+<div class="kb-row"><span class="kb-key">R</span><span class="kb-action">Dirt Road ($10)</span></div>
+<div class="kb-row"><span class="kb-key">T</span><span class="kb-action">Two-Lane Road ($25)</span></div>
+<div class="kb-row"><span class="kb-key">V</span><span class="kb-action">One-Way Road ($30)</span></div>
+<div class="kb-row"><span class="kb-key">Y</span><span class="kb-action">Multi-Lane ($50)</span></div>
+<div class="kb-row"><span class="kb-key">H</span><span class="kb-action">Highway ($100)</span></div>
+<div class="kb-row"><span class="kb-key">B</span><span class="kb-action">Flyover ($75)</span></div>
+<div class="kb-row"><span class="kb-key">U</span><span class="kb-action">Tunnel ($120)</span></div>
+</div>
+<div class="kb-section"><h4>Paid Roads</h4>
+<div class="kb-row"><span class="kb-key">4</span><span class="kb-action">Paid 2-Lane ($40)</span></div>
+<div class="kb-row"><span class="kb-key">5</span><span class="kb-action">Paid Multi ($70)</span></div>
+<div class="kb-row"><span class="kb-key">6</span><span class="kb-action">Paid Highway ($140)</span></div>
+</div>
+<div class="kb-section"><h4>Buildings</h4>
+<div class="kb-row"><span class="kb-key">K</span><span class="kb-action">Parking Lot ($60)</span></div>
+<div class="kb-row"><span class="kb-key">M</span><span class="kb-action">Maintenance ($200)</span></div>
+</div>
+<div class="kb-section"><h4>Tools</h4>
+<div class="kb-row"><span class="kb-key">X</span><span class="kb-action">Demolish</span></div>
+<div class="kb-row"><span class="kb-key">I</span><span class="kb-action">Inspect</span></div>
+<div class="kb-row"><span class="kb-key">F</span><span class="kb-action">Traffic Control</span></div>
+<div class="kb-row"><span class="kb-key">L</span><span class="kb-action">Straight Line Toggle</span></div>
+</div>
+<div class="kb-section"><h4>Upkeep</h4>
+<div class="kb-row"><span class="kb-key">7</span><span class="kb-action">Low Upkeep</span></div>
+<div class="kb-row"><span class="kb-key">8</span><span class="kb-action">Medium Upkeep</span></div>
+<div class="kb-row"><span class="kb-key">9</span><span class="kb-action">High Upkeep</span></div>
+</div>
+<div class="kb-section"><h4>Panels</h4>
+<div class="kb-row"><span class="kb-key">N</span><span class="kb-action">Lore Journal</span></div>
+<div class="kb-row"><span class="kb-key">Z</span><span class="kb-action">Late Report</span></div>
+<div class="kb-row"><span class="kb-key">G</span><span class="kb-action">Settings</span></div>
+<div class="kb-row"><span class="kb-key">?</span><span class="kb-action">Show Keybinds</span></div>
+</div>
+</div>
+</div>
+<div id="debugMenu" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:400;display:none;background:rgba(10,10,20,0.97);border-radius:14px;padding:20px 28px;color:#e8d5b7;border:2px solid rgba(255,100,100,0.4);min-width:380px;max-height:80vh;overflow-y:auto;">
+<h2 style="color:#ff8866;margin-bottom:12px;">Debug Menu <span style="font-size:11px;color:#888;">(~ to toggle)</span></h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+<div>
+<label style="color:#a89070;font-size:11px;">Dirt Road Cost</label>
+<input type="number" id="dbg_road_1lane" value="10" min="0" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="ROAD_COSTS.road_1lane=+this.value">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">2-Lane Cost</label>
+<input type="number" id="dbg_road_2lane" value="25" min="0" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="ROAD_COSTS.road_2lane=+this.value">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Multi-Lane Cost</label>
+<input type="number" id="dbg_road_multi" value="50" min="0" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="ROAD_COSTS.road_multi=+this.value">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Highway Extend Cost</label>
+<input type="number" id="dbg_road_highway" value="15" min="0" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="ROAD_COSTS.road_highway=+this.value">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Flyover Cost</label>
+<input type="number" id="dbg_road_flyover" value="75" min="0" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="ROAD_COSTS.road_flyover=+this.value">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Tunnel Cost</label>
+<input type="number" id="dbg_road_tunnel" value="120" min="0" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="ROAD_COSTS.road_tunnel=+this.value">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Upkeep Tier 1</label>
+<input type="number" id="dbg_upkeep1" value="2" min="0" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="UPKEEP_COST[1]=+this.value">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Upkeep Tier 2</label>
+<input type="number" id="dbg_upkeep2" value="5" min="0" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="UPKEEP_COST[2]=+this.value">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Upkeep Tier 3</label>
+<input type="number" id="dbg_upkeep3" value="10" min="0" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="UPKEEP_COST[3]=+this.value">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Add Money</label>
+<button class="menu-btn" style="padding:4px 12px;font-size:11px;width:100%;" onclick="if(G)G.money+=10000;updateHUD();">+$10,000</button>
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Auto-Connect</label>
+<button class="menu-btn" style="padding:4px 12px;font-size:11px;width:100%;" onclick="debugAutoConnectBuildings();">Connect All Buildings</button>
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Artifact Tiles</label>
+<button class="menu-btn" style="padding:4px 12px;font-size:11px;width:100%;" id="dbgArtifactBtn" onclick="G.debugShowArtifacts=!G.debugShowArtifacts; this.textContent=G.debugShowArtifacts?'Hide Artifacts':'Show Artifacts'">Show Artifacts</button>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;">
+<div>
+<label style="color:#a89070;font-size:11px;">Day Shift Start</label>
+<input type="number" id="dbg_dayShiftStart" value="9" min="6" max="12" step="0.5" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="DAY_SHIFT_START=+this.value;computeDepartureTicks();">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Day Shift End</label>
+<input type="number" id="dbg_dayShiftEnd" value="17" min="12" max="22" step="0.5" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="DAY_SHIFT_END=+this.value;">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Night Shift Start</label>
+<input type="number" id="dbg_nightShiftStart" value="22" min="18" max="24" step="0.5" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="NIGHT_SHIFT_START=+this.value;computeDepartureTicks();">
+</div>
+<div>
+<label style="color:#a89070;font-size:11px;">Night Shift End</label>
+<input type="number" id="dbg_nightShiftEnd" value="6" min="4" max="10" step="0.5" style="width:100%;background:#222;color:#e8d5b7;border:1px solid #555;padding:4px;border-radius:4px;" onchange="NIGHT_SHIFT_END=+this.value;">
+</div>
+</div>
+<hr style="border-color:rgba(232,213,183,0.15);margin:12px 0;">
+<div style="display:flex;gap:8px;">
+<button class="menu-btn" style="padding:6px 16px;font-size:12px;" onclick="toggleDebugMenu()">Close</button>
+<button class="menu-btn secondary" style="padding:6px 16px;font-size:12px;" onclick="resetDebugDefaults()">Reset Defaults</button>
+</div>
+</div>
+<div id="gameOver">
+<h2>Town Bankrupt!</h2>
+<p id="goScore" style="font-size:1.3em;margin:10px 0;"></p>
+<p id="goStats" style="font-size:12px;color:#a89070;margin-bottom:8px;"></p>
+<p id="goNetwork" style="font-size:12px;color:#a89070;margin-bottom:8px;display:none;"></p>
+<p id="goLedger" style="font-size:11px;color:#776655;margin-bottom:16px;display:none;white-space:pre-line;text-align:left;max-height:150px;overflow-y:auto;"></p>
+<p id="goFinal" style="font-size:11px;color:#998877;margin-bottom:16px;display:none;font-style:italic;"></p>
+<button class="menu-btn" onclick="returnToMenu()">Main Menu</button>
+</div>
+
+<script src="lore.js"></script>
+<script src="world.js"></script>
+<script src="simulate.js"></script>
+<script src="render.js"></script>
+<script src="ui.js"></script>
+<script src="tutorial.js"></script>
+<script>
+// ===== MAIN MENU INIT =====
+(function initMainMenu() {
+// Wave-bobbing emoji icons
+const icons = ['🏘️','🚗','🛣️','🚦','🏢','🌉'];
+const container = document.getElementById('menuIcons');
+if (container) {
+icons.forEach((icon, i) => {
+const span = document.createElement('span');
+span.className = 'menu-icon-char';
+span.textContent = icon;
+span.style.animationDelay = (i * 0.5) + 's';
+container.appendChild(span);
+});
+}
+// Lore ticker tape
+const ticker = document.getElementById('loreTickerInner');
+if (ticker) {
+const tips = [
+'Legend says the first road was paved by a wanderer who just wanted to find a good taco.',
+'Old miners speak of golden veins hidden deep within the mountains...',
+'They say if you build enough roads, the town spirit Izzy blesses your treasury.',
+'The previous Transport Commissioner vanished under unclear circumstances.',
+'Certain old families have lived here since before the roads were built. They never seem to age.',
+'The bedrock underneath the town has structure. Almost like architecture.',
+'Rosa Caruso\'s tiramisu is the best in town. Nobody asks how she stays so young.',
+'A child\'s drawing found under a road shows a town with roads spreading outward like roots.',
+'The roads didn\'t bring people here. Something else did.',
+'Elias Holt described the valley as "almost eager to be connected."',
+'The Golden Lotus has reported exactly $4,847.00 in revenue every single week since 1941.',
+'Some roads, when demolished, reveal ghost asphalt underneath — from a network that predates the town.'
+];
+// Shuffle and join with separator
+const shuffled = tips.sort(() => Math.random() - 0.5);
+ticker.textContent = shuffled.map(t => '\u00a0\u00a0\u00a0\u2022 ' + t).join('\u00a0\u00a0\u00a0\u00a0\u00a0');
+}
+// ===== ISOMETRIC CITY BACKGROUND WITH DRIVING CARS =====
+const bgCanvas = document.getElementById('menuBgCanvas');
+if (bgCanvas) {
+const bctx = bgCanvas.getContext('2d');
+const TW = 40; // tile width
+const TH = 20; // tile height
+const GRID_W = 28;
+const GRID_H = 28;
+// Seeded random for consistent city layout
+let _seed = 42;
+function srand() { _seed = (_seed * 16807 + 0) % 2147483647; return (_seed & 0x7fffffff) / 0x7fffffff; }
+// City grid: 0=grass, 1=road, 2=building, 3=water, 4=park
+const grid = [];
+for (let y = 0; y < GRID_H; y++) { grid[y] = []; for (let x = 0; x < GRID_W; x++) grid[y][x] = 0; }
+// Lay out roads in a loose grid pattern with some variation
+const roadRowsBase = [4, 8, 13, 18, 23];
+const roadColsBase = [3, 8, 13, 18, 23];
+const roadRows = roadRowsBase.filter(() => srand() > 0.15);
+const roadCols = roadColsBase.filter(() => srand() > 0.15);
+roadRows.forEach(ry => { for (let x = 0; x < GRID_W; x++) if (ry < GRID_H) grid[ry][x] = 1; });
+roadCols.forEach(cx => { for (let y = 0; y < GRID_H; y++) if (cx < GRID_W) grid[y][cx] = 1; });
+// Add some short side streets
+for (let i = 0; i < 8; i++) {
+const sx = Math.floor(srand() * GRID_W);
+const sy = Math.floor(srand() * GRID_H);
+const horiz = srand() > 0.5;
+const len = 2 + Math.floor(srand() * 4);
+for (let j = 0; j < len; j++) {
+const nx = horiz ? sx + j : sx;
+const ny = horiz ? sy : sy + j;
+if (nx >= 0 && nx < GRID_W && ny >= 0 && ny < GRID_H) grid[ny][nx] = 1;
+}
+}
+// Place buildings next to roads
+for (let y = 1; y < GRID_H - 1; y++) {
+for (let x = 1; x < GRID_W - 1; x++) {
+if (grid[y][x] !== 0) continue;
+const nearRoad = grid[y-1][x]===1||grid[y+1][x]===1||grid[y][x-1]===1||grid[y][x+1]===1;
+if (nearRoad && srand() > 0.45) grid[y][x] = 2;
+}
+}
+// A few water tiles and parks
+for (let i = 0; i < 3; i++) {
+const wx = 2 + Math.floor(srand() * (GRID_W - 4));
+const wy = 2 + Math.floor(srand() * (GRID_H - 4));
+const ws = 2 + Math.floor(srand() * 3);
+for (let dy = 0; dy < ws; dy++) for (let dx = 0; dx < ws; dx++) {
+const nx = wx+dx, ny = wy+dy;
+if (nx < GRID_W && ny < GRID_H && grid[ny][nx] === 0) grid[ny][nx] = 3;
+}
+}
+for (let i = 0; i < 4; i++) {
+const px = 1 + Math.floor(srand() * (GRID_W - 2));
+const py = 1 + Math.floor(srand() * (GRID_H - 2));
+if (grid[py][px] === 0) grid[py][px] = 4;
+if (px+1<GRID_W && grid[py][px+1]===0) grid[py][px+1]=4;
+}
+// Collect road tiles for car paths
+const roadTiles = [];
+for (let y = 0; y < GRID_H; y++) for (let x = 0; x < GRID_W; x++) if (grid[y][x] === 1) roadTiles.push({x, y});
+// Build adjacency for pathfinding
+function roadNeighbors(x, y) {
+const n = [];
+if (x>0 && grid[y][x-1]===1) n.push({x:x-1,y});
+if (x<GRID_W-1 && grid[y][x+1]===1) n.push({x:x+1,y});
+if (y>0 && grid[y-1][x]===1) n.push({x,y:y-1});
+if (y<GRID_H-1 && grid[y+1][x]===1) n.push({x,y:y+1});
+return n;
+}
+// Building properties (seeded)
+const buildingProps = [];
+for (let y = 0; y < GRID_H; y++) for (let x = 0; x < GRID_W; x++) {
+if (grid[y][x] === 2) {
+const h = 8 + Math.floor(srand() * 28);
+const hue = srand();
+let r, g, b;
+if (hue < 0.25) { r=180+srand()*40; g=140+srand()*30; b=100+srand()*20; } // warm
+else if (hue < 0.5) { r=140+srand()*30; g=150+srand()*30; b=170+srand()*40; } // cool
+else if (hue < 0.75) { r=170+srand()*40; g=130+srand()*30; b=130+srand()*30; } // reddish
+else { r=160+srand()*30; g=170+srand()*30; b=150+srand()*20; } // green-ish
+buildingProps.push({x, y, h, r:Math.floor(r), g:Math.floor(g), b:Math.floor(b)});
+}
+}
+// Cars
+const carColors = ['#e85454','#5485e8','#e8d454','#54c878','#e87830','#c854d8','#54bce8','#e8e8e8'];
+const cars = [];
+function spawnCar() {
+const start = roadTiles[Math.floor(Math.random() * roadTiles.length)];
+const color = carColors[Math.floor(Math.random() * carColors.length)];
+// Pick a direction and follow road
+const car = { x: start.x, y: start.y, tx: start.x, ty: start.y, progress: 0, color, speed: 0.008 + Math.random() * 0.012, path: [start], dead: false };
+// Build a random path by walking along roads
+let cx = start.x, cy = start.y, prevX = -1, prevY = -1;
+const pathLen = 8 + Math.floor(Math.random() * 20);
+for (let i = 0; i < pathLen; i++) {
+const neighbors = roadNeighbors(cx, cy).filter(n => !(n.x === prevX && n.y === prevY));
+if (neighbors.length === 0) break;
+const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+prevX = cx; prevY = cy;
+cx = next.x; cy = next.y;
+car.path.push({x: cx, y: cy});
+}
+car.pathIdx = 0;
+car.tx = car.path[0].x; car.ty = car.path[0].y;
+if (car.path.length > 1) { car.tx = car.path[1].x; car.ty = car.path[1].y; car.pathIdx = 1; }
+return car;
+}
+for (let i = 0; i < 14; i++) cars.push(spawnCar());
+// Iso helpers
+function toIso(x, y, ox, oy) {
+return { sx: (x - y) * TW/2 + ox, sy: (x + y) * TH/2 + oy };
+}
+function drawDiamond(ctx2, sx, sy, w, h, color) {
+ctx2.fillStyle = color;
+ctx2.beginPath();
+ctx2.moveTo(sx, sy - h/2);
+ctx2.lineTo(sx + w/2, sy);
+ctx2.lineTo(sx, sy + h/2);
+ctx2.lineTo(sx - w/2, sy);
+ctx2.closePath();
+ctx2.fill();
+}
+function drawIsoBlock(ctx2, sx, sy, w, h, blockH, r, g, b, a) {
+// Top
+ctx2.fillStyle = `rgba(${r},${g},${b},${a})`;
+ctx2.beginPath();
+ctx2.moveTo(sx, sy - blockH - h/2);
+ctx2.lineTo(sx + w/2, sy - blockH);
+ctx2.lineTo(sx, sy - blockH + h/2);
+ctx2.lineTo(sx - w/2, sy - blockH);
+ctx2.closePath(); ctx2.fill();
+// Right face
+const dr = Math.max(0,r-40), dg = Math.max(0,g-40), db = Math.max(0,b-40);
+ctx2.fillStyle = `rgba(${dr},${dg},${db},${a})`;
+ctx2.beginPath();
+ctx2.moveTo(sx + w/2, sy - blockH);
+ctx2.lineTo(sx, sy - blockH + h/2);
+ctx2.lineTo(sx, sy + h/2);
+ctx2.lineTo(sx + w/2, sy);
+ctx2.closePath(); ctx2.fill();
+// Left face
+const lr = Math.max(0,r-65), lg = Math.max(0,g-65), lb = Math.max(0,b-65);
+ctx2.fillStyle = `rgba(${lr},${lg},${lb},${a})`;
+ctx2.beginPath();
+ctx2.moveTo(sx - w/2, sy - blockH);
+ctx2.lineTo(sx, sy - blockH + h/2);
+ctx2.lineTo(sx, sy + h/2);
+ctx2.lineTo(sx - w/2, sy);
+ctx2.closePath(); ctx2.fill();
+}
+let bgAnimId = null;
+function renderBg() {
+bgAnimId = requestAnimationFrame(renderBg);
+if (document.getElementById('mainMenu').style.display === 'none') { cancelAnimationFrame(bgAnimId); bgAnimId = null; return; }
+const dpr = window.devicePixelRatio || 1;
+bgCanvas.width = bgCanvas.clientWidth * dpr;
+bgCanvas.height = bgCanvas.clientHeight * dpr;
+bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+const cw = bgCanvas.clientWidth, ch = bgCanvas.clientHeight;
+bctx.clearRect(0, 0, cw, ch);
+// Center the grid
+const ox = cw / 2;
+const oy = ch / 2 - (GRID_H * TH / 2) + 40;
+const alpha = 0.35; // subtle behind UI
+bctx.globalAlpha = alpha;
+// Draw terrain tiles
+for (let y = 0; y < GRID_H; y++) {
+for (let x = 0; x < GRID_W; x++) {
+const p = toIso(x, y, ox, oy);
+const t = grid[y][x];
+let color;
+if (t === 1) color = 'rgb(145,140,130)'; // road grey
+else if (t === 2) continue; // buildings drawn separately
+else if (t === 3) color = 'rgb(55,140,195)'; // water
+else if (t === 4) color = 'rgb(60,160,50)'; // park - brighter green
+else { // grass with variation
+const n = ((Math.sin(x*12.98+y*78.23)*43758.5)%1)*0.08;
+color = `rgb(${65+Math.floor(n*40)},${155+Math.floor(n*25)},${50+Math.floor(n*20)})`;
+}
+drawDiamond(bctx, p.sx, p.sy, TW, TH, color);
+// Road markings
+if (t === 1) {
+bctx.fillStyle = 'rgba(220,210,190,0.3)';
+// Check if horizontal or vertical road for center line
+const hRoad = (x>0 && grid[y][x-1]===1) || (x<GRID_W-1 && grid[y][x+1]===1);
+const vRoad = (y>0 && grid[y-1][x]===1) || (y<GRID_H-1 && grid[y+1][x]===1);
+if (hRoad && !vRoad) {
+bctx.fillRect(p.sx - TW*0.15, p.sy - 1, TW*0.3, 1.5);
+} else if (vRoad && !hRoad) {
+bctx.fillRect(p.sx - 0.75, p.sy - TH*0.15, 1.5, TH*0.3);
+}
+}
+}
+}
+// Draw buildings (sorted by iso depth)
+buildingProps.forEach(bp => {
+const p = toIso(bp.x, bp.y, ox, oy);
+const bw = TW * 0.75, bh = TH * 0.75;
+drawIsoBlock(bctx, p.sx, p.sy, bw, bh, bp.h, bp.r, bp.g, bp.b, 1.0);
+// Window dots
+bctx.fillStyle = 'rgba(255,240,180,0.4)';
+const floors = Math.floor(bp.h / 7);
+for (let f = 0; f < floors; f++) {
+const wy = p.sy - 4 - f * 7;
+bctx.fillRect(p.sx + TW*0.08, wy, 2, 2);
+bctx.fillRect(p.sx + TW*0.2, wy, 2, 2);
+}
+});
+// Update and draw cars
+bctx.globalAlpha = alpha * 1.4;
+cars.forEach(car => {
+if (car.dead) return;
+car.progress += car.speed;
+if (car.progress >= 1) {
+car.progress = 0;
+car.x = car.tx; car.y = car.ty;
+car.pathIdx++;
+if (car.pathIdx >= car.path.length) { car.dead = true; return; }
+car.tx = car.path[car.pathIdx].x;
+car.ty = car.path[car.pathIdx].y;
+}
+const cx = car.x + (car.tx - car.x) * car.progress;
+const cy = car.y + (car.ty - car.y) * car.progress;
+const p = toIso(cx, cy, ox, oy);
+// Shadow
+bctx.fillStyle = 'rgba(0,0,0,0.2)';
+drawDiamond(bctx, p.sx + 1, p.sy + 2, 8, 4, 'rgba(0,0,0,0.2)');
+// Car body
+drawDiamond(bctx, p.sx, p.sy - 2, 8, 4, car.color);
+// Roof highlight
+drawDiamond(bctx, p.sx, p.sy - 3.5, 5, 2.5, 'rgba(255,255,255,0.2)');
+});
+bctx.globalAlpha = 1;
+// Respawn dead cars
+cars.forEach((car, i) => { if (car.dead) cars[i] = spawnCar(); });
+}
+renderBg();
+// Restart bg animation when menu reappears
+const menuEl = document.getElementById('mainMenu');
+new MutationObserver(() => {
+if (menuEl.style.display !== 'none' && !bgAnimId) renderBg();
+}).observe(menuEl, {attributes: true, attributeFilter: ['style']});
+}
+})();
+// ===== TINY TOWN TRAFFIC — Complete Game Engine =====
+const C = document.getElementById('gameCanvas');
+const ctx = C.getContext('2d');
+const MC = document.getElementById('minimap');
+const mctx = MC.getContext('2d');
+// roundRect polyfill
+if (!ctx.roundRect) {
+CanvasRenderingContext2D.prototype.roundRect = function(x,y,w,h,r) {
+if (typeof r === 'number') r = [r,r,r,r];
+this.moveTo(x+r[0],y);
+this.lineTo(x+w-r[1],y); this.quadraticCurveTo(x+w,y,x+w,y+r[1]);
+this.lineTo(x+w,y+h-r[2]); this.quadraticCurveTo(x+w,y+h,x+w-r[2],y+h);
+this.lineTo(x+r[3],y+h); this.quadraticCurveTo(x,y+h,x,y+h-r[3]);
+this.lineTo(x,y+r[0]); this.quadraticCurveTo(x,y,x+r[0],y);
+this.closePath();
+};
+}
+
+// ===== CONSTANTS =====
+const TILE = 40;
+const MAP_W = 120, MAP_H = 120;
+const ISO_A = Math.PI/6;
+const COS_A = Math.cos(ISO_A), SIN_A = Math.sin(ISO_A);
+let DAY_SHIFT_START = 9.0;     // 9:00 AM (hour as decimal)
+let DAY_SHIFT_END = 17.0;      // 5:00 PM
+let NIGHT_SHIFT_START = 22.0;  // 10:00 PM
+let NIGHT_SHIFT_END = 6.0;     // 6:00 AM
+const COMMUTE_ZONES = [
+  { maxDist: 8, leadMinutes: 15 },
+  { maxDist: 16, leadMinutes: 30 },
+  { maxDist: 25, leadMinutes: 50 },
+  { maxDist: 35, leadMinutes: 75 },
+  { maxDist: Infinity, leadMinutes: 100 }
+];
+function getCommuteZone(dist) {
+  for (let i = 0; i < COMMUTE_ZONES.length; i++) {
+    if (dist <= COMMUTE_ZONES[i].maxDist) return COMMUTE_ZONES[i];
+  }
+  return COMMUTE_ZONES[COMMUTE_ZONES.length - 1];
+}
+const HIGHWAY_SETUP_COST = 150;
+const HIGHWAY_EXTEND_COST = 15;
+const HIGHWAY_EXTEND_COST_GROUND = 10;
+const PAID_HIGHWAY_SETUP_COST = 200;
+const PAID_HIGHWAY_EXTEND_COST = 20;
+const ROAD_COSTS = {road_1lane:10,road_2lane:25,road_oneway:30,road_multi:50,road_highway:15,road_flyover:75,road_tunnel:120,paid_2lane:40,paid_multi:70,paid_highway:20};
+const ROAD_CAPACITY = {road_1lane:2,road_2lane:4,road_oneway:3,road_multi:8,road_highway:20,road_flyover:4,road_tunnel:4,paid_2lane:4,paid_multi:8,paid_highway:20};
+const ROAD_SPEED = {road_1lane:0.5,road_2lane:0.6,road_oneway:1.0,road_multi:2.0,road_highway:4.0,road_flyover:1.2,road_tunnel:1,paid_2lane:0.65,paid_multi:2.2,paid_highway:4.5};
+const ROAD_LANES_PER_DIR = {road_1lane:1,road_2lane:1,road_oneway:2,road_multi:2,road_highway:1,road_flyover:1,road_tunnel:1,paid_2lane:1,paid_multi:2,paid_highway:1};
+const UPKEEP_COST = [0,2,5,10];
+const BREAKDOWN_CHANCE = [0,0.015,0.005,0.001]; // per road per day
+// ===== GAME STATE =====
+let G = null; // game state object
+
+function newGameState(mode) {
+return {
+mode: mode, // 'normal','endless','creative'
+money: mode === 'creative' ? 999999999 : 10000,
+day: 1,
+dayTick: 0, // 0-3600 ticks per day (60fps * 60s)
+speed: 1,
+score: 0,
+weeklyRevenue: 0,
+weekTaxOffice: 0,
+weekTaxRestaurant: 0,
+weekTollRoad: 0,
+weekParking: 0,
+weekUpkeep: 0,
+graceDays: 0,
+upkeepTier: 2,
+terrain: [], // MAP_W x MAP_H: 0=grass,1=water,2=mountain,3=river,4=deep_water
+heightMap: [],
+roads: new Map(), // key "x,y" -> road object
+elevatedRoads: new Map(), // key "x,y" -> elevated road object
+dragDirection: null, // 'h' or 'v' for wide road placement
+_lastPlacedPos: null, // last placed road position for one-way direction
+buildings: [], // array of building objects
+vehicles: [], // array of vehicle objects
+intersections: new Map(), // key "x,y" -> intersection control
+breakdowns: [], // active breakdowns
+maintenanceVehicles: [], // visible repair vehicles en route
+crashes: [], // active crash sites
+maintenanceBuildings: [],
+families: [],
+parkingLots: [],
+camera: {x: MAP_W*TILE/2, y: MAP_H*TILE/2, zoom: 1, rotation: 0, targetRotation: 0},
+selectedTool: null,
+straightMode: true,
+straightStart: null,
+dragStart: null,
+roadsDuringPause: new Set(),
+isPaused: false,
+pathCache: new Map(),
+lastRoadChangeId: 0,
+connectedRoadSet: null,
+lastConnectedRoadChangeId: -1,
+discoveredSecrets: [],
+artifactsFound: [], // artifact IDs found this game
+daysWithoutRoad: 0, // tracks days without road building for Caruso escalation
+lastRoadBuildDay: 0, // last day a road was placed
+carusoEscalation: 0, // 0=none, 1=whispers, 2=pressure, 3=fire, 4=letter, 5=final
+ghostCarSpawned: false, // night ghost car flag
+networkCompletion: 0, // % for game over screen
+loreRestaurantsUsed: {}, // track which lore restaurant names have been placed
+vossHouseId: null, // building id for Voss's vacant house
+notifications: [],
+lakeName: null,
+terrainNames: [], // named rivers, lakes, mountains
+loreJournal: { legends: [], discoveries: [], geography: [], history: [] },
+loreCollections: {}, // keyed by collection id → array of entries
+mysteryBoard: {
+  pinnedEntries: [],        // {text, category, day, pinnedAt}
+  connections: [],           // {entryA, entryB, createdAt}
+  solvedDeductions: [],      // deduction IDs
+  failedAttempts: {},        // {deductionId: count}
+  revealedCollections: {},   // {entryText: [collKey...]}
+  unlockedBonusLore: []      // bonus texts added
+},
+schoolNames: {},
+tickAccum: 0,
+lastSave: Date.now(),
+playableRadius: 15, // starts small, grows each week
+playableCenter: {x: MAP_W/2, y: MAP_H/2},
+demolishStart: null, // for area demolish drag
+demolishEnd: null,
+highlightBuildings: [], // building IDs to highlight on map
+highlightColor: '#44ff44', // highlight ring color
+commuteZoneCenter: null, // {x,y} when inspecting office/restaurant
+failedCommutes: 0, // count of failed commute attempts this day
+commuteStats: { officeTotal:0, officeLate:0, restaurantTotal:0, restaurantLate:0, schoolTotal:0, schoolLate:0 },
+weeklyCommuteStats: { officeTotal:0, officeLate:0, restaurantTotal:0, restaurantLate:0, schoolTotal:0, schoolLate:0 },
+debugShowArtifacts: false,
+unconnectedHouses: 0, // houses not connected to road network
+tollPlacedThisWeek: false, // whether a toll road has been placed this week
+currentTollGroup: new Set(), // tile keys of this week's toll road placement
+loans: [], // [{amount, remaining, weeklyPayment, interestRate, weeksLeft, bankId}]
+totalDebt: 0, // sum of all remaining loan balances
+// Voss discovery bonuses
+vossFound: false, // whether Voss has been found this session (resets each find)
+vossFindsTotal: 0, // lifetime count
+vossActiveBonus: null, // {id, name, desc, icon, expiresDay} or null
+vossIncomeBoost: 1, // multiplier for weekly income
+vossTunnelDiscount: 1, // multiplier for tunnel costs (0.5 = half price)
+vossSpeedBoost: 1, // multiplier for road speeds
+vossMiningBoost: 1, // multiplier for mountain treasure/artifact chances
+tutorial: null, // {step:0, cameraStartX, cameraStartY, speedChanged, inspectedBuilding, roadsPlaced}
+tutorialArtifactsGiven: false,
+_tutorialSearched: false,
+_tutorialLateOpened: false,
+lateReportDay: { byHouse: [], byBusiness: [] },
+lateReportWeek: { byHouse: [], byBusiness: [] }
+};
+}
+
+// ===== PERLIN NOISE =====
+class PerlinNoise {
+constructor(seed) {
+this.p = [];
+const rng = this.seededRandom(seed);
+for (let i = 0; i < 256; i++) this.p[i] = i;
+for (let i = 255; i > 0; i--) {
+const j = Math.floor(rng() * (i + 1));
+[this.p[i], this.p[j]] = [this.p[j], this.p[i]];
+}
+this.p = this.p.concat(this.p);
+}
+seededRandom(seed) {
+let s = seed;
+return () => { s = (s * 16807 + 0) % 2147483647; return s / 2147483647; };
+}
+fade(t) { return t * t * t * (t * (t * 6 - 15) + 10); }
+lerp(a, b, t) { return a + t * (b - a); }
+grad(hash, x, y) {
+const h = hash & 3;
+const u = h < 2 ? x : y;
+const v = h < 2 ? y : x;
+return ((h & 1) ? -u : u) + ((h & 2) ? -v : v);
+}
+noise(x, y) {
+const X = Math.floor(x) & 255, Y = Math.floor(y) & 255;
+x -= Math.floor(x); y -= Math.floor(y);
+const u = this.fade(x), v = this.fade(y);
+const A = this.p[X] + Y, B = this.p[X + 1] + Y;
+return this.lerp(
+this.lerp(this.grad(this.p[A], x, y), this.grad(this.p[B], x - 1, y), u),
+this.lerp(this.grad(this.p[A + 1], x, y - 1), this.grad(this.p[B + 1], x - 1, y - 1), u),
+v
+);
+}
+octave(x, y, octaves, persistence) {
+let total = 0, freq = 1, amp = 1, maxVal = 0;
+for (let i = 0; i < octaves; i++) {
+total += this.noise(x * freq, y * freq) * amp;
+maxVal += amp;
+amp *= persistence;
+freq *= 2;
+}
+return total / maxVal;
+}
+}
+
+
+let buildingIdCounter = 0;
+
+// ===== ISOMETRIC HELPERS =====
+function toISO(x, y) {
+const r = G ? (G.camera.rotation || 0) : 0;
+const rRad = r * Math.PI / 2;
+const cosR = Math.cos(rRad), sinR = Math.sin(rRad);
+const rx = x * cosR + y * sinR;
+const ry = -x * sinR + y * cosR;
+return {
+sx: (rx - ry) * TILE * COS_A,
+sy: (rx + ry) * TILE * SIN_A
+};
+}
+function fromISO(sx, sy) {
+const rx = (sx / (TILE * COS_A) + sy / (TILE * SIN_A)) / 2;
+const ry = (sy / (TILE * SIN_A) - sx / (TILE * COS_A)) / 2;
+const r = G ? (G.camera.rotation || 0) : 0;
+const rRad = r * Math.PI / 2;
+const cosR = Math.cos(rRad), sinR = Math.sin(rRad);
+// Inverse rotation: transpose of rotation matrix
+const x = rx * cosR - ry * sinR;
+const y = rx * sinR + ry * cosR;
+return {x: Math.floor(x), y: Math.floor(y)};
+}
+function worldToScreen(wx, wy) {
+const iso = toISO(wx, wy);
+return {
+x: (iso.sx - G.camera.x) * G.camera.zoom + C.width / 2,
+y: (iso.sy - G.camera.y) * G.camera.zoom + C.height / 2
+};
+}
+function screenToWorld(sx, sy) {
+const isoX = (sx - C.width / 2) / G.camera.zoom + G.camera.x;
+const isoY = (sy - C.height / 2) / G.camera.zoom + G.camera.y;
+const rx = (isoX / (TILE * COS_A) + isoY / (TILE * SIN_A)) / 2;
+const ry = (isoY / (TILE * SIN_A) - isoX / (TILE * COS_A)) / 2;
+const r = G ? (G.camera.rotation || 0) : 0;
+const rRad = r * Math.PI / 2;
+const cosR = Math.cos(rRad), sinR = Math.sin(rRad);
+const x = rx * cosR - ry * sinR;
+const y = rx * sinR + ry * cosR;
+return {x: Math.round(x), y: Math.round(y)};
+}
+
+// ===== RENDERING =====
+function getDayProgress() { return G.dayTick / 3600; }
+function getTimeOfDay() {
+const progress = getDayProgress();
+const hours = 6 + progress * 18; // 6 AM to midnight
+return hours;
+}
+function getTimeString() {
+const h = getTimeOfDay();
+const hr = Math.floor(h);
+const min = Math.floor((h - hr) * 60);
+const ampm = hr >= 12 ? 'PM' : 'AM';
+const hr12 = hr > 12 ? hr - 12 : hr === 0 ? 12 : hr;
+return `${hr12}:${min.toString().padStart(2,'0')} ${ampm}`;
+}
+
+function getBuildingIdAt(x, y) {
+const b = G.buildings.find(b => b.x === x && b.y === y);
+return b ? b.id : null;
+}
+
+
+// ===== COLLAPSE TOGGLES =====
+let hudCollapsed = false;
+let panelCollapsed = false;
+
+function toggleHudCollapse() {
+hudCollapsed = !hudCollapsed;
+const inner = document.querySelector('.hud-inner');
+const btn = document.getElementById('hudCollapseBtn');
+if (hudCollapsed) {
+inner.style.display = 'none';
+btn.textContent = '▶';
+} else {
+inner.style.display = 'flex';
+btn.textContent = '◀';
+}
+}
+
+function togglePanelCollapse() {
+panelCollapsed = !panelCollapsed;
+const panel = document.getElementById('sidePanel');
+const btn = document.getElementById('panelCollapseBtn');
+if (panelCollapsed) {
+panel.classList.add('collapsed');
+btn.textContent = '◀';
+} else {
+panel.classList.remove('collapsed');
+btn.textContent = '▶';
+}
+}
+
+// ===== VEHICLE SYSTEM =====
+let weeklyTruckTolls = 0;
+
+
+let disconnectedCycleIndex = 0;
+let lastDisconnectedTarget = null;
+
+const disconnectedBuildingCycle = {};
+function closeArtifactPopup() {
+document.getElementById('artifactPopup').style.display = 'none';
+if (showArtifactPopup._timer) clearTimeout(showArtifactPopup._timer);
+}
+
+// Floating cost popups that rise and fade
+const costPopups = [];
+function showCostPopup(tileX, tileY, cost, type) {
+const autoLabel = (type === 'road_flyover') ? ' (Flyover)' : (type === 'road_tunnel') ? ' (Tunnel)' : '';
+costPopups.push({
+x: tileX, y: tileY,
+text: `-$${cost}${autoLabel}`,
+life: 90, // frames to live
+maxLife: 90
+});
+}
+
+function toggleStraight() {
+G.straightMode = !G.straightMode;
+document.getElementById('straightLabel').textContent = `Straight Line: ${G.straightMode ? 'ON' : 'OFF'}`;
+G.straightStart = null;
+}
+
+
+function setUpkeep(tier) {
+G.upkeepTier = tier;
+for (let i = 1; i <= 3; i++) {
+document.getElementById('upkeep'+i).classList.toggle('active', i === tier);
+}
+}
+
+// Convert road to effective mph (base 30mph * multiplier, capped by per-road speed limit if set)
+function getRoadEffectiveMPH(road) {
+const baseMPH = 30;
+const rawMPH = baseMPH * (ROAD_SPEED[road.type] || 1);
+if (road.speedLimitMPH) return Math.min(rawMPH, road.speedLimitMPH);
+return rawMPH;
+}
+
+// Crash chance multiplier based on speed — exponential increase over 60mph
+function getSpeedCrashChance(effectiveMPH) {
+if (effectiveMPH <= 60) return 0;
+const excess = effectiveMPH - 60;
+return Math.pow(1.08, excess) - 1;
+}
+
+function setRoadSpeedLimit(x, y, mph) {
+const key = `${x},${y}`;
+const road = G.roads.get(key) || G.elevatedRoads.get(key);
+if (!road) return;
+road.speedLimitMPH = mph;
+showNotification(`Speed limit set to ${mph} mph`);
+showInspectInfo(x, y);
+}
+
+
+function toggleStopDir(x, y, dir) {
+const key = `${x},${y}`;
+const ctrl = G.intersections.get(key);
+if (ctrl && ctrl.type === 'stop' && ctrl.stopDirs) {
+ctrl.stopDirs[dir] = !ctrl.stopDirs[dir];
+const count = ['N','S','E','W'].filter(d => ctrl.stopDirs[d]).length;
+if (count === 0) { ctrl.stopDirs[dir] = true; showNotification('Need at least one stop direction!'); return; }
+showNotification(`🛑 ${dir} stop sign ${ctrl.stopDirs[dir] ? 'enabled' : 'disabled'}`);
+}
+showTrafficControl(x, y);
+}
+
+
+function setTollTier(x, y, tier) {
+const road = G.roads.get(`${x},${y}`) || G.elevatedRoads.get(`${x},${y}`);
+if (road && road.paid) {
+road.tollTier = tier;
+const amounts = [0, 2, 5, 10];
+showNotification(`Toll set to $${amounts[tier]}/vehicle`);
+}
+document.getElementById('infoPanel').style.display = 'none';
+}
+
+function setParkingTier(x, y, tier) {
+const p = G.parkingLots.find(pk => pk.x === x && pk.y === y);
+if (p) {
+p.paid = tier > 0;
+p.tier = tier;
+}
+document.getElementById('infoPanel').style.display = 'none';
+}
+
+// ===== INPUT HANDLING =====
+let mouseX = 0, mouseY = 0;
+let isDragging = false;
+let dragStartX = 0, dragStartY = 0;
+let camDragStartX = 0, camDragStartY = 0;
+let isPanning = false;
+let lastPinchDist = 0;
+let roadDrawing = false;
+let lastRoadTile = null;
+
+C.addEventListener('mousedown', e => onPointerDown(e.clientX, e.clientY, e.button));
+C.addEventListener('mousemove', e => onPointerMove(e.clientX, e.clientY));
+C.addEventListener('mouseup', e => onPointerUp(e.clientX, e.clientY));
+C.addEventListener('wheel', e => { if(G) { G.camera.zoom *= e.deltaY > 0 ? 0.9 : 1.1; G.camera.zoom = Math.max(0.3, Math.min(3, G.camera.zoom)); } e.preventDefault(); }, {passive:false});
+C.addEventListener('contextmenu', e => e.preventDefault());
+
+// Touch
+C.addEventListener('touchstart', e => {
+e.preventDefault();
+if (e.touches.length === 1) onPointerDown(e.touches[0].clientX, e.touches[0].clientY, 0);
+else if (e.touches.length === 2) {
+lastPinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+isPanning = false; roadDrawing = false;
+}
+}, {passive:false});
+C.addEventListener('touchmove', e => {
+e.preventDefault();
+if (e.touches.length === 1) onPointerMove(e.touches[0].clientX, e.touches[0].clientY);
+else if (e.touches.length === 2 && G) {
+const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+G.camera.zoom *= dist / lastPinchDist;
+G.camera.zoom = Math.max(0.3, Math.min(3, G.camera.zoom));
+lastPinchDist = dist;
+}
+}, {passive:false});
+C.addEventListener('touchend', e => { e.preventDefault(); onPointerUp(mouseX, mouseY); }, {passive:false});
+
+// Minimap click
+MC.addEventListener('mousedown', e => {
+if (!G) return;
+const rect = MC.getBoundingClientRect();
+const mx = (e.clientX - rect.left) / MC.width * MAP_W;
+const my = (e.clientY - rect.top) / MC.height * MAP_H;
+const iso = toISO(mx, my);
+G.camera.x = iso.sx;
+G.camera.y = iso.sy;
+});
+
+function onPointerDown(px, py, button) {
+if (!G) return;
+mouseX = px; mouseY = py;
+dragStartX = px; dragStartY = py;
+camDragStartX = G.camera.x;
+camDragStartY = G.camera.y;
+
+if (button === 2 || (!G.selectedTool && button === 0)) {
+isPanning = true;
+return;
+}
+
+const tile = screenToWorld(px, py);
+if (tile.x < 0 || tile.x >= MAP_W || tile.y < 0 || tile.y >= MAP_H) return;
+
+if (G.selectedTool === 'traffic') {
+showTrafficControl(tile.x, tile.y);
+return;
+}
+if (G.selectedTool === 'inspect') {
+showInspectInfo(tile.x, tile.y);
+return;
+}
+if (G.selectedTool === 'demolish') {
+G.demolishStart = {x: tile.x, y: tile.y};
+G.demolishEnd = {x: tile.x, y: tile.y};
+return;
+}
+if (G.selectedTool === 'maintenance') {
+if (G.mode !== 'creative' && G.money < 200) { showNotification('Not enough money!'); return; }
+if (G.mode !== 'creative') G.money -= 200;
+G.maintenanceBuildings.push({x: tile.x, y: tile.y});
+showNotification('Maintenance building placed!');
+return;
+}
+if (G.selectedTool === 'parking') {
+// Block placement on road tiles and building tiles
+const pk = `${tile.x},${tile.y}`;
+if (G.roads.has(pk) || G.elevatedRoads.has(pk)) { showNotification('Cannot place parking on a road!'); return; }
+if (G.buildings.some(b => b.x === tile.x && b.y === tile.y)) { showNotification('Cannot place parking on a building!'); return; }
+if (G.parkingLots.some(p => p.x === tile.x && p.y === tile.y)) { showNotification('Parking lot already here!'); return; }
+if (G.mode !== 'creative' && G.money < 60) { showNotification('Not enough money!'); return; }
+if (G.mode !== 'creative') G.money -= 60;
+const newParking = {x: tile.x, y: tile.y, capacity: 20, used: 0, paid: false, tier: 0, playerBuilt: true, connectedSides: []};
+G.parkingLots.push(newParking);
+updateParkingConnections(newParking);
+showNotification('Parking lot placed!');
+return;
+}
+if (G.selectedTool && G.selectedTool.startsWith('road') || G.selectedTool && G.selectedTool.startsWith('paid')) {
+if (G.straightMode) {
+if (!G.straightStart) {
+G.straightStart = {x: tile.x, y: tile.y};
+showNotification('Click end point for straight road');
+} else {
+drawStraightRoad(G.straightStart, tile);
+G.straightStart = null;
+}
+} else {
+roadDrawing = true;
+lastRoadTile = {x: tile.x, y: tile.y};
+G.dragDirection = null; // reset drag direction for new stroke
+G._lastPlacedPos = null; // reset one-way tracking for new stroke
+G._highwayPendingStart = null;
+const isWide = G.selectedTool.includes('multi') || G.selectedTool.includes('highway');
+const isHighwayTool = G.selectedTool.includes('highway');
+if (isHighwayTool) {
+// Defer highway first tile — place 2-wide only once drag direction is known
+G._highwayPendingStart = {x: tile.x, y: tile.y};
+} else if (isWide) {
+if (canPlaceRoad(G.selectedTool, tile.x, tile.y)) {
+placeRoad(G.selectedTool, tile.x, tile.y);
+}
+} else {
+if (canPlaceRoad(G.selectedTool, tile.x, tile.y)) {
+placeRoad(G.selectedTool, tile.x, tile.y);
+}
+}
+}
+return;
+}
+// No tool selected — inspect on click
+showInspectInfo(tile.x, tile.y);
+}
+
+function onPointerMove(px, py) {
+mouseX = px; mouseY = py;
+if (!G) return;
+if (isPanning) {
+const dx = (px - dragStartX) / G.camera.zoom;
+const dy = (py - dragStartY) / G.camera.zoom;
+G.camera.x = camDragStartX - dx;
+G.camera.y = camDragStartY - dy;
+return;
+}
+// Demolish area drag
+if (G.selectedTool === 'demolish' && G.demolishStart) {
+const tile = screenToWorld(px, py);
+G.demolishEnd = {x: tile.x, y: tile.y};
+return;
+}
+if (roadDrawing && G.selectedTool) {
+const tile = screenToWorld(px, py);
+if (tile.x !== lastRoadTile.x || tile.y !== lastRoadTile.y) {
+const lx = lastRoadTile.x, ly = lastRoadTile.y;
+const tx = tile.x, ty = tile.y;
+// Determine drag direction on first move
+if (!G.dragDirection) {
+const adx = Math.abs(tx - lx), ady = Math.abs(ty - ly);
+G.dragDirection = adx >= ady ? 'h' : 'v';
+}
+const isWide = G.selectedTool.includes('multi') || G.selectedTool.includes('highway');
+const isHighwayTool = G.selectedTool.includes('highway');
+// If a highway pending start exists, place it now that direction is known
+if (isHighwayTool && G._highwayPendingStart) {
+const ps = G._highwayPendingStart;
+const initStepX = tx > ps.x ? 1 : tx < ps.x ? -1 : (ty > ps.y ? 0 : 0);
+const initStepY = ty > ps.y ? 1 : ty < ps.y ? -1 : 0;
+const flowDx = tx !== ps.x ? (tx > ps.x ? 1 : -1) : 0;
+const flowDy = ty !== ps.y ? (ty > ps.y ? 1 : -1) : 0;
+const initFlow = flowDx !== 0 ? {dx: flowDx, dy: 0} : {dx: 0, dy: flowDy};
+placeWideRoad(G.selectedTool, ps.x, ps.y, G.dragDirection, initFlow);
+G._highwayPendingStart = null;
+}
+// L-shaped path: go horizontal first, then vertical (no diagonal roads)
+// Horizontal segment
+const stepX = tx > lx ? 1 : -1;
+for (let x = lx + stepX; x !== tx + stepX; x += stepX) {
+if (isWide) {
+placeWideRoad(G.selectedTool, x, ly, G.dragDirection, {dx: stepX, dy: 0});
+} else if (canPlaceRoad(G.selectedTool, x, ly)) {
+placeRoad(G.selectedTool, x, ly);
+}
+}
+// Vertical segment
+const stepY = ty > ly ? 1 : -1;
+for (let y = ly; y !== ty + stepY; y += stepY) {
+if (isWide) {
+placeWideRoad(G.selectedTool, tx, y, G.dragDirection, {dx: 0, dy: stepY});
+} else if (canPlaceRoad(G.selectedTool, tx, y)) {
+placeRoad(G.selectedTool, tx, y);
+}
+}
+lastRoadTile = {x: tile.x, y: tile.y};
+}
+}
+}
+
+function onPointerUp(px, py) {
+// Finalize demolish area
+if (G && G.selectedTool === 'demolish' && G.demolishStart) {
+const tile = screenToWorld(px, py);
+G.demolishEnd = {x: tile.x, y: tile.y};
+const x1 = Math.min(G.demolishStart.x, G.demolishEnd.x);
+const y1 = Math.min(G.demolishStart.y, G.demolishEnd.y);
+const x2 = Math.max(G.demolishStart.x, G.demolishEnd.x);
+const y2 = Math.max(G.demolishStart.y, G.demolishEnd.y);
+if (x1 === x2 && y1 === y2) {
+// Single tile demolish — try road, then maintenance, then parking
+const refund = demolishRoad(x1, y1);
+if (refund > 0) {
+showNotification(`Road demolished. Refund: $${refund}`);
+} else {
+const mi = G.maintenanceBuildings.findIndex(m => m.x === x1 && m.y === y1);
+if (mi >= 0) {
+G.maintenanceBuildings.splice(mi, 1);
+const ref = G.mode === 'creative' ? 0 : 100;
+G.money += ref;
+showNotification(`Maintenance building demolished. Refund: $${ref}`);
+} else {
+const pi = G.parkingLots.findIndex(p => Math.abs(p.x - x1) <= 1 && Math.abs(p.y - y1) <= 1 && p.playerBuilt);
+if (pi >= 0) {
+G.parkingLots.splice(pi, 1);
+const ref = G.mode === 'creative' ? 0 : 30;
+G.money += ref;
+showNotification(`Parking lot demolished. Refund: $${ref}`);
+}
+}
+}
+} else {
+demolishArea(x1, y1, x2, y2);
+}
+G.demolishStart = null;
+G.demolishEnd = null;
+}
+isPanning = false;
+roadDrawing = false;
+lastRoadTile = null;
+}
+
+function drawStraightRoad(start, end) {
+// L-shaped path: horizontal first, then vertical (no diagonal roads)
+const tiles = getStraightRoadTiles(start.x, start.y, end.x, end.y);
+const dx = Math.abs(end.x - start.x), dy = Math.abs(end.y - start.y);
+const dir = dx >= dy ? 'h' : 'v';
+const flowDx = end.x > start.x ? 1 : end.x < start.x ? -1 : 0;
+const flowDy = end.y > start.y ? 1 : end.y < start.y ? -1 : 0;
+const straightFlowDir = {dx: flowDx || 0, dy: flowDy || 0};
+const isWide = G.selectedTool.includes('multi') || G.selectedTool.includes('highway');
+for (const t of tiles) {
+if (isWide) {
+placeWideRoad(G.selectedTool, t.x, t.y, dir, straightFlowDir);
+} else if (canPlaceRoad(G.selectedTool, t.x, t.y)) {
+placeRoad(G.selectedTool, t.x, t.y);
+}
+}
+}
+
+function getStraightRoadTiles(sx, sy, ex, ey) {
+const tiles = [];
+const dx = ex - sx, dy = ey - sy;
+// If mostly horizontal, go horizontal then vertical; otherwise vertical then horizontal
+if (Math.abs(dx) >= Math.abs(dy)) {
+// Horizontal first
+const stepX = dx >= 0 ? 1 : -1;
+for (let x = sx; x !== ex + stepX; x += stepX) {
+tiles.push({x, y: sy});
+}
+const stepY = dy >= 0 ? 1 : -1;
+for (let y = sy + stepY; y !== ey + stepY; y += stepY) {
+tiles.push({x: ex, y});
+}
+} else {
+// Vertical first
+const stepY = dy >= 0 ? 1 : -1;
+for (let y = sy; y !== ey + stepY; y += stepY) {
+tiles.push({x: sx, y});
+}
+const stepX = dx >= 0 ? 1 : -1;
+for (let x = sx + stepX; x !== ex + stepX; x += stepX) {
+tiles.push({x, y: ey});
+}
+}
+return tiles;
+}
+
+// ===== KEYBOARD =====
+const keysDown = {};
+document.addEventListener('keydown', e => {
+keysDown[e.key] = true;
+// Tutorial navigation (when tutorial is visible)
+const tutVisible = document.getElementById('tutorialModal').style.display === 'block';
+if (tutVisible) {
+if (e.key === 'ArrowRight' || e.key === 'Enter') { tutorialNext(); e.preventDefault(); return; }
+if (e.key === 'ArrowLeft') { tutorialPrev(); e.preventDefault(); return; }
+if (e.key === 'Escape') { closeTutorial(); e.preventDefault(); return; }
+return; // block all other keys while tutorial is open
+}
+if (!G) return;
+// Check if any modal is open or search bar is focused
+const searchFocused = document.activeElement === document.getElementById('searchBar');
+const modalOpen = document.getElementById('settingsModal').style.display === 'block'
+|| document.getElementById('loreJournal').style.display === 'block'
+|| document.getElementById('debugMenu').style.display === 'block'
+|| document.getElementById('weekSummary').style.display === 'block';
+if (e.key === ' ' || e.key === 'p') { setSpeed(G.speed === 0 ? 1 : 0); e.preventDefault(); }
+if (e.key === '1') setSpeed(1);
+if (e.key === '2') setSpeed(2);
+if (e.key === '3') setSpeed(4);
+if (e.key === '+' || e.key === '=') { G.camera.zoom = Math.min(3, G.camera.zoom * 1.15); e.preventDefault(); }
+if (e.key === '-' || e.key === '_') { G.camera.zoom = Math.max(0.3, G.camera.zoom * 0.87); e.preventDefault(); }
+if (e.key === 'Escape') {
+if (modalOpen) { closeModals(); e.preventDefault(); }
+else {
+G.selectedTool = null;
+G.highlightBuildings = [];
+G.demolishStart = null;
+G.demolishEnd = null;
+G.straightStart = null;
+document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+document.getElementById('infoPanel').style.display = 'none';
+}
+}
+if (e.key === 'q' || e.key === 'Q') { if (G.camera.targetRotation === undefined) G.camera.targetRotation = Math.round(G.camera.rotation); G.camera.targetRotation = (G.camera.targetRotation + 3) % 4; e.preventDefault(); }
+if (e.key === 'e' || e.key === 'E') { if (G.camera.targetRotation === undefined) G.camera.targetRotation = Math.round(G.camera.rotation); G.camera.targetRotation = (G.camera.targetRotation + 1) % 4; e.preventDefault(); }
+if (e.key === '`' || e.key === '~') { toggleDebugMenu(); e.preventDefault(); }
+// New keybinds — only fire when search bar is NOT focused and no modal is open
+if (!searchFocused && !modalOpen) {
+const k = e.key.toLowerCase();
+if (k === 'r') selectTool('road_1lane');
+else if (k === 't') selectTool('road_2lane');
+else if (k === 'y') selectTool('road_multi');
+else if (k === 'h') selectTool('road_highway');
+else if (k === 'b') selectTool('road_flyover');
+else if (k === 'u') selectTool('road_tunnel');
+else if (k === 'v') selectTool('road_oneway');
+else if (e.key === '4') selectTool('paid_2lane');
+else if (e.key === '5') selectTool('paid_multi');
+else if (e.key === '6') selectTool('paid_highway');
+else if (k === 'k') selectTool('parking');
+else if (k === 'm') selectTool('maintenance');
+else if (k === 'x') selectTool('demolish');
+else if (k === 'i') selectTool('inspect');
+else if (k === 'f') selectTool('traffic');
+else if (k === 'l') toggleStraight();
+else if (e.key === '7') setUpkeep(1);
+else if (e.key === '8') setUpkeep(2);
+else if (e.key === '9') setUpkeep(3);
+else if (k === 'n') openLoreJournal();
+else if (k === 'z') showLateReport();
+else if (k === 'g') showSettings();
+else if (k === 'c') returnToCenter();
+else if (e.key === '?') { showSettings(); setTimeout(()=>{ const kb=document.getElementById('keybindsCard'); if(kb) kb.classList.add('visible'); },50); }
+}
+// Prevent page scroll with arrow keys
+if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) e.preventDefault();
+});
+document.addEventListener('keyup', e => { keysDown[e.key] = false; });
+
+// Continuous camera panning via arrow keys (checked each frame)
+function updateKeyboardCamera() {
+if (!G) return;
+// Smooth rotation lerp — pivot around screen center
+if (G.camera.targetRotation === undefined) G.camera.targetRotation = Math.round(G.camera.rotation);
+const target = G.camera.targetRotation;
+let current = G.camera.rotation;
+// Calculate shortest path with wrapping (values are 0-3, wrapping at 4)
+let diff = target - current;
+// Handle wrapping: e.g. 3→0 should go +1 not -3, 0→3 should go -1 not +3
+if (diff > 2) diff -= 4;
+if (diff < -2) diff += 4;
+if (Math.abs(diff) > 0.001) {
+// Find world point at screen center before rotation change
+const oldR = current;
+const oldRad = oldR * Math.PI / 2;
+const cosO = Math.cos(oldRad), sinO = Math.sin(oldRad);
+// Inverse iso: camera.x/y are iso coords; convert to pre-rotation world coords
+const rxC = (G.camera.x / (TILE * COS_A) + G.camera.y / (TILE * SIN_A)) / 2;
+const ryC = (G.camera.y / (TILE * SIN_A) - G.camera.x / (TILE * COS_A)) / 2;
+const worldX = rxC * cosO - ryC * sinO;
+const worldY = rxC * sinO + ryC * cosO;
+// Update rotation (slower: 0.06 instead of 0.12)
+current += diff * 0.06;
+current = ((current % 4) + 4) % 4;
+G.camera.rotation = current;
+// Recompute iso coords for the same world point with new rotation
+const newRad = current * Math.PI / 2;
+const cosN = Math.cos(newRad), sinN = Math.sin(newRad);
+const nrx = worldX * cosN + worldY * sinN;
+const nry = -worldX * sinN + worldY * cosN;
+G.camera.x = (nrx - nry) * TILE * COS_A;
+G.camera.y = (nrx + nry) * TILE * SIN_A;
+} else {
+// Snap to target — also adjust camera for the final snap
+if (current !== target) {
+const oldRad = current * Math.PI / 2;
+const cosO = Math.cos(oldRad), sinO = Math.sin(oldRad);
+const rxC = (G.camera.x / (TILE * COS_A) + G.camera.y / (TILE * SIN_A)) / 2;
+const ryC = (G.camera.y / (TILE * SIN_A) - G.camera.x / (TILE * COS_A)) / 2;
+const worldX = rxC * cosO - ryC * sinO;
+const worldY = rxC * sinO + ryC * cosO;
+G.camera.rotation = target;
+const newRad = target * Math.PI / 2;
+const cosN = Math.cos(newRad), sinN = Math.sin(newRad);
+const nrx = worldX * cosN + worldY * sinN;
+const nry = -worldX * sinN + worldY * cosN;
+G.camera.x = (nrx - nry) * TILE * COS_A;
+G.camera.y = (nrx + nry) * TILE * SIN_A;
+} else {
+G.camera.rotation = target;
+}
+}
+const panSpeed = 8 / G.camera.zoom;
+let dx = 0, dy = 0;
+if (keysDown['ArrowUp'] || keysDown['w']) dy -= panSpeed;
+if (keysDown['ArrowDown'] || keysDown['s']) dy += panSpeed;
+if (keysDown['ArrowLeft'] || keysDown['a']) dx -= panSpeed;
+if (keysDown['ArrowRight'] || keysDown['d']) dx += panSpeed;
+// Camera x/y are in iso space — WASD should always move in screen directions
+// No rotation needed: toISO already handles the visual rotation
+G.camera.x += dx;
+G.camera.y += dy;
+}
+
+// ===== SAVE/LOAD =====
+function saveGame() {
+if (!G || G.tutorial) return;
+const save = {
+mode: G.mode, money: G.money, day: G.day, dayTick: G.dayTick,
+score: G.score, weeklyRevenue: G.weeklyRevenue, upkeepTier: G.upkeepTier,
+terrain: G.terrain, heightMap: G.heightMap,
+roads: Array.from(G.roads.entries()),
+elevatedRoads: Array.from(G.elevatedRoads.entries()),
+buildings: G.buildings,
+families: G.families,
+intersections: Array.from(G.intersections.entries()),
+maintenanceBuildings: G.maintenanceBuildings,
+parkingLots: G.parkingLots,
+camera: G.camera,
+discoveredSecrets: G.discoveredSecrets,
+artifactsFound: G.artifactsFound,
+daysWithoutRoad: G.daysWithoutRoad,
+lastRoadBuildDay: G.lastRoadBuildDay,
+carusoEscalation: G.carusoEscalation,
+networkCompletion: G.networkCompletion,
+loreRestaurantsUsed: G.loreRestaurantsUsed,
+vossHouseId: G.vossHouseId,
+lakeName: G.lakeName,
+graceDays: G.graceDays,
+terrainNames: G.terrainNames,
+playableRadius: G.playableRadius,
+playableCenter: G.playableCenter,
+loreJournal: G.loreJournal,
+loreCollections: G.loreCollections,
+mysteryBoard: G.mysteryBoard,
+loans: G.loans,
+totalDebt: G.totalDebt
+};
+try { localStorage.setItem('tinyTownTraffic', JSON.stringify(save)); } catch(e) {}
+}
+
+function loadGame() {
+try {
+const data = JSON.parse(localStorage.getItem('tinyTownTraffic'));
+if (!data) { showNotification('No save found!'); return; }
+G = newGameState(data.mode);
+Object.assign(G, {
+money: data.money, day: data.day, dayTick: data.dayTick || 0,
+score: data.score, weeklyRevenue: data.weeklyRevenue, upkeepTier: data.upkeepTier,
+terrain: data.terrain, heightMap: data.heightMap,
+buildings: data.buildings || [],
+families: data.families || [],
+maintenanceBuildings: data.maintenanceBuildings || [],
+maintenanceVehicles: data.maintenanceVehicles || [],
+parkingLots: (data.parkingLots || []).map(p => ({...p, connectedSides: p.connectedSides || []})),
+camera: Object.assign({targetRotation: Math.round(data.camera.rotation || 0)}, data.camera),
+discoveredSecrets: data.discoveredSecrets || [],
+artifactsFound: data.artifactsFound || [],
+daysWithoutRoad: data.daysWithoutRoad || 0,
+lastRoadBuildDay: data.lastRoadBuildDay || 0,
+carusoEscalation: data.carusoEscalation || 0,
+networkCompletion: data.networkCompletion || 0,
+loreRestaurantsUsed: data.loreRestaurantsUsed || {},
+vossHouseId: data.vossHouseId || null,
+lakeName: data.lakeName,
+graceDays: data.graceDays || 0,
+terrainNames: data.terrainNames || [],
+playableRadius: data.playableRadius || 50,
+playableCenter: data.playableCenter || {x: MAP_W/2, y: MAP_H/2},
+loreJournal: data.loreJournal || { legends: [], discoveries: [], geography: [], history: [] },
+loreCollections: data.loreCollections || {},
+mysteryBoard: data.mysteryBoard || {
+  pinnedEntries: [], connections: [], solvedDeductions: [],
+  failedAttempts: {}, revealedCollections: {}, unlockedBonusLore: []
+},
+loans: data.loans || [],
+totalDebt: data.totalDebt || 0
+});
+G.roads = new Map(data.roads || []);
+G.elevatedRoads = new Map(data.elevatedRoads || []);
+G.intersections = new Map(data.intersections || []);
+// Migrate old green boolean to greenAxis
+G.intersections.forEach(ctrl => {
+if (ctrl.type === 'light' && ctrl.greenAxis === undefined) {
+ctrl.greenAxis = ctrl.green ? 'NS' : 'EW';
+delete ctrl.green;
+}
+// Migrate old stops count to stopDirs
+if (ctrl.type === 'stop' && !ctrl.stopDirs) {
+ctrl.stopDirs = {N:true, S:true, E:true, W:true};
+delete ctrl.stops;
+}
+});
+buildingIdCounter = Math.max(...G.buildings.map(b => b.id), 0);
+// Recalculate all intersections to fix stale data from older saves
+for (const [key] of G.roads) {
+const [rx, ry] = key.split(',').map(Number);
+updateIntersections(rx, ry);
+}
+// Refresh parking lot road connections after load
+updateAllParkingConnections();
+document.getElementById('mainMenu').style.display = 'none';
+document.getElementById('hud').style.display = 'block';
+document.getElementById('sidePanel').style.display = 'flex';
+MC.style.display = 'block';
+updateHUD();
+showNotification('Welcome back, Commissioner.');
+} catch(e) {
+G = null;
+showNotification('Failed to load save.');
+}
+}
+
+// ===== GAME FLOW =====
+function startGame(mode) {
+G = newGameState(mode);
+generateTerrain();
+// Find a good starting center on grass, near map center
+let bestX = MAP_W/2, bestY = MAP_H/2, bestScore = -1;
+for (let attempt = 0; attempt < 40; attempt++) {
+const tx = Math.floor(MAP_W/2 + (Math.random()-0.5)*30);
+const ty = Math.floor(MAP_H/2 + (Math.random()-0.5)*30);
+let grassCount = 0;
+for (let dy = -8; dy <= 8; dy++) {
+for (let dx = -8; dx <= 8; dx++) {
+const px = tx+dx, py = ty+dy;
+if (px>=0 && px<MAP_W && py>=0 && py<MAP_H && G.terrain[py][px] === 0) grassCount++;
+}
+}
+if (grassCount > bestScore) { bestScore = grassCount; bestX = tx; bestY = ty; }
+}
+G.playableCenter = {x: bestX, y: bestY};
+G.playableRadius = mode === 'creative' ? Math.floor(Math.min(MAP_W,MAP_H)/2)-2 : 15;
+generateInitialBuildings();
+// Center camera on buildings
+if (G.buildings.length > 0) {
+const avgX = G.buildings.reduce((s,b)=>s+b.x,0)/G.buildings.length;
+const avgY = G.buildings.reduce((s,b)=>s+b.y,0)/G.buildings.length;
+const iso = toISO(avgX, avgY);
+G.camera.x = iso.sx;
+G.camera.y = iso.sy;
+}
+G.camera.zoom = 1.0;
+document.getElementById('mainMenu').style.display = 'none';
+document.getElementById('hud').style.display = 'block';
+document.getElementById('sidePanel').style.display = 'flex';
+MC.style.display = 'block';
+updateHUD();
+if (mode === 'creative') showNotification('🎨 Creative Mode — Infinite money! Build freely!');
+else if (mode === 'endless') showNotification('♾️ Endless Mode — No game over! Just build!');
+else showNotification('🏘️ Welcome, Commissioner. The town needs roads. The previous one... left. Build roads to connect buildings.');
+}
+
+function gameOver() {
+saveGame();
+document.getElementById('goScore').textContent = `You survived ${G.score} days!`;
+document.getElementById('goStats').textContent = `Roads built: ${G.roads.size + G.elevatedRoads.size} | Buildings: ${G.buildings.length} | Families: ${G.families.length}`;
+const pct = G.networkCompletion || 0;
+const artifactCount = (G.artifactsFound || []).length;
+// Network completion shown only if above 50%
+const goNetwork = document.getElementById('goNetwork');
+const goLedger = document.getElementById('goLedger');
+const goFinal = document.getElementById('goFinal');
+if (pct >= 50) {
+goNetwork.style.display = '';
+goNetwork.textContent = `The network is ${pct}% complete. The next commissioner has been notified.`;
+}
+// Artifact-based ending layers
+if (artifactCount >= 9) {
+goLedger.style.display = '';
+const playerSurname = G.families.length > 0 ? G.families[0].lastName : 'Unknown';
+let ledger = `Commissioner ${playerSurname}: ${G.score} days. Infrastructure: ${pct}%.\n`;
+for (const c of COMMISSIONER_HISTORY) {
+ledger += `Commissioner ${c.name}: ${c.days.toLocaleString()} days. Infrastructure: ${c.pct}%.\n`;
+}
+if (artifactCount >= 15) {
+ledger += `\nFirst contact: ~4,200 BCE\nInfrastructure at first contact: 0.0001%\nCommissioner designation: unknown\nDays served: 1`;
+}
+goLedger.textContent = ledger;
+goFinal.style.display = '';
+goFinal.textContent = artifactCount >= 15 ? 'The network thanks you for your service.' : `The next commissioner shares your surname: ${playerSurname}.`;
+} else if (artifactCount >= 4) {
+goFinal.style.display = '';
+goFinal.textContent = 'The next commissioner has been notified.';
+}
+document.getElementById('gameOver').style.display = 'block';
+G.speed = 0;
+}
+
+// ===== SEARCH BAR =====
+let searchHighlight = -1;
+let searchResults = [];
+
+
+function boldMatch(text, query) {
+const idx = text.toLowerCase().indexOf(query);
+if (idx < 0) return text;
+return text.substring(0, idx) + '<strong style="color:#d4a574;">' + text.substring(idx, idx + query.length) + '</strong>' + text.substring(idx + query.length);
+}
+
+function handleSearchKey(event) {
+const dropdown = document.getElementById('searchDropdown');
+if (event.key === 'ArrowDown') {
+event.preventDefault();
+searchHighlight = Math.min(searchHighlight + 1, searchResults.length - 1);
+renderSearchHighlight();
+} else if (event.key === 'ArrowUp') {
+event.preventDefault();
+searchHighlight = Math.max(searchHighlight - 1, 0);
+renderSearchHighlight();
+} else if (event.key === 'Enter') {
+event.preventDefault();
+const idx = searchHighlight >= 0 ? searchHighlight : 0;
+if (searchResults.length > 0) selectSearchResult(idx);
+} else if (event.key === 'Escape') {
+document.getElementById('searchBar').value = '';
+hideSearch();
+document.getElementById('searchBar').blur();
+}
+}
+
+function renderSearchHighlight() {
+const dropdown = document.getElementById('searchDropdown');
+const items = dropdown.children;
+for (let i = 0; i < items.length; i++) {
+items[i].style.background = i === searchHighlight ? 'rgba(232,213,183,0.15)' : '';
+}
+}
+
+function selectSearchResult(idx) {
+const r = searchResults[idx];
+if (!r || !G) return;
+if (G.tutorial) G._tutorialSearched = true;
+// Pan camera to target
+const iso = toISO(r.targetX, r.targetY);
+G.camera.x = iso.sx;
+G.camera.y = iso.sy;
+// Open inspect panel
+showInspectInfo(r.targetX, r.targetY);
+// Clear search
+document.getElementById('searchBar').value = '';
+hideSearch();
+}
+
+function hideSearch() {
+document.getElementById('searchDropdown').style.display = 'none';
+searchResults = [];
+searchHighlight = -1;
+}
+
+function returnToCenter() {
+if (!G) return;
+// Convert map center world coords to iso screen coords
+const cx = MAP_W / 2, cy = MAP_H / 2;
+const r = G.camera.rotation || 0;
+const rRad = r * Math.PI / 2;
+const cosR = Math.cos(rRad), sinR = Math.sin(rRad);
+const rx = cx * cosR + cy * sinR;
+const ry = -cx * sinR + cy * cosR;
+G.camera.x = (rx - ry) * TILE * COS_A;
+G.camera.y = (rx + ry) * TILE * SIN_A;
+}
+
+function returnToMenu() {
+if (G && G.tutorial) endTutorial();
+if (G) saveGame();
+G = null;
+document.getElementById('mainMenu').style.display = 'flex';
+document.getElementById('hud').style.display = 'none';
+document.getElementById('sidePanel').style.display = 'none';
+document.getElementById('gameOver').style.display = 'none';
+document.getElementById('weekSummary').style.display = 'none';
+document.getElementById('infoPanel').style.display = 'none';
+document.getElementById('tutorialPopup').style.display = 'none';
+MC.style.display = 'none';
+closeModals();
+}
+
+function toggleDebugMenu() {
+const el = document.getElementById('debugMenu');
+const visible = el.style.display === 'block';
+el.style.display = visible ? 'none' : 'block';
+if (!visible) {
+// Sync current values into inputs
+document.getElementById('dbg_road_1lane').value = ROAD_COSTS.road_1lane;
+document.getElementById('dbg_road_2lane').value = ROAD_COSTS.road_2lane;
+document.getElementById('dbg_road_multi').value = ROAD_COSTS.road_multi;
+document.getElementById('dbg_road_highway').value = ROAD_COSTS.road_highway;
+document.getElementById('dbg_road_flyover').value = ROAD_COSTS.road_flyover;
+document.getElementById('dbg_road_tunnel').value = ROAD_COSTS.road_tunnel;
+document.getElementById('dbg_upkeep1').value = UPKEEP_COST[1];
+document.getElementById('dbg_upkeep2').value = UPKEEP_COST[2];
+document.getElementById('dbg_upkeep3').value = UPKEEP_COST[3];
+document.getElementById('dbg_dayShiftStart').value = DAY_SHIFT_START;
+document.getElementById('dbg_dayShiftEnd').value = DAY_SHIFT_END;
+document.getElementById('dbg_nightShiftStart').value = NIGHT_SHIFT_START;
+document.getElementById('dbg_nightShiftEnd').value = NIGHT_SHIFT_END;
+}
+}
+function debugAutoConnectBuildings() {
+    if (!G) return;
+    // Collect all building positions
+    const targets = G.buildings.map(b => ({x: b.x, y: b.y}));
+    if (targets.length === 0) { showNotification('No buildings to connect!'); return; }
+    // Find center of all buildings
+    const cx = Math.round(targets.reduce((s,t) => s+t.x, 0) / targets.length);
+    const cy = Math.round(targets.reduce((s,t) => s+t.y, 0) / targets.length);
+    let roadsPlaced = 0;
+    const savedMode = G.mode;
+    G.mode = 'creative'; // bypass costs
+    // For each building, draw an L-shaped road from the building to a hub road
+    // First, lay a main road through the center (horizontal)
+    const minX = Math.min(...targets.map(t => t.x)) - 2;
+    const maxX = Math.max(...targets.map(t => t.x)) + 2;
+    const minY = Math.min(...targets.map(t => t.y)) - 2;
+    const maxY = Math.max(...targets.map(t => t.y)) + 2;
+    // Lay a horizontal spine road
+    for (let x = minX; x <= maxX; x++) {
+        if (canPlaceRoad('road_2lane', x, cy)) {
+            if (placeRoad('road_2lane', x, cy)) roadsPlaced++;
+        }
+    }
+    // Lay a vertical spine road
+    for (let y = minY; y <= maxY; y++) {
+        if (canPlaceRoad('road_2lane', cx, y)) {
+            if (placeRoad('road_2lane', cx, y)) roadsPlaced++;
+        }
+    }
+    // Connect each building to the nearest spine via vertical/horizontal spur
+    for (const t of targets) {
+        // Vertical spur to horizontal spine (y -> cy)
+        const yDir = t.y < cy ? 1 : -1;
+        for (let y = t.y + yDir; y !== cy; y += yDir) {
+            if (canPlaceRoad('road_1lane', t.x, y)) {
+                if (placeRoad('road_1lane', t.x, y)) roadsPlaced++;
+            }
+        }
+        // Horizontal spur to vertical spine (x -> cx)
+        const xDir = t.x < cx ? 1 : -1;
+        for (let x = t.x + xDir; x !== cx; x += xDir) {
+            if (canPlaceRoad('road_1lane', x, t.y)) {
+                if (placeRoad('road_1lane', x, t.y)) roadsPlaced++;
+            }
+        }
+    }
+    G.mode = savedMode;
+    updateAllParkingConnections();
+    showNotification(`Debug: Auto-connected ${targets.length} buildings with ${roadsPlaced} road tiles`);
+}
+
+function resetDebugDefaults() {
+ROAD_COSTS.road_1lane=10; ROAD_COSTS.road_2lane=25; ROAD_COSTS.road_multi=50;
+ROAD_COSTS.road_highway=15; ROAD_COSTS.road_flyover=75; ROAD_COSTS.road_tunnel=120;
+UPKEEP_COST[1]=2; UPKEEP_COST[2]=5; UPKEEP_COST[3]=10;
+DAY_SHIFT_START=9.0; DAY_SHIFT_END=17.0; NIGHT_SHIFT_START=22.0; NIGHT_SHIFT_END=6.0;
+if (typeof computeDepartureTicks === 'function') computeDepartureTicks();
+toggleDebugMenu(); toggleDebugMenu(); // refresh values
+showNotification('Debug: prices reset to defaults');
+}
+
+let speedBeforeSettings = 1;
+
+function closeModals() {
+document.getElementById('settingsModal').style.display = 'none';
+document.getElementById('loreJournal').style.display = 'none';
+document.getElementById('tutorialModal').style.display = 'none';
+document.getElementById('lateReportPanel').style.display = 'none';
+document.getElementById('overlay').style.display = 'none';
+const kb = document.getElementById('keybindsCard');
+if (kb) kb.classList.remove('visible');
+_boardSelectA = null;
+if (G) setSpeed(speedBeforeSettings || 1);
+}
+let tutorialPage = 0;
+
+let tutorialFromMenu = false;
+
+function closeTutorial() {
+document.getElementById('tutorialModal').style.display = 'none';
+document.getElementById('overlay').style.display = 'none';
+if (tutorialFromMenu) {
+document.getElementById('mainMenu').style.display = 'flex';
+tutorialFromMenu = false;
+}
+if (G) setSpeed(speedBeforeSettings || 1);
+}
+
+
+function tutorialNext() {
+if (tutorialPage < TUTORIAL_PAGES.length - 1) { tutorialPage++; renderTutorialPage(); }
+else closeTutorial();
+}
+
+function tutorialPrev() {
+if (tutorialPage > 0) { tutorialPage--; renderTutorialPage(); }
+}
+
+function toggleKeybindsCard() {
+const kb = document.getElementById('keybindsCard');
+if (kb) kb.classList.toggle('visible');
+}
+
+function tryDiscoverArtifact(pool) {
+if (!G) return;
+// No artifacts in the first 3 days — let the player settle in
+if (G.day <= 3) return false;
+// Cooldown: at least 60 ticks (~1 game minutes) between discoveries to avoid clumping
+if (G._lastArtifactTick && (G.day === G._lastArtifactDay) && (G.dayTick - G._lastArtifactTick) < 60) return false;
+const available = ARTIFACT_POOL[pool].filter(a => !G.artifactsFound.includes(a.id));
+for (const artifact of available) {
+// Halve the base chance to space discoveries out more
+if (Math.random() < artifact.chance * 0.5) {
+G.artifactsFound.push(artifact.id);
+G.discoveredSecrets.push(artifact.id);
+G._lastArtifactTick = G.dayTick;
+G._lastArtifactDay = G.day;
+addToJournal(artifact.category, `📜 ${artifact.title}: ${artifact.text}`, artifact.collections);
+showArtifactPopup(artifact.title, artifact.text);
+// Check for lore milestones
+const count = G.artifactsFound.length;
+if (count === 5) addToJournal('history', 'You are beginning to see the patterns beneath this town.', ['entity']);
+if (count === 10) addToJournal('history', 'The artifacts paint a picture of something ancient beneath the roads.', ['entity']);
+if (count === 15) addToJournal('history', 'Commissioner Voss saw what you are seeing. He lasted 11 years. Some say he\'s still out there — in the deepest tunnels, mapping what he found. Tunnel deep enough and you might find him.', ['voss','entity']);
+if (count === 20) addToJournal('history', 'The network is patient. It has been doing this for a very long time.', ['entity']);
+return true;
+}
+}
+return false;
+}
+
+function tryLakeArtifact(x, y) {
+if (!G) return false;
+return tryDiscoverArtifact('lake');
+}
+
+function addToJournal(category, text, collections) {
+if (!G || !G.loreJournal) return;
+if (!G.loreJournal[category]) G.loreJournal[category] = [];
+// Deduplicate by text
+if (G.loreJournal[category].some(e => e.text === text)) return;
+const entry = { text, day: G.day, isNew: true };
+if (collections && collections.length) entry.collections = collections;
+G.loreJournal[category].push(entry);
+// Also index into loreCollections for easy lookup
+if (collections && G.loreCollections) {
+collections.forEach(col => {
+if (!G.loreCollections[col]) G.loreCollections[col] = [];
+if (!G.loreCollections[col].some(e => e.text === text)) {
+G.loreCollections[col].push({ text, day: G.day, category });
+}
+});
+}
+}
+
+let journalCurrentTab = 'journal';
+let _boardSelectA = null; // first selected evidence card index for connection drawing
+function escapeForAttr(text) {
+return text.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+
+function togglePinEntryByIndex(category, entryIndex) {
+if (!G || !G.mysteryBoard) return;
+const entries = G.loreJournal[category] || [];
+if (entryIndex < 0 || entryIndex >= entries.length) return;
+togglePinEntry(category, entries[entryIndex].text);
+}
+
+function togglePinEntry(category, text) {
+if (!G || !G.mysteryBoard) return;
+const mb = G.mysteryBoard;
+const idx = mb.pinnedEntries.findIndex(p => p.text === text);
+if (idx >= 0) {
+// Unpin: remove entry and clean up connections
+unpinEntry(idx);
+} else {
+// Pin: find the entry in the journal
+const entry = (G.loreJournal[category] || []).find(e => e.text === text);
+if (entry) {
+mb.pinnedEntries.push({ text: entry.text, category, day: entry.day, pinnedAt: Date.now() });
+}
+}
+openLoreJournal();
+}
+
+function unpinEntry(index) {
+if (!G || !G.mysteryBoard) return;
+const mb = G.mysteryBoard;
+const removed = mb.pinnedEntries[index];
+if (!removed) return;
+mb.pinnedEntries.splice(index, 1);
+// Remove connections involving this entry
+mb.connections = mb.connections.filter(c => c.entryA !== removed.text && c.entryB !== removed.text);
+_boardSelectA = null;
+openLoreJournal();
+}
+
+function selectEvidence(index) {
+if (!G || !G.mysteryBoard) return;
+const mb = G.mysteryBoard;
+if (_boardSelectA === null) {
+_boardSelectA = index;
+} else if (_boardSelectA === index) {
+_boardSelectA = null;
+} else {
+// Create connection between A and index
+const entryA = mb.pinnedEntries[_boardSelectA];
+const entryB = mb.pinnedEntries[index];
+if (entryA && entryB) {
+// Check for duplicate connection
+const exists = mb.connections.some(c =>
+(c.entryA === entryA.text && c.entryB === entryB.text) ||
+(c.entryA === entryB.text && c.entryB === entryA.text)
+);
+if (!exists) {
+mb.connections.push({ entryA: entryA.text, entryB: entryB.text, createdAt: Date.now() });
+}
+}
+_boardSelectA = null;
+}
+openLoreJournal();
+}
+
+function removeConnection(index) {
+if (!G || !G.mysteryBoard) return;
+G.mysteryBoard.connections.splice(index, 1);
+openLoreJournal();
+}
+
+function getAvailableDeductions() {
+if (!G || !G.mysteryBoard) return [];
+const mb = G.mysteryBoard;
+const pinnedTexts = mb.pinnedEntries.map(p => p.text);
+// Build a flat list of all artifacts for ID lookup
+const allArtifacts = [...ARTIFACT_POOL.ground, ...ARTIFACT_POOL.mountain, ...ARTIFACT_POOL.lake, ...(ARTIFACT_POOL.tutorial || [])];
+return MYSTERY_DEDUCTIONS.filter(ded => {
+if (mb.solvedDeductions.includes(ded.id)) return false;
+if (ded.tutorialOnly && !G.tutorial) return false;
+// Check all required artifacts are pinned (by matching artifact text via ID)
+const requiredTexts = ded.requiredPins.map(id => {
+const art = allArtifacts.find(a => a.id === id);
+return art ? art.text : null;
+}).filter(Boolean);
+if (requiredTexts.length !== ded.requiredPins.length) return false;
+// All must be pinned
+if (!requiredTexts.every(t => pinnedTexts.includes(t))) return false;
+// All must be connected to each other
+for (let i = 0; i < requiredTexts.length; i++) {
+for (let j = i + 1; j < requiredTexts.length; j++) {
+const connected = mb.connections.some(c =>
+(c.entryA === requiredTexts[i] && c.entryB === requiredTexts[j]) ||
+(c.entryA === requiredTexts[j] && c.entryB === requiredTexts[i])
+);
+if (!connected) return false;
+}
+}
+return true;
+});
+}
+
+function attemptDeduction(dedId, choiceIndex) {
+if (!G || !G.mysteryBoard) return;
+const mb = G.mysteryBoard;
+const ded = MYSTERY_DEDUCTIONS.find(d => d.id === dedId);
+if (!ded || mb.solvedDeductions.includes(dedId)) return;
+if (choiceIndex === ded.correctIndex) {
+// Correct!
+mb.solvedDeductions.push(dedId);
+// Reveal collections for entries that have the revealed collections
+const allArtifacts = [...ARTIFACT_POOL.ground, ...ARTIFACT_POOL.mountain, ...ARTIFACT_POOL.lake];
+const requiredTexts = ded.requiredPins.map(id => {
+const art = allArtifacts.find(a => a.id === id);
+return art ? art.text : null;
+}).filter(Boolean);
+// Reveal collection memberships for all entries that belong to the revealed collections
+for (const colKey of ded.revealsCollections) {
+const colEntries = G.loreCollections[colKey] || [];
+for (const ce of colEntries) {
+if (!mb.revealedCollections[ce.text]) mb.revealedCollections[ce.text] = [];
+if (!mb.revealedCollections[ce.text].includes(colKey)) {
+mb.revealedCollections[ce.text].push(colKey);
+}
+}
+}
+// Add bonus lore
+if (ded.bonusLore && !mb.unlockedBonusLore.includes(ded.bonusLore)) {
+mb.unlockedBonusLore.push(ded.bonusLore);
+addToJournal(ded.bonusCategory || 'discoveries', ded.bonusLore, ded.bonusCollections || []);
+// Auto-reveal the bonus lore entry's collections
+if (ded.bonusCollections) {
+for (const bc of ded.bonusCollections) {
+if (!mb.revealedCollections[ded.bonusLore]) mb.revealedCollections[ded.bonusLore] = [];
+if (!mb.revealedCollections[ded.bonusLore].includes(bc)) {
+mb.revealedCollections[ded.bonusLore].push(bc);
+}
+}
+}
+}
+showNotification('Case solved! Collection memberships revealed. Check the Collections tab.');
+saveGame();
+} else {
+// Wrong answer
+if (!mb.failedAttempts[dedId]) mb.failedAttempts[dedId] = 0;
+mb.failedAttempts[dedId]++;
+showNotification('That doesn\'t fit the evidence. Try again.');
+}
+openLoreJournal();
+}
+
+function closeLoreJournal() {
+document.getElementById('loreJournal').style.display = 'none';
+document.getElementById('overlay').style.display = 'none';
+_boardSelectA = null;
+if (G) setSpeed(speedBeforeSettings || 1);
+}
+
+// ===== IDLE DETECTION =====
+let lastActivity = Date.now();
+document.addEventListener('mousemove', () => lastActivity = Date.now());
+document.addEventListener('touchstart', () => lastActivity = Date.now());
+document.addEventListener('keydown', () => lastActivity = Date.now());
+
+setInterval(() => {
+if (G && Date.now() - lastActivity > 120000) { // 2 min idle
+saveGame();
+if (G.speed > 0) {
+setSpeed(0);
+showNotification('Game paused due to inactivity. Your progress is saved.');
+}
+}
+}, 30000);
+
+// Save on page unload
+window.addEventListener('beforeunload', () => { if(G) saveGame(); });
+
+// ===== GAME LOOP =====
+let lastTime = 0;
+function gameLoop(timestamp) {
+const dt = Math.min((timestamp - lastTime) / 16.67, 3); // cap at 3x speed
+lastTime = timestamp;
+if (G) {
+try {
+updateKeyboardCamera();
+simulate(dt);
+render();
+if (G.tutorial) checkTutorialProgress();
+if (Date.now() % 500 < 20) updateHUD();
+} catch(e) {
+console.error('Game loop error:', e);
+}
+}
+requestAnimationFrame(gameLoop);
+}
+
+// Resize
+window.addEventListener('resize', () => {
+C.width = window.innerWidth;
+C.height = window.innerHeight;
+});
+C.width = window.innerWidth;
+C.height = window.innerHeight;
+
+requestAnimationFrame(gameLoop);
+</script>
+</body>
+</html>
