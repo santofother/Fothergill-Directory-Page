@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Play NFL Budget Draft Online — Free Single-Player Salary-Cap Auction Game vs AI | Fothergill</title>
-<meta name="description" content="Play NFL Budget Draft free in your browser. Build a 10-man roster from a shared salary cap in a blind-bid auction against AI general managers across four difficulty levels. Value players, manage your budget, and out-draft the room — no download, no account. Full rules and strategy included.">
+<title>Play NFL Budget Draft — Free Trivia Auction Game vs AI GMs | Fothergill</title>
+<meta name="description" content="Play NFL Budget Draft free in your browser. Each player is a mystery revealed only through trivia clues — identify the star from the hints, then bid blind against AI GMs who are guessing too. Part NFL trivia, part salary-cap auction, part social deduction. No download, no account.">
 <meta name="author" content="Fothergill">
-<meta name="keywords" content="nfl budget draft, salary cap draft game, fantasy auction draft, play budget draft online, nfl auction game, single player draft game, football gm game, blind bid auction, draft simulator, nfl roster builder">
+<meta name="keywords" content="nfl budget draft, nfl trivia game, salary cap auction, blind bid draft, football trivia, guess the player, nfl guessing game, social deduction draft, play budget draft online, fantasy auction game">
 <link rel="canonical" href="https://fothergill.com/budget-draft/">
 <meta property="og:type" content="game">
-<meta property="og:title" content="Play NFL Budget Draft Online — Free Single-Player Salary-Cap Auction Game">
-<meta property="og:description" content="Build a roster from a shared salary cap in a blind-bid auction against AI general managers. Value players, manage your budget, and out-draft the room — no download or account.">
+<meta property="og:title" content="Play NFL Budget Draft — Free Trivia Auction Game vs AI GMs">
+<meta property="og:description" content="Identify a mystery NFL player from trivia clues, then bid blind against AI GMs who are guessing too. Part trivia, part auction, part social deduction. No download or account.">
 <meta property="og:url" content="https://fothergill.com/budget-draft/">
 <link rel="stylesheet" href="../style.css">
 <style>
@@ -45,24 +45,23 @@
   .slotpip{ width:14px; height:8px; border-radius:2px; background:var(--border); }
   .slotpip.filled{ background:var(--accent); }
 
-  /* Player card (up for auction) */
-  .auction-card{ background:linear-gradient(160deg,#243244,#161b26); border:1px solid var(--border); border-radius:14px; padding:20px; margin:6px 0 16px; display:flex; align-items:center; gap:18px; flex-wrap:wrap; }
-  .ovr-badge{ width:74px; height:74px; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; flex-shrink:0; box-shadow:0 4px 12px rgba(0,0,0,.35); }
-  .ovr-badge .num{ font-size:30px; font-weight:800; line-height:1; }
-  .ovr-badge .lbl{ font-size:10px; letter-spacing:.08em; opacity:.85; }
-  .pl-info{ min-width:180px; flex:1; }
-  .pl-name{ font-size:22px; font-weight:700; color:var(--text-primary); }
-  .pl-sub{ color:var(--text-secondary); font-size:14px; margin-top:2px; }
-  .pos-tag{ display:inline-block; font-family:var(--mono); font-size:11px; font-weight:700; padding:2px 8px; border-radius:6px; color:#fff; margin-right:8px; }
-  .accolades{ display:flex; gap:14px; flex-wrap:wrap; margin-top:10px; }
-  .acc{ text-align:center; }
-  .acc .v{ font-size:18px; font-weight:700; color:var(--text-primary); }
-  .acc .k{ font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--text-muted); }
-  .fills-note{ font-size:13px; color:var(--text-muted); margin-top:8px; }
+  /* Mystery player card (up for auction) */
+  .auction-card{ background:linear-gradient(160deg,#243244,#161b26); border:1px solid var(--border); border-radius:14px; padding:20px; margin:6px 0 16px; }
+  .myst-head{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+  .myst-badge{ width:60px; height:60px; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:30px; background:var(--surface); border:1px dashed var(--border); flex-shrink:0; }
+  .pos-tag{ display:inline-block; font-family:var(--mono); font-size:12px; font-weight:700; padding:3px 10px; border-radius:6px; color:#fff; }
+  .myst-title{ font-size:20px; font-weight:700; color:var(--text-primary); }
+  .myst-sub{ color:var(--text-secondary); font-size:13.5px; margin-top:2px; }
+  .clue-list{ display:flex; flex-direction:column; gap:8px; }
+  .clue-item{ background:var(--surface); border:1px solid var(--border-soft); border-radius:9px; padding:10px 12px; font-size:14px; color:var(--text-primary); display:flex; gap:10px; align-items:flex-start; }
+  .clue-item .cnum{ font-family:var(--mono); font-size:11px; color:var(--accent); flex-shrink:0; margin-top:2px; }
+  .clue-item .clabel{ color:var(--text-muted); font-family:var(--mono); font-size:11px; text-transform:uppercase; letter-spacing:.04em; }
+  .fills-note{ font-size:13px; color:var(--text-muted); margin-top:12px; }
 
   /* Bid controls */
   .bid-box{ background:var(--surface); border:1px solid var(--border-soft); border-radius:12px; padding:16px; }
-  .bid-box h3{ margin:0 0 12px; font-size:14px; font-family:var(--mono); letter-spacing:.04em; text-transform:uppercase; color:var(--text-secondary); }
+  .bid-box h3{ margin:0 0 6px; font-size:14px; font-family:var(--mono); letter-spacing:.04em; text-transform:uppercase; color:var(--text-secondary); }
+  .bid-box p.hint{ font-size:13px; color:var(--text-muted); margin:0 0 14px; }
   .stepper{ display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap; }
   .stepper button.step{ width:40px; height:40px; border-radius:8px; border:1px solid var(--border); background:var(--surface-hover); color:var(--text-primary); font-size:20px; line-height:1; cursor:pointer; }
   .stepper button.step:hover{ border-color:var(--accent); }
@@ -79,11 +78,20 @@
 
   /* Reveal */
   .reveal-box{ background:var(--surface); border:1px solid var(--accent); border-radius:12px; padding:16px 18px; margin-top:14px; }
-  .reveal-box h3{ margin:0 0 10px; font-size:17px; }
+  .reveal-head{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; margin-bottom:10px; }
+  .ovr-badge{ width:64px; height:64px; border-radius:12px; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#fff; flex-shrink:0; }
+  .ovr-badge .num{ font-size:26px; font-weight:800; line-height:1; }
+  .ovr-badge .lbl{ font-size:10px; letter-spacing:.08em; opacity:.85; }
+  .reveal-name{ font-size:20px; font-weight:700; color:var(--text-primary); }
+  .reveal-sub{ color:var(--text-secondary); font-size:13.5px; }
+  .reveal-outcome{ font-size:15px; margin:6px 0 10px; }
+  .reveal-outcome.win{ color:#9ae6b4; } .reveal-outcome.lose{ color:var(--text-secondary); }
+  .recog-note{ font-size:12.5px; color:var(--text-muted); font-family:var(--mono); margin-bottom:8px; }
   .bidline{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px dashed var(--border-soft); font-size:14px; }
   .bidline:last-child{ border-bottom:none; }
   .bidline.win{ color:#9ae6b4; font-weight:600; }
   .bidline .amt{ font-family:var(--mono); }
+  .bidline .rec{ font-size:11px; color:var(--text-muted); font-family:var(--mono); margin-left:8px; }
 
   /* Log */
   .log{ margin-top:16px; max-height:200px; overflow-y:auto; background:var(--bg); border:1px solid var(--border-soft); border-radius:10px; padding:12px 14px; }
@@ -92,7 +100,7 @@
   .log-entry .who{ color:var(--text-primary); font-weight:600; }
   .log-entry.system{ color:var(--accent); font-family:var(--mono); font-size:12.5px; }
 
-  /* Roster table */
+  /* Roster tables */
   .roster-wrap{ overflow-x:auto; }
   table.roster{ width:100%; border-collapse:collapse; margin-top:8px; font-size:14px; }
   table.roster th, table.roster td{ text-align:left; padding:8px 10px; border-bottom:1px solid var(--border-soft); }
@@ -133,11 +141,11 @@
     <div class="wrap-narrow">
       <p class="breadcrumb"><a href="../index.html">Home</a> / <a href="../index.html#projects">Projects</a> / <a href="../projects/nfl-budget-draft.html">NFL Budget Draft</a> / Play</p>
       <h1>Play NFL Budget Draft</h1>
-      <p class="lede">Take the general manager's chair for a full single-player salary-cap draft. You and a room of AI GMs share the same budget and bid in a blind auction for every player on the board. Value talent correctly, manage your cap, and assemble the strongest ten-man roster — all in your browser, with no download and no account.</p>
+      <p class="lede">Every player is a mystery. You get a handful of trivia clues, and you have to work out who's hiding behind them — then bid blind against a room of AI GMs who are guessing right alongside you. If you recognise a star nobody else spotted, you steal him cheap. If everyone can see it's a legend, you'll pay through the nose. Part NFL trivia, part salary-cap auction, part social deduction.</p>
       <div class="badge-row">
-        <span class="card-tag utilities">Tool / Game</span>
+        <span class="card-tag utilities">Trivia / Game</span>
         <span class="card-status"><span class="pulse-dot"></span>PLAYABLE HERE</span>
-        <a class="btn btn-ghost" href="#how-to-use">How the auction works</a>
+        <a class="btn btn-ghost" href="#how-to-use">How it works</a>
       </div>
     </div>
   </header>
@@ -148,7 +156,7 @@
     <!-- Setup -->
     <section class="game-panel" id="setup">
       <h2 style="font-size:22px;">Set up your draft</h2>
-      <p style="color:var(--text-secondary);margin:0 0 6px;">Name your franchise, choose how many rival GMs to draft against, and pick how sharp they are. Every GM — including you — starts with the same <strong>$200 salary cap</strong> and must fill all ten roster slots. When the board is done, the roster with the highest total player rating wins.</p>
+      <p style="color:var(--text-secondary);margin:0 0 6px;">Name your franchise, choose how many rival GMs to draft against, and pick how much football they know. Every GM — including you — starts with the same <strong>$200 salary cap</strong> and must fill all ten roster slots. Players come up one at a time as trivia puzzles; the roster with the highest total rating at the end wins.</p>
       <div class="setup-grid">
         <div class="field-block">
           <span class="label-cap">Your franchise name</span>
@@ -163,14 +171,14 @@
           </div>
         </div>
         <div class="field-block">
-          <span class="label-cap">GM difficulty</span>
+          <span class="label-cap">GM football knowledge</span>
           <div class="seg" id="diff-seg" role="group" aria-label="AI difficulty">
-            <button data-diff="easy">Easy</button>
-            <button data-diff="medium" class="selected">Medium</button>
-            <button data-diff="hard">Hard</button>
-            <button data-diff="impossible">Sharp</button>
+            <button data-diff="easy">Casual</button>
+            <button data-diff="medium" class="selected">Fan</button>
+            <button data-diff="hard">Diehard</button>
+            <button data-diff="impossible">Historian</button>
           </div>
-          <p class="diff-note" id="diff-note">Medium — GMs value players reasonably and spread their cap, with a little noise you can exploit.</p>
+          <p class="diff-note" id="diff-note">Fan — the GMs recognise most well-known players but miss deeper cuts, and their bids carry some noise you can exploit.</p>
         </div>
       </div>
       <div class="btn-row" style="margin-top:16px;">
@@ -187,7 +195,8 @@
 
       <div id="bid-stage">
         <div class="bid-box">
-          <h3>Your bid</h3>
+          <h3>Your blind bid</h3>
+          <p class="hint">Work out who this is from the clues. Bid high enough to beat the GMs who also recognise him — but not a dollar more than he's worth to you.</p>
           <div class="stepper">
             <button class="step" id="bid-minus" aria-label="Lower bid">&minus;</button>
             <span class="bid-amount"><span class="dollar">$</span><span id="bid-val">0</span></span>
@@ -222,60 +231,64 @@
     <div class="wrap-narrow">
 
       <h2 id="how-to-use">How to play on this page</h2>
-      <p>Everything you need to run a full salary-cap draft is built into the board above — there is nothing to install, no account to create, and no second person required. You begin by <strong>setting up your draft</strong>: name your franchise, choose one to three rival general managers to compete against, and set how sharp those AI GMs are. Every general manager at the table, including you, is handed the exact same <strong>$200 salary cap</strong> and the exact same empty ten-slot roster to fill.</p>
-      <p>The draft then runs as a <strong>blind-bid auction</strong>, one player at a time. The best available player is placed "on the block," and every GM who still needs a slot that player can fill submits a single secret bid at the same moment. You set your bid with the plus and minus buttons or the quick-bid chips, then press <strong>Place blind bid</strong> — or <strong>Pass</strong> if you'd rather save your money. Once you commit, every AI GM's sealed bid is revealed at once. The highest bid wins the player and pays exactly what they bid; a tie is broken in favour of whichever GM has more cap space left. The winner slots the player onto their roster, the cap is deducted, and the next player comes up. This continues until the board can no longer fill anyone's roster.</p>
-      <p>Because the bids are blind, the game is a test of nerve and reading the room. You can see every rival's remaining cap and which slots they still need — that public information is your biggest weapon. If you know a rival is desperate for a quarterback and has $80 left, you know roughly how high you'd have to go to beat them, and whether it's worth it. Overpay for one superstar and you'll be filling the back of your roster with the scraps nobody else wanted; hoard your cap too long and the players you needed will already be gone.</p>
-      <p>When the draft ends, every roster is scored by adding up the overall rating of every player on it. The highest total wins — not the team with the single best player, but the team that spent its cap most efficiently across all ten slots. You'll see a full breakdown of every franchise's roster, what each player cost, and where the draft was won and lost.</p>
+      <p>NFL Budget Draft is three games braided together: an <strong>NFL trivia quiz</strong>, a <strong>salary-cap auction</strong>, and a game of <strong>social deduction</strong>. Everything you need runs right here in your browser — nothing to install, no account, and no second person required. You begin by naming your franchise, choosing one to three rival general managers, and setting how much football those AI GMs know. Every GM at the table, including you, is handed the same <strong>$200 salary cap</strong> and the same empty ten-slot roster to fill.</p>
+      <p>Here is the twist that makes the game: <strong>you never see who you're bidding on.</strong> Each player comes up as a mystery, revealed only through a short stack of trivia clues — things like "Won the Heisman Trophy at Oklahoma State," "Retired in his prime," or "Played his entire career with one AFC North franchise." From those hints you have to work out who it is, decide how good he actually is, and place a single <strong>blind bid</strong> using the plus and minus buttons or the quick-bid chips. Then you either commit the bid or pass.</p>
+      <p>Once you lock in, every AI GM's sealed bid is revealed at the same moment, the mystery player's name and rating are unveiled, and the highest bidder wins him for exactly what they bid. The player fills one of the winner's open slots, their cap is docked, and the next mystery comes up. This repeats until the rosters are full.</p>
+      <p>The skill is in the reading. A clue card for a legend is deliberately vague — the game strips the dead-giveaway facts from famous players, so "3× MVP" never appears and you have to <em>recognise</em> them. A lesser-known player, by contrast, usually gets one pinpoint clue that lets you crack him if you know your football. Recognise a genuinely good player that the room can't place, and you'll win him for a song. Fail to notice that the vague clues are actually describing an all-time great, and you'll let a bargain walk — or worse, overpay for a household name everyone else also recognised.</p>
+
+      <h2 id="deduction">Why it's really a bluffing game</h2>
+      <p>Because every bid is blind and simultaneous, the hard question isn't "how good is this player?" — it's "<strong>how much will everyone else bid?</strong>" Every rival's remaining cap and open slots are public, so you always know who <em>can</em> outspend you. What you don't know is who has <em>identified</em> the mystery player. That's the deduction layer.</p>
+      <p>If the clues are famous enough that everyone will obviously know him, you have to bid near his true value to win — and there's no bargain to be had. But if the clues are obscure and you're confident you're the only one at the table who recognises the name, you can win him for barely above what a clueless GM throws out as a shot in the dark. The leverage cuts both ways: bid too timidly on a player you know and a rival who also knows him snipes him for a dollar more; bid too aggressively on a player nobody wanted and you've wasted cap you'll need later. Reading how much your opponents know is the whole game.</p>
 
       <h2 id="roster">The roster you're building</h2>
-      <p>Each franchise fills the same ten starting slots, drawn from a pool of famous players at every position. The slots are: one quarterback, one running back, two wide receivers, one tight end, one flex spot that accepts a running back, receiver, or tight end, and then four defenders — a defensive lineman, a linebacker, a cornerback, and a safety. The flex slot is where a lot of drafts are won: because it accepts three different positions, a savvy GM can wait for value to fall to them there rather than paying full price at a locked position.</p>
-      <p>Every player carries a single <strong>overall rating</strong> from the low 60s to a maximum of 99, generated from their real career accolades — Pro Bowls, All-Pro selections, MVP awards, and championships — blended with their attributes. That rating is both what you're chasing (it's what your roster is scored on) and the anchor for what a player is truly worth at auction. Learning to feel the gap between a 99 and an 88 at a position, and whether that gap is worth twenty dollars of cap, is the entire skill of the game.</p>
+      <p>Each franchise fills the same ten starting slots: one quarterback, one running back, two wide receivers, one tight end, one flex spot that accepts a running back, receiver, or tight end, and then four defenders — a defensive lineman, a linebacker, a cornerback, and a safety. Each mystery player's <strong>position is shown</strong> (you always know whether you're bidding on a quarterback or a corner); only the identity is hidden. The flex slot is where value tends to fall, because it accepts three positions and lets you wait for a bargain instead of paying full freight at a locked spot.</p>
+      <p>When a player is finally revealed, he carries a single <strong>overall rating</strong> from the low 60s up to 99, built from his real career accolades — Pro Bowls, All-Pro nods, MVPs, and championships. That rating is what your roster is scored on at the end, and it's the true value you were trying to estimate from the clues while the identity was hidden.</p>
 
       <h2 id="rules">The rules, step by step</h2>
       <ol>
         <li><strong>Everyone gets the same cap.</strong> All GMs start with $200 and an identical empty roster of ten slots.</li>
-        <li><strong>Players are auctioned one at a time.</strong> The highest-rated player still useful to someone is placed on the block.</li>
-        <li><strong>Bids are blind and simultaneous.</strong> Every GM who can use the player submits one secret bid, then all bids are revealed together.</li>
-        <li><strong>Highest bid wins and pays that amount.</strong> Ties go to the GM with more remaining cap. The player fills one of the winner's open slots — a dedicated position slot first, otherwise the flex.</li>
-        <li><strong>You must be able to finish your roster.</strong> The game never lets you bid so much that you couldn't afford at least $1 for every remaining empty slot, so you can always complete a legal team.</li>
-        <li><strong>The draft ends when rosters are full</strong> (or no remaining player fits anyone's open slots). Every roster is then scored by total overall rating.</li>
-        <li><strong>Highest total rating wins.</strong> If two franchises tie on rating, the one with more leftover cap wins the tiebreak.</li>
+        <li><strong>Players are auctioned one at a time as mysteries.</strong> You see the position and a few trivia clues — never the name or rating — until after the bidding.</li>
+        <li><strong>Bids are blind and simultaneous.</strong> Every GM who can use the player submits one secret bid, then all bids and the player's identity are revealed together.</li>
+        <li><strong>Highest bid wins and pays that amount.</strong> Ties go to the GM with more remaining cap. The player fills a dedicated slot first, otherwise the flex.</li>
+        <li><strong>You can always finish your roster.</strong> The game never lets you bid so much that you couldn't keep at least $1 for every remaining empty slot.</li>
+        <li><strong>The draft ends when rosters are full.</strong> Every roster is then scored by total overall rating.</li>
+        <li><strong>Highest total rating wins.</strong> A tie is broken by whoever has more leftover cap.</li>
       </ol>
 
-      <h2 id="difficulty">Choosing GM difficulty</h2>
-      <p>The rival GMs are not picking randomly — each one runs the same valuation engine you're playing against, but with a different amount of noise and aggression layered on top. The difficulty setting changes how accurately they price players and how disciplined they are with their cap.</p>
-      <h3>Easy</h3>
-      <p>Easy GMs value players loosely, with a lot of random noise in their bids. They'll frequently over-pay for a name they like and under-value a quiet star, leaving obvious bargains on the board for you to scoop up. A forgiving place to learn how the auction flows.</p>
-      <h3>Medium</h3>
-      <p>Medium GMs value players reasonably and spread their cap sensibly across the roster, but there's still enough randomness in their bids that a sharp reader can find edges. This is the fair fight for someone who knows the game.</p>
-      <h3>Hard</h3>
-      <p>Hard GMs price players tightly, stretch appropriately for elite talent, and rarely leave a clear bargain sitting on the board. Beating them means genuinely nailing player value and timing your aggression for the moments they can't match you.</p>
-      <h3>Sharp</h3>
-      <p>Sharp GMs are the benchmark: near-perfect valuations, disciplined cap management, and a willingness to pay a small premium to lock down the players that matter most. They will punish every overpay and every slot you leave to chance. Out-drafting a room of Sharp GMs is a real achievement.</p>
+      <h2 id="difficulty">Choosing GM knowledge</h2>
+      <p>The difficulty setting is really a measure of how much football your rival GMs know — how likely they are to correctly identify a mystery player from the clues, and how disciplined their bids are. The less they know, the more deep-cut bargains slip through for you to grab; the more they know, the harder it is to hide a star from the room.</p>
+      <h3>Casual</h3>
+      <p>Casual GMs only recognise the true household names. Deep cuts and cleverly-clued veterans sail right past them, so a fan who knows their football can steal bargains all draft long. A forgiving place to learn.</p>
+      <h3>Fan</h3>
+      <p>Fan GMs recognise most well-known players but still miss the deeper cuts, and their bids carry enough noise that a sharp reader can find edges. The fair fight for someone who follows the league.</p>
+      <h3>Diehard</h3>
+      <p>Diehard GMs crack most clue cards, price players tightly, and rarely let an obvious bargain sit. Beating them means genuinely knowing the middle and back of the player pool, not just the stars.</p>
+      <h3>Historian</h3>
+      <p>Historian GMs recognise nearly everyone, from all-time legends to obscure role players, and bid with real discipline. Hiding a player from them is almost impossible — you win by valuation and nerve, not by out-trivia-ing the room.</p>
 
       <h2 id="strategy">Strategy: how to win</h2>
-      <h3>Value tiers, not names</h3>
-      <p>Great GMs think in tiers, not individual players. If three receivers are rated within a couple of points of one another, there is no reason to pay a premium for the first one off the board — let a rival spend big, then take the near-identical option a tier down for far less. Knowing where the real drop-offs are between tiers is most of the game.</p>
+      <h3>Hunt the deep cuts</h3>
+      <p>The bargains are players who are genuinely good but not famous — the ones whose clue cards the weaker GMs won't crack. If you can identify a quiet star, you can win him for a fraction of his rating because nobody else at the table knows to bid.</p>
+      <h3>Don't overpay for the obvious</h3>
+      <p>When the clues point unmistakably at a legend, everyone sees it, and the bidding will run to his true value. There's no edge there — pay up only if you truly need the slot, and look to make your money on the mysteries instead.</p>
+      <h3>Bid one dollar more than you think they will</h3>
+      <p>Against a player you've identified, the winning bid is exactly one more than the highest rival who also identified him. Read the room: how famous are these clues, how much cap do your rivals have, and how badly do they need this position? Then bid to beat them by the smallest margin that still wins.</p>
       <h3>Budget for the endgame</h3>
-      <p>The most common way to lose is to run out of usable cap with slots still to fill, forcing you to roster whoever is left for a dollar. Always keep enough powder dry to field a complete, respectable team. Depth across ten slots beats one superstar surrounded by minimum-bid filler almost every time.</p>
-      <h3>Read the room's cap</h3>
-      <p>Every rival's remaining cap and open slots are shown to you. That is public information you should be constantly using: a GM with no cap left can't outbid you, and a GM who still needs three positions with $40 left is about to get squeezed. Nominate and bid with those pressures in mind.</p>
-      <h3>Exploit the flex</h3>
-      <p>Because the flex slot accepts three positions, it is the easiest place to capture value. Rather than paying up for your second running back, you can let the board come to you and drop whichever of a runner, receiver, or tight end falls furthest below its rating into the flex.</p>
-      <blockquote>The winner of a budget draft is rarely the GM with the best single player. It's the GM who spent efficiently across the whole roster while everyone else was busy overpaying at the top.</blockquote>
+      <p>The most common way to lose is to run out of usable cap with slots still to fill, forcing you to roster whoever's left for a dollar. Keep enough powder dry to field a full, respectable team — depth across ten slots beats one superstar surrounded by filler.</p>
+      <blockquote>The winner isn't the GM with the best single player. It's the GM who knew which mysteries were worth chasing, and read exactly how much the room would pay for each one.</blockquote>
 
       <h2 id="how-ai-works">How the AI general managers decide</h2>
-      <p>Each AI GM values every player from the same rating you see, converted into a market price on a curve where elite players cost exponentially more than average ones. On each auction, a GM first checks whether the player fills one of its open slots — if not, it passes outright. If the player is useful, the GM works out a target bid from three things: its <em>fair share</em> of cap per remaining slot, how far above baseline the player's rating sits (it will stretch well past fair share for a genuine star, and well below it for a role player), and a personality factor that makes some GMs naturally more aggressive than others. Difficulty then adds or removes random noise around that target, and the Sharp tier layers on a small premium to secure the players it wants most.</p>
-      <p>Crucially, every GM caps its bid so that it can always afford at least a dollar for each of its other empty slots — the same discipline the game enforces on you. That is why the AI rarely blows itself up early, and why beating the harder tiers comes down to reading which players they'll fight for and which they'll let slide, then bidding one dollar more than they will at exactly the right moment.</p>
+      <p>Each AI GM plays the same puzzle you do. When a mystery player comes up, the GM first rolls to see whether it <em>recognises</em> him — a chance driven by how famous the player is and how much football that difficulty tier knows. Famous players are identified by almost everyone; obscure ones only by the sharpest GMs. If a GM recognises the player, it bids toward his true value, stretched for quality and scaled by its own cap and roster needs. If it <em>doesn't</em> recognise him, it can only judge the surface of the clue card, so it bids cautiously and largely blind to how good he really is — which is exactly why a player you know but the room doesn't can be stolen so cheaply.</p>
+      <p>Every GM also caps its bid so it can always keep a dollar for each remaining slot, the same discipline the game enforces on you. On the reveal you'll see not just who bid what, but which GMs actually recognised the player — the clearest window into whether a bargain was there to be had.</p>
 
       <h2 id="faq">Frequently asked questions</h2>
       <div class="faq">
-        <details><summary>Is this NFL Budget Draft game really free?</summary><p>Yes. The complete single-player draft runs free in your browser with no account, no download, and no in-game purchases. The site is supported by lightweight advertising, explained in full on the <a href="../privacy.html">privacy policy</a> page.</p></details>
-        <details><summary>Do I need to follow the NFL closely to play?</summary><p>Deep knowledge is a real advantage — knowing which names are underrated is how you find bargains — but the overall ratings and accolades are shown on every player card, so a casual fan can absolutely play and improve.</p></details>
-        <details><summary>Is this the same as fantasy football?</summary><p>It's related but distinct. Instead of drafting in turn order, every GM competes for every player under a shared salary cap in a blind auction, which puts the focus squarely on valuation and bidding rather than draft position.</p></details>
+        <details><summary>Is this NFL Budget Draft game really free?</summary><p>Yes. The complete single-player game runs free in your browser with no account, no download, and no in-game purchases. The site is supported by lightweight advertising, explained in full on the <a href="../privacy.html">privacy policy</a> page.</p></details>
+        <details><summary>Do I need to know NFL history to play?</summary><p>The more football you know, the bigger your edge — recognising players from clues is the whole skill. But every clue card shows the player's position and accolade-based hints, and the player is revealed after each auction, so you'll learn as you go.</p></details>
+        <details><summary>Why can't I see who I'm bidding on?</summary><p>That's the point of the game. The player is a mystery revealed only through trivia clues; identifying him from the hints — and judging whether your opponents can too — is how you find bargains and avoid overpaying.</p></details>
         <details><summary>How is the winner decided?</summary><p>When all rosters are full, each is scored by adding up the overall rating of every player on it. The highest total wins; a tie is broken by whoever has more leftover cap.</p></details>
         <details><summary>Can I play on my phone?</summary><p>Yes. The board is responsive with large tap targets for bidding, and works on modern phones, tablets, and desktops.</p></details>
-        <details><summary>What's the difference between this and the full version?</summary><p>This page is a streamlined, self-contained single-player auction. The <a href="https://budgetnfldraft.fothergill.com/" target="_blank" rel="noopener noreferrer">full version</a> adds online multiplayer, a much larger player pool, head coaches, clue cards, and a play-by-play game simulator that actually plays your roster out on the field.</p></details>
+        <details><summary>What's the difference between this and the full version?</summary><p>This page is a streamlined, self-contained single-player game. The <a href="https://budgetnfldraft.fothergill.com/" target="_blank" rel="noopener noreferrer">full version</a> adds online multiplayer, a much larger player pool, head coaches, richer clue cards, and a play-by-play game simulator that actually plays your roster out on the field.</p></details>
       </div>
 
       <div class="cta-row">
@@ -302,33 +315,48 @@
 document.getElementById('year').textContent = new Date().getFullYear();
 
 /* =====================================================================
-   NFL BUDGET DRAFT — OFFLINE SINGLE-PLAYER AUCTION ENGINE
+   NFL BUDGET DRAFT — OFFLINE TRIVIA-AUCTION ENGINE
    ---------------------------------------------------------------------
    This whole game runs client-side. There is no server round-trip: the
-   player pool, the AI general managers, the blind-bid auction, and the
-   final scoring all live in this one file. The design mirrors the core
-   loop of the full multiplayer game (a shared salary cap + a blind-bid
-   auction) in a simplified, self-contained form.
+   player pool, the trivia-clue generator, the AI general managers, the
+   blind-bid auction, and the final scoring all live in this one file.
+
+   THE CORE IDEA
+   -------------
+   NFL Budget Draft is a TRIVIA + HIDDEN-INFORMATION game, not a plain
+   auction. Every player is put on the block as a MYSTERY: you see only
+   the position and a short ladder of trivia clues, never the name or
+   rating. You must work out who he is (or at least how good he is) from
+   the clues, then bid BLIND. Your edge comes from ball knowledge —
+   recognising a player the other GMs can't — combined with reading how
+   much your opponents will bid (they're guessing too). Recognise a
+   quiet star the room misses and you steal him cheap; misjudge a vague
+   clue card for a legend and you let a bargain walk.
 
    HIGH-LEVEL FLOW
    ---------------
-   1. SETUP   — the human picks a franchise name, a number of AI GMs,
-                and a difficulty. Everyone is seeded with the same cap
-                (BUDGET) and an identical empty roster (SLOTS).
-   2. NOMINATE — the highest-rated player who can still fill *someone's*
-                open slot is placed "on the block". If no remaining
-                player fits anyone, the draft ends.
-   3. BID     — every GM that can use the player submits ONE blind bid
-                simultaneously. The human bids through the UI; each AI
-                bids via computeAIBid(). Bids are capped so a GM can
-                always afford the rest of its roster (see maxBid()).
-   4. RESOLVE — the highest bid wins and pays exactly that amount. Ties
-                break toward the GM with more cap left, then at random.
-                The player is placed into a dedicated slot if one is
-                open, otherwise the flex slot.
-   5. REPEAT  — go back to NOMINATE until all rosters are full.
-   6. SCORE   — each roster's total overall rating is summed; highest
-                total wins, leftover cap breaks ties.
+   1. SETUP     — human picks franchise name, number of AI GMs, and how
+                  much football they know (difficulty). Everyone gets the
+                  same cap (BUDGET) and the same empty roster (SLOTS).
+   2. NOMINATE  — the best still-usable player is put on the block and a
+                  fame-adaptive clue card is generated (buildClues). His
+                  identity and rating are HIDDEN.
+   3. BID       — every GM that can use the player submits ONE blind bid.
+                  The human bids via the UI; each AI first rolls to see
+                  whether it RECOGNISES the player (recognizeProb), then
+                  bids his true value if recognised, or a cautious, mostly
+                  quality-blind guess if not (computeAIBid).
+   4. RESOLVE   — highest bid wins and pays it; ties break toward more cap
+                  left. The player is revealed and slotted (dedicated slot
+                  first, else flex). The reveal shows who recognised him.
+   5. REPEAT    — back to NOMINATE until all rosters are full.
+   6. SCORE     — each roster's total overall rating is summed; highest
+                  wins, leftover cap breaks ties.
+
+   The clue engine (classifyHintText / hintFame / selectTieredClues /
+   derivedClues / buildClues) is ported from the full multiplayer game so
+   the puzzles behave the same: legends have their giveaway facts stripped
+   (you must RECOGNISE them), while lesser names get a pinpoint clue.
    ===================================================================== */
 
 (function(){
@@ -337,10 +365,11 @@ document.getElementById('year').textContent = new Date().getFullYear();
   /* ---- Constants ---------------------------------------------------- */
   var BUDGET = 200;               // starting salary cap for every GM
   var MIN_RESERVE = 1;            // dollars each still-empty slot must keep
+  var CLUES_PER_CARD = 3;         // trivia clues shown per mystery
 
   // The ten roster slots. `pos` lists which player positions may fill the
-  // slot. A slot with more than one position (the FLEX) is filled only
-  // after dedicated slots, so value naturally falls into it.
+  // slot. The FLEX (more than one position) is filled only after dedicated
+  // slots, so value naturally falls into it.
   var SLOTS = [
     { key:'QB',   label:'Quarterback',      pos:['QB'] },
     { key:'RB',   label:'Running Back',     pos:['RB'] },
@@ -353,178 +382,260 @@ document.getElementById('year').textContent = new Date().getFullYear();
     { key:'CB',   label:'Cornerback',       pos:['CB'] },
     { key:'S',    label:'Safety',           pos:['S'] }
   ];
-
-  // Colours + labels for each position, used purely for display.
   var POS_META = {
-    QB:{c:'#3182ce'}, RB:{c:'#38a169'}, WR:{c:'#dd6b20'}, TE:{c:'#d69e2e'},
-    DL:{c:'#e53e3e'}, LB:{c:'#805ad5'}, CB:{c:'#319795'}, S:{c:'#d53f8c'}
+    QB:{c:'#3182ce',n:'Quarterback'}, RB:{c:'#38a169',n:'Running Back'},
+    WR:{c:'#dd6b20',n:'Wide Receiver'}, TE:{c:'#d69e2e',n:'Tight End'},
+    DL:{c:'#e53e3e',n:'Defensive Line'}, LB:{c:'#805ad5',n:'Linebacker'},
+    CB:{c:'#319795',n:'Cornerback'}, S:{c:'#d53f8c',n:'Safety'}
   };
-
-  // Names given to the AI general managers (a subset is used per game).
   var GM_NAMES = ['Dynasty Dan','Moneyball Mia','Cap-Space Casey','Value Vic','Blitz Barry','Sharp Sharon','Trader Tom'];
 
   /* ---- Player pool -------------------------------------------------- */
-  // Curated from real career accolades. Each player: n=name, p=position,
-  // t=team, o=overall rating (63-99, normalised within position),
-  // pb=Pro Bowls, ap=All-Pros, mvp=MVPs, chp=championships, y=years.
+  // Curated from real career accolades. n=name, p=position, o=overall
+  // (63-99, per-position normalised), tm=team codes, pb/ap/mvp=Pro Bowls/
+  // All-Pros/MVPs, chp=championships, ca=title-game appearances,
+  // cm=championship MVPs, y=years, ts=trivia hints (text_stats).
   var POOL = [
-{n:"Rod Woodson",p:"CB",t:"PIT",o:99,pb:11,ap:6,mvp:0,chp:1,y:17},
-{n:"Reggie White",p:"DL",t:"PHI",o:99,pb:13,ap:8,mvp:0,chp:1,y:15},
-{n:"Lawrence Taylor",p:"LB",t:"NYG",o:99,pb:10,ap:8,mvp:1,chp:2,y:13},
-{n:"Tom Brady",p:"QB",t:"NE",o:99,pb:15,ap:3,mvp:3,chp:7,y:23},
-{n:"Jim Brown",p:"RB",t:"CLE",o:99,pb:9,ap:8,mvp:3,chp:1,y:9},
-{n:"Ronnie Lott",p:"S",t:"SF",o:99,pb:10,ap:8,mvp:0,chp:4,y:14},
-{n:"Travis Kelce",p:"TE",t:"KC",o:99,pb:10,ap:4,mvp:0,chp:3,y:13},
-{n:"Jerry Rice",p:"WR",t:"SF",o:99,pb:13,ap:10,mvp:0,chp:3,y:20},
-{n:"Ray Lewis",p:"LB",t:"BAL",o:98,pb:13,ap:7,mvp:0,chp:2,y:17},
-{n:"Deion Sanders",p:"CB",t:"ATL",o:97,pb:8,ap:6,mvp:0,chp:2,y:14},
-{n:"Tony Gonzalez",p:"TE",t:"KC",o:95,pb:14,ap:6,mvp:0,chp:0,y:17},
-{n:"Aaron Donald",p:"DL",t:"STL",o:94,pb:10,ap:8,mvp:0,chp:1,y:10},
-{n:"Joe Greene",p:"DL",t:"PIT",o:93,pb:10,ap:4,mvp:0,chp:4,y:13},
-{n:"Bruce Smith",p:"DL",t:"BUF",o:93,pb:11,ap:8,mvp:0,chp:0,y:19},
-{n:"Rob Gronkowski",p:"TE",t:"NE",o:93,pb:5,ap:4,mvp:0,chp:4,y:11},
-{n:"Peyton Manning",p:"QB",t:"IND",o:92,pb:14,ap:7,mvp:5,chp:2,y:18},
-{n:"Alan Page",p:"DL",t:"MIN",o:91,pb:9,ap:6,mvp:1,chp:0,y:15},
-{n:"Jack Lambert",p:"LB",t:"PIT",o:91,pb:9,ap:6,mvp:0,chp:4,y:11},
-{n:"Shannon Sharpe",p:"TE",t:"DEN",o:91,pb:8,ap:4,mvp:0,chp:3,y:14},
-{n:"Mel Blount",p:"CB",t:"PIT",o:88,pb:5,ap:2,mvp:0,chp:4,y:14},
-{n:"Emmitt Smith",p:"RB",t:"DAL",o:88,pb:8,ap:4,mvp:1,chp:3,y:15},
-{n:"Walter Payton",p:"RB",t:"CHI",o:88,pb:9,ap:5,mvp:2,chp:1,y:13},
-{n:"Champ Bailey",p:"CB",t:"WAS",o:84,pb:12,ap:3,mvp:0,chp:0,y:15},
-{n:"Mike Ditka",p:"TE",t:"CHI",o:84,pb:5,ap:5,mvp:0,chp:2,y:12},
-{n:"Charles Woodson",p:"CB",t:"OAK",o:83,pb:9,ap:3,mvp:0,chp:1,y:18},
-{n:"Darrelle Revis",p:"CB",t:"NYJ",o:83,pb:7,ap:4,mvp:0,chp:1,y:11},
-{n:"Patrick Mahomes",p:"QB",t:"KC",o:83,pb:7,ap:2,mvp:3,chp:3,y:9},
-{n:"Ty Law",p:"CB",t:"NE",o:82,pb:5,ap:2,mvp:0,chp:3,y:15},
-{n:"Mike Singletary",p:"LB",t:"CHI",o:82,pb:10,ap:7,mvp:0,chp:1,y:12},
-{n:"Aaron Rodgers",p:"QB",t:"GB",o:82,pb:10,ap:4,mvp:4,chp:1,y:20},
-{n:"Joe Montana",p:"QB",t:"SF",o:82,pb:8,ap:3,mvp:2,chp:4,y:16},
-{n:"Barry Sanders",p:"RB",t:"DET",o:82,pb:10,ap:6,mvp:1,chp:0,y:10},
-{n:"Johnny Unitas",p:"QB",t:"BAL",o:81,pb:10,ap:5,mvp:3,chp:3,y:18},
-{n:"Junior Seau",p:"LB",t:"SD",o:80,pb:12,ap:6,mvp:0,chp:0,y:20},
-{n:"Troy Polamalu",p:"S",t:"PIT",o:80,pb:8,ap:4,mvp:0,chp:2,y:12},
-{n:"Bobby Wagner",p:"LB",t:"SEA",o:80,pb:10,ap:6,mvp:0,chp:1,y:14},
-{n:"Jalen Ramsey",p:"CB",t:"JAX",o:79,pb:7,ap:3,mvp:0,chp:1,y:10},
-{n:"Ed Reed",p:"S",t:"BAL",o:79,pb:9,ap:5,mvp:0,chp:1,y:12},
-{n:"Steve Young",p:"QB",t:"SF",o:77,pb:7,ap:3,mvp:2,chp:3,y:15},
-{n:"Brett Favre",p:"QB",t:"GB",o:77,pb:11,ap:3,mvp:3,chp:1,y:20},
-{n:"Terrell Davis",p:"RB",t:"DEN",o:77,pb:3,ap:3,mvp:1,chp:2,y:7},
-{n:"Richard Sherman",p:"CB",t:"SEA",o:76,pb:5,ap:3,mvp:0,chp:1,y:11},
-{n:"Von Miller",p:"LB",t:"DEN",o:76,pb:8,ap:3,mvp:0,chp:2,y:14},
-{n:"Marshall Faulk",p:"RB",t:"IND",o:76,pb:7,ap:3,mvp:1,chp:1,y:12},
-{n:"Adrian Peterson",p:"RB",t:"MIN",o:75,pb:7,ap:4,mvp:1,chp:0,y:15},
-{n:"Lance Alworth",p:"WR",t:"SD",o:75,pb:7,ap:6,mvp:0,chp:1,y:11},
-{n:"DeMarcus Ware",p:"DL",t:"DAL",o:74,pb:9,ap:4,mvp:0,chp:1,y:12},
-{n:"Dave Casper",p:"TE",t:"OAK",o:74,pb:5,ap:4,mvp:0,chp:1,y:11},
-{n:"Brian Dawkins",p:"S",t:"PHI",o:73,pb:9,ap:4,mvp:0,chp:0,y:16},
-{n:"Steve Atwater",p:"S",t:"DEN",o:73,pb:8,ap:2,mvp:0,chp:2,y:11},
-{n:"Asante Samuel",p:"CB",t:"NE",o:72,pb:4,ap:1,mvp:0,chp:2,y:11},
-{n:"John Elway",p:"QB",t:"DEN",o:72,pb:9,ap:1,mvp:1,chp:2,y:16},
-{n:"Earl Thomas",p:"S",t:"SEA",o:72,pb:7,ap:3,mvp:0,chp:1,y:10},
-{n:"Antonio Gates",p:"TE",t:"SD",o:72,pb:8,ap:3,mvp:0,chp:0,y:16},
-{n:"Tyreek Hill",p:"WR",t:"KC",o:72,pb:8,ap:3,mvp:0,chp:1,y:10},
-{n:"Antonio Brown",p:"WR",t:"PIT",o:72,pb:7,ap:4,mvp:0,chp:1,y:12},
-{n:"Michael Strahan",p:"DL",t:"NYG",o:71,pb:7,ap:4,mvp:0,chp:1,y:15},
-{n:"Dick Butkus",p:"LB",t:"CHI",o:71,pb:8,ap:6,mvp:0,chp:0,y:9},
-{n:"LaDainian Tomlinson",p:"RB",t:"SD",o:71,pb:5,ap:3,mvp:1,chp:0,y:11},
-{n:"Marvin Harrison",p:"WR",t:"IND",o:71,pb:8,ap:3,mvp:0,chp:1,y:13},
-{n:"Deacon Jones",p:"DL",t:"LA",o:70,pb:8,ap:5,mvp:0,chp:0,y:14},
-{n:"Warren Sapp",p:"DL",t:"TB",o:70,pb:7,ap:4,mvp:0,chp:1,y:13},
-{n:"Kurt Warner",p:"QB",t:"STL",o:70,pb:4,ap:2,mvp:2,chp:1,y:12},
-{n:"Earl Campbell",p:"RB",t:"HOU",o:70,pb:5,ap:3,mvp:1,chp:0,y:8},
-{n:"Eric Dickerson",p:"RB",t:"LA",o:70,pb:6,ap:5,mvp:0,chp:0,y:11},
-{n:"John Lynch",p:"S",t:"TB",o:70,pb:9,ap:2,mvp:0,chp:1,y:15},
-{n:"Terrell Owens",p:"WR",t:"SF",o:70,pb:6,ap:5,mvp:0,chp:0,y:15},
-{n:"Randy Moss",p:"WR",t:"MIN",o:69,pb:6,ap:4,mvp:0,chp:0,y:14},
-{n:"Michael Irvin",p:"WR",t:"DAL",o:69,pb:5,ap:1,mvp:0,chp:3,y:12},
-{n:"Luke Kuechly",p:"LB",t:"CAR",o:68,pb:7,ap:5,mvp:0,chp:0,y:8},
-{n:"Drew Brees",p:"QB",t:"NO",o:68,pb:13,ap:1,mvp:0,chp:1,y:20},
-{n:"George Kittle",p:"TE",t:"SF",o:68,pb:6,ap:2,mvp:0,chp:0,y:9},
-{n:"DeAndre Hopkins",p:"WR",t:"HOU",o:68,pb:5,ap:3,mvp:0,chp:1,y:13},
-{n:"Larry Fitzgerald",p:"WR",t:"ARI",o:68,pb:11,ap:1,mvp:0,chp:0,y:17},
-{n:"Patrick Willis",p:"LB",t:"SF",o:67,pb:7,ap:5,mvp:0,chp:0,y:8},
-{n:"Dan Marino",p:"QB",t:"MIA",o:67,pb:9,ap:3,mvp:1,chp:0,y:17},
-{n:"Kellen Winslow Sr",p:"TE",t:"SD",o:67,pb:5,ap:3,mvp:0,chp:0,y:9},
-{n:"Julius Peppers",p:"DL",t:"CAR",o:66,pb:9,ap:3,mvp:0,chp:0,y:17},
-{n:"Brian Urlacher",p:"LB",t:"CHI",o:66,pb:8,ap:4,mvp:0,chp:0,y:13},
-{n:"Lamar Jackson",p:"QB",t:"BAL",o:66,pb:3,ap:2,mvp:2,chp:0,y:8},
-{n:"Rodney Harrison",p:"S",t:"NE",o:66,pb:2,ap:2,mvp:0,chp:2,y:15},
-{n:"Torry Holt",p:"WR",t:"STL",o:66,pb:7,ap:1,mvp:0,chp:1,y:11},
-{n:"Calvin Johnson",p:"WR",t:"DET",o:66,pb:6,ap:3,mvp:0,chp:0,y:9},
-{n:"Davante Adams",p:"WR",t:"GB",o:66,pb:6,ap:3,mvp:0,chp:0,y:12},
-{n:"J.J. Watt",p:"DL",t:"HOU",o:65,pb:5,ap:5,mvp:0,chp:0,y:12},
-{n:"Marshawn Lynch",p:"RB",t:"SEA",o:65,pb:5,ap:1,mvp:0,chp:1,y:12},
-{n:"Julio Jones",p:"WR",t:"ATL",o:65,pb:7,ap:2,mvp:0,chp:0,y:13},
-{n:"Cris Carter",p:"WR",t:"MIN",o:65,pb:8,ap:2,mvp:0,chp:0,y:16},
-{n:"Reggie Wayne",p:"WR",t:"IND",o:65,pb:6,ap:1,mvp:0,chp:1,y:14},
-{n:"Cooper Kupp",p:"WR",t:"LA",o:65,pb:3,ap:1,mvp:0,chp:1,y:9},
-{n:"T.J. Watt",p:"LB",t:"PIT",o:64,pb:7,ap:4,mvp:0,chp:0,y:9},
-{n:"Harry Carson",p:"LB",t:"NYG",o:64,pb:9,ap:2,mvp:0,chp:1,y:13},
-{n:"Eli Manning",p:"QB",t:"NYG",o:64,pb:4,ap:0,mvp:0,chp:2,y:16},
-{n:"Shaun Alexander",p:"RB",t:"SEA",o:64,pb:3,ap:1,mvp:1,chp:0,y:9},
-{n:"Priest Holmes",p:"RB",t:"KC",o:64,pb:3,ap:2,mvp:0,chp:1,y:10},
-{n:"Tony Dorsett",p:"RB",t:"DAL",o:64,pb:4,ap:1,mvp:0,chp:1,y:12},
-{n:"Tyrann Mathieu",p:"S",t:"ARI",o:64,pb:3,ap:2,mvp:0,chp:1,y:13},
-{n:"Howie Long",p:"DL",t:"OAK",o:63,pb:8,ap:2,mvp:0,chp:1,y:13},
-{n:"Willie Lanier",p:"LB",t:"KC",o:63,pb:8,ap:2,mvp:0,chp:1,y:11},
-{n:"Jalen Hurts",p:"QB",t:"PHI",o:63,pb:3,ap:1,mvp:0,chp:1,y:6},
-{n:"Derrick Henry",p:"RB",t:"TEN",o:63,pb:5,ap:2,mvp:0,chp:0,y:10},
-{n:"Budda Baker",p:"S",t:"ARI",o:63,pb:6,ap:2,mvp:0,chp:0,y:9},
-{n:"Minkah Fitzpatrick",p:"S",t:"PIT",o:63,pb:4,ap:3,mvp:0,chp:0,y:8},
-{n:"Jeremy Shockey",p:"TE",t:"NYG",o:63,pb:4,ap:0,mvp:0,chp:2,y:10},
-{n:"Ja'Marr Chase",p:"WR",t:"CIN",o:63,pb:4,ap:2,mvp:0,chp:0,y:5},
-{n:"Mike Evans",p:"WR",t:"TB",o:63,pb:5,ap:1,mvp:0,chp:1,y:12},
-{n:"Kellen Moore",p:"TE",t:"DAL",o:63,pb:3,ap:1,mvp:0,chp:0,y:8},
-{n:"Zach Ertz",p:"TE",t:"PHI",o:64,pb:3,ap:0,mvp:0,chp:1,y:12},
-{n:"Mark Andrews",p:"TE",t:"BAL",o:65,pb:3,ap:1,mvp:0,chp:0,y:7},
-{n:"Christian McCaffrey",p:"RB",t:"CAR",o:66,pb:3,ap:2,mvp:0,chp:0,y:8},
-{n:"Saquon Barkley",p:"RB",t:"NYG",o:65,pb:3,ap:1,mvp:0,chp:1,y:7},
-{n:"Micah Parsons",p:"LB",t:"DAL",o:65,pb:3,ap:2,mvp:0,chp:0,y:4},
-{n:"Nick Bosa",p:"DL",t:"SF",o:64,pb:3,ap:1,mvp:0,chp:0,y:6},
-{n:"Myles Garrett",p:"DL",t:"CLE",o:67,pb:4,ap:2,mvp:0,chp:0,y:8},
-{n:"Sauce Gardner",p:"CB",t:"NYJ",o:70,pb:2,ap:2,mvp:0,chp:0,y:3},
-{n:"Patrick Surtain II",p:"CB",t:"DEN",o:68,pb:3,ap:2,mvp:0,chp:0,y:5},
-{n:"Stephon Gilmore",p:"CB",t:"BUF",o:71,pb:5,ap:2,mvp:0,chp:1,y:14},
-{n:"Ronde Barber",p:"CB",t:"TB",o:75,pb:5,ap:3,mvp:0,chp:1,y:16},
-{n:"Aeneas Williams",p:"CB",t:"ARI",o:76,pb:8,ap:3,mvp:0,chp:0,y:14},
-{n:"Mike Haynes",p:"CB",t:"NE",o:79,pb:9,ap:2,mvp:0,chp:1,y:14},
-{n:"Larry Allen",p:"OL",t:"DAL",o:88,pb:11,ap:7,mvp:0,chp:1,y:14},
-{n:"Bruce Matthews",p:"OL",t:"HOU",o:93,pb:14,ap:7,mvp:0,chp:0,y:19},
-{n:"Anthony Munoz",p:"OL",t:"CIN",o:99,pb:11,ap:9,mvp:0,chp:0,y:13},
-{n:"Trent Williams",p:"OL",t:"WAS",o:82,pb:11,ap:3,mvp:0,chp:0,y:14},
-{n:"Willie Roaf",p:"OL",t:"NO",o:80,pb:11,ap:4,mvp:0,chp:0,y:13},
-{n:"Andre Johnson",p:"WR",t:"HOU",o:65,pb:7,ap:2,mvp:0,chp:0,y:14}
+{n:"Tom Brady",p:"QB",o:99,tm:["NE","TB"],pb:15,ap:3,mvp:3,chp:7,ca:10,cm:5,y:23,ts:["Played college football at Michigan","Drafted in the 6th round","Former Big Ten quarterback","Played for AFC and NFC teams","Started career as backup quarterback","Not selected in first 100 picks","Drafted by an AFC East team","Did not start immediately as a rookie","Played in cold-weather home games for most of his career"]},
+{n:"Jim Brown",p:"RB",o:99,tm:["CLE"],pb:9,ap:8,mvp:3,chp:1,ca:1,cm:0,y:9,ts:["Was a star lacrosse player at Syracuse","Retired at the peak of his career to pursue acting"]},
+{n:"Jerry Rice",p:"WR",o:99,tm:["SF","OAK","SEA"],pb:13,ap:10,mvp:0,chp:3,ca:4,cm:1,y:20,ts:["Played college football at a small school","Played for AFC and NFC teams","Drafted outside the top 10","Caught passes from Hall of Fame quarterbacks","Known for durability","Came from a non-Power Five conference","Played in a West Coast style offense","Spent most of his prime with one franchise","Played home games in both California and the Pacific Northwest"]},
+{n:"Travis Kelce",p:"TE",o:99,tm:["KC"],pb:10,ap:4,mvp:0,chp:3,ca:5,cm:0,y:13,ts:["Third-round draft pick","Played college football in Ohio","Tight end with multiple 1000-yard seasons","Played with an MVP quarterback","Did not play for a traditional football powerhouse","Has a brother who also won a Super Bowl","Drafted by an AFC West team","Missed his entire rookie season due to injury","Frequently lined up in the slot and out wide"]},
+{n:"Reggie White",p:"DL",o:99,tm:["PHI","GB","CAR"],pb:13,ap:8,mvp:0,chp:1,ca:2,cm:0,y:15,ts:["Played his college football at Tennessee","Known as the Minister of Defense for his pastoral work"]},
+{n:"Lawrence Taylor",p:"LB",o:99,tm:["NYG"],pb:10,ap:8,mvp:1,chp:2,ca:2,cm:0,y:13,ts:["Played his college football at North Carolina","Famous for revolutionizing the pass rush from outside linebacker"]},
+{n:"Rod Woodson",p:"CB",o:99,tm:["PIT","SF","BAL","OAK"],pb:11,ap:6,mvp:0,chp:1,ca:2,cm:0,y:17,ts:["Played his college football at Purdue","Holds the record for career interceptions returned for touchdowns"]},
+{n:"Ronnie Lott",p:"S",o:99,tm:["SF","LA","NYJ","KC"],pb:10,ap:8,mvp:0,chp:4,ca:4,cm:0,y:14,ts:["Played his college football at USC","Once had part of a finger amputated to keep playing"]},
+{n:"Ray Lewis",p:"LB",o:98,tm:["BAL"],pb:13,ap:7,mvp:0,chp:2,ca:2,cm:1,y:17,ts:["Played his college football at Miami","Famous for the pregame Squirrel dance"]},
+{n:"Deion Sanders",p:"CB",o:96,tm:["ATL","SF","DAL","WAS","BAL"],pb:8,ap:6,mvp:0,chp:2,ca:2,cm:0,y:14,ts:["Played his college football at Florida State","Also played Major League Baseball during his football career"]},
+{n:"Tony Gonzalez",p:"TE",o:94,tm:["KC","ATL"],pb:14,ap:6,mvp:0,chp:0,ca:0,cm:0,y:17,ts:["Played college football and basketball at California","Holds the all-time records for tight end receptions and yardage"]},
+{n:"Aaron Donald",p:"DL",o:94,tm:["STL","LAR"],pb:10,ap:8,mvp:0,chp:1,ca:2,cm:0,y:10,ts:["Played his college football at Pittsburgh","Won Defensive Player of the Year three times"]},
+{n:"Rob Gronkowski",p:"TE",o:93,tm:["NE","TB"],pb:5,ap:4,mvp:0,chp:4,ca:5,cm:0,y:11,ts:["Played college football in Arizona","Second-round draft pick","Tight end known for touchdowns","Played with Tom Brady","Missed significant time with injuries","Member of a football family","Drafted by an AFC East team","Played in both cold-weather and warm-weather home stadiums","Frequently used as an in-line blocker and red-zone target"]},
+{n:"Joe Greene",p:"DL",o:93,tm:["PIT"],pb:10,ap:4,mvp:0,chp:4,ca:4,cm:0,y:13,ts:["Played his college football at North Texas","Anchored the famous Steel Curtain defense"]},
+{n:"Peyton Manning",p:"QB",o:92,tm:["IND","DEN"],pb:14,ap:7,mvp:5,chp:2,ca:4,cm:1,y:18,ts:["SEC quarterback","Drafted 1st overall","Played for AFC and NFC teams","Started as a rookie","Played home games in both dome and outdoor stadiums","Came from a football family","Known for pre-snap adjustments","Played for teams in the AFC South and AFC West","Missed an entire season due to injury before changing teams"]},
+{n:"Bruce Smith",p:"DL",o:92,tm:["BUF","WAS"],pb:11,ap:8,mvp:0,chp:0,ca:4,cm:0,y:19,ts:["Played his college football at Virginia Tech","Holds the all-time career sacks record"]},
+{n:"Shannon Sharpe",p:"TE",o:91,tm:["DEN","BAL"],pb:8,ap:4,mvp:0,chp:3,ca:3,cm:0,y:14,ts:["Played his college career at Savannah State","Has a brother who was an All Pro defensive end"]},
+{n:"Alan Page",p:"DL",o:91,tm:["MIN","CHI"],pb:9,ap:6,mvp:1,chp:0,ca:4,cm:0,y:15,ts:["Played his college football at Notre Dame","Later served as a Minnesota Supreme Court Justice"]},
+{n:"Jack Lambert",p:"LB",o:91,tm:["Steelers"],pb:9,ap:6,mvp:0,chp:4,ca:4,cm:0,y:11,ts:["Played college football at Kent State","Second-round pick","Spent his entire career with one AFC North franchise","Won Defensive Rookie of the Year","Won Defensive Player of the Year","Inducted into the Pro Football Hall of Fame","Multiple-time first-team All-Pro at middle linebacker","Famous for his missing front teeth and intimidating presence"]},
+{n:"Emmitt Smith",p:"RB",o:88,tm:["DAL","ARI"],pb:8,ap:4,mvp:1,chp:3,ca:3,cm:1,y:15,ts:["Played college ball at Florida","Holds the all-time rushing yardage record"]},
+{n:"Walter Payton",p:"RB",o:87,tm:["CHI"],pb:9,ap:5,mvp:2,chp:1,ca:1,cm:0,y:13,ts:["Played college football at Jackson State","Nicknamed Sweetness for his running style"]},
+{n:"Mel Blount",p:"CB",o:86,tm:["PIT"],pb:5,ap:2,mvp:0,chp:4,ca:4,cm:0,y:14,ts:["Played his college football at Southern University","His physical style of play prompted a rule change limiting receiver contact"]},
+{n:"Patrick Mahomes",p:"QB",o:83,tm:["KC"],pb:7,ap:2,mvp:3,chp:3,ca:5,cm:3,y:9,ts:["Played college football in Texas","Son of a professional athlete","Drafted in the top 10","Quarterback from the Big 12","Won league MVP before age 25","Known for improvisation","Sat behind a veteran quarterback as a rookie","Joined a team with an offensive-minded head coach","Played home games in an outdoor stadium in the Midwest"]},
+{n:"Mike Ditka",p:"TE",o:83,tm:["CHI","PHI","DAL"],pb:5,ap:5,mvp:0,chp:2,ca:2,cm:0,y:12,ts:["Played his college football at Pittsburgh","Later coached the team he had played his early years with to a Super Bowl"]},
+{n:"Aaron Rodgers",p:"QB",o:82,tm:["GB","NYJ"],pb:10,ap:4,mvp:4,chp:1,ca:1,cm:1,y:20,ts:["Slid to 24th overall after starting at Cal","Sat behind a future Hall of Famer for three seasons"]},
+{n:"Joe Montana",p:"QB",o:82,tm:["SF","KC"],pb:8,ap:3,mvp:2,chp:4,ca:4,cm:3,y:16,ts:["Known as Joe Cool for poise in big moments","Led a 92-yard game-winning drive in his final Super Bowl appearance"]},
+{n:"Barry Sanders",p:"RB",o:82,tm:["DET"],pb:10,ap:6,mvp:1,chp:0,ca:0,cm:0,y:10,ts:["Won the Heisman Trophy at Oklahoma State","Retired in his prime less than 1500 yards from the all-time rushing record"]},
+{n:"Mike Singletary",p:"LB",o:82,tm:["CHI"],pb:10,ap:7,mvp:0,chp:1,ca:1,cm:0,y:12,ts:["Played his college football at Baylor","Captained one of the most dominant defenses in NFL history"]},
+{n:"Champ Bailey",p:"CB",o:82,tm:["WAS","DEN"],pb:12,ap:3,mvp:0,chp:0,ca:1,cm:0,y:15,ts:["Played his college football at Georgia","Was traded for a Pro Bowl running back in 2004"]},
+{n:"Johnny Unitas",p:"QB",o:81,tm:["BAL","SD"],pb:10,ap:5,mvp:3,chp:3,ca:4,cm:0,y:18,ts:["Was cut by the team that drafted him before signing with the Colts","Quarterbacked The Greatest Game Ever Played in 1958"]},
+{n:"Charles Woodson",p:"CB",o:81,tm:["OAK","GB"],pb:9,ap:3,mvp:0,chp:1,ca:1,cm:0,y:18,ts:["Won the Heisman Trophy at Michigan as a defensive player","Won Defensive Player of the Year in 2009"]},
+{n:"Bobby Wagner",p:"LB",o:80,tm:["Seahawks","Rams","Commanders"],pb:10,ap:6,mvp:0,chp:1,ca:2,cm:0,y:14,ts:["Played college football at Utah State","Second-round pick","Multiple-time first-team All-Pro middle linebacker","Member of the NFL 2010s All-Decade Team","Played the bulk of his career with one NFC West franchise","Known for elite instincts and pre-snap recognition","Recorded over 150 tackles in multiple seasons","Considered a lock for the Pro Football Hall of Fame"]},
+{n:"Junior Seau",p:"LB",o:80,tm:["SD","MIA","NE"],pb:12,ap:6,mvp:0,chp:0,ca:2,cm:0,y:20,ts:["Played his college football at USC","Was the fifth overall pick out of college"]},
+{n:"Darrelle Revis",p:"CB",o:80,tm:["NYJ","TB","NE","KC"],pb:7,ap:4,mvp:0,chp:1,ca:1,cm:0,y:11,ts:["Played his college football at Pittsburgh","His shadow coverage areas were nicknamed an island"]},
+{n:"Troy Polamalu",p:"S",o:80,tm:["PIT"],pb:8,ap:4,mvp:0,chp:2,ca:3,cm:0,y:12,ts:["Played his college football at USC","Famous for his long hair and instinctive pre-snap jumps"]},
+{n:"Ty Law",p:"CB",o:79,tm:["NE","NYJ","KC","DEN"],pb:5,ap:2,mvp:0,chp:3,ca:3,cm:0,y:15,ts:["Played college football at Michigan","First-round pick","Spent the bulk of his career with one AFC East franchise","Inducted into the Pro Football Hall of Fame","Known for press coverage and ball-hawking ability","Career interception total over 50","Recorded a defining playoff interception in a championship-game run","Member of multiple All-Decade discussion teams","Played alongside multiple Hall of Fame teammates"]},
+{n:"Ed Reed",p:"S",o:79,tm:["BAL","HOU","NYJ"],pb:9,ap:5,mvp:0,chp:1,ca:1,cm:0,y:12,ts:["Played his college football at Miami","Holds the record for longest interception return at 108 yards"]},
+{n:"Jason Witten",p:"TE",o:78,tm:["Cowboys","Raiders"],pb:11,ap:4,mvp:0,chp:0,ca:0,cm:0,y:17,ts:["Played college football at Tennessee","Drafted in the third round","Spent the vast majority of his career with one NFC East franchise","Briefly retired before returning to play again","Known for elite blocking and football intelligence at tight end","Holds franchise records for receptions","Career receptions total over 1,200","Member of the NFL 2000s All-Decade Team","Considered a lock for the Pro Football Hall of Fame"]},
+{n:"Terrell Davis",p:"RB",o:77,tm:["Broncos"],pb:3,ap:3,mvp:1,chp:2,ca:2,cm:1,y:7,ts:["Played college football at Georgia","Drafted in the sixth round","Rushed for over 2,000 yards in a season","Inducted into the Pro Football Hall of Fame","Career was cut short by a serious knee injury","Spent his entire career with one AFC West franchise","Famously played through a migraine in a Super Bowl"]},
+{n:"Steve Young",p:"QB",o:76,tm:["TB","SF"],pb:7,ap:3,mvp:2,chp:3,ca:3,cm:1,y:15,ts:["Played college football at BYU","Started his pro career in the USFL","Sat behind a Hall of Fame quarterback for years before taking over","Known for elite mobility at the quarterback position","Left-handed thrower","Played for an AFC and an NFC franchise","Member of multiple All-Decade teams","Inducted into the Pro Football Hall of Fame","Career completion percentage over 64 percent"]},
+{n:"Brett Favre",p:"QB",o:76,tm:["ATL","GB","NYJ","MIN"],pb:11,ap:3,mvp:3,chp:1,ca:2,cm:0,y:20,ts:["Played college ball at Southern Mississippi","Started 297 consecutive regular season games"]},
+{n:"Marshall Faulk",p:"RB",o:76,tm:["IND","STL"],pb:7,ap:3,mvp:1,chp:1,ca:2,cm:0,y:12,ts:["Played college football at San Diego State","First player ever with 2000 total yards in four consecutive seasons"]},
+{n:"Von Miller",p:"LB",o:76,tm:["DEN","LAR","BUF"],pb:8,ap:3,mvp:0,chp:2,ca:2,cm:1,y:14,ts:["Played his college football at Texas A&M","Won a championship MVP after recording 2.5 sacks against an undefeated team"]},
+{n:"Jalen Ramsey",p:"CB",o:76,tm:["JAX","LAR","MIA"],pb:7,ap:3,mvp:0,chp:1,ca:1,cm:0,y:10,ts:["Played his college football at Florida State","Was the fifth overall pick in 2016"]},
+{n:"Mike Haynes",p:"CB",o:76,tm:["Patriots","Raiders"],pb:9,ap:2,mvp:0,chp:1,ca:1,cm:0,y:14,ts:["Played college football at Arizona State","Top-five overall draft pick","Won Defensive Rookie of the Year","Inducted into the Pro Football Hall of Fame","Member of the NFL 1980s All-Decade Team","Known for elite man coverage and physicality"]},
+{n:"Adrian Peterson",p:"RB",o:74,tm:["MIN","NO","ARI","WAS","DET","TEN"],pb:7,ap:4,mvp:1,chp:0,ca:0,cm:0,y:15,ts:["Big 12 running back","Top-10 draft pick","Played for both NFC and AFC teams","Known for physical running style","Had a season with over 2,000 rushing yards","Played most of his prime with one franchise","Returned from a major knee injury to lead the league in rushing","Shared backfields with multiple different quarterbacks","Played home games in both dome and outdoor stadiums"]},
+{n:"Lance Alworth",p:"WR",o:74,tm:["SD","DAL"],pb:7,ap:6,mvp:0,chp:1,ca:1,cm:0,y:11,ts:["Nicknamed Bambi for his graceful running style","First AFL player inducted into the Pro Football Hall of Fame"]},
+{n:"Richard Sherman",p:"CB",o:73,tm:["SEA","SF","TB"],pb:5,ap:3,mvp:0,chp:1,ca:2,cm:0,y:11,ts:["Played his college football at Stanford originally as a receiver","Tipped a famous pass to secure a championship trip in the NFC title game"]},
+{n:"Aeneas Williams",p:"CB",o:73,tm:["Cardinals","Rams"],pb:8,ap:3,mvp:0,chp:0,ca:1,cm:0,y:14,ts:["Played college football at Southern University","Drafted in the third round","Inducted into the Pro Football Hall of Fame","Recorded multiple pick-six interceptions","Led the NFL in interceptions in a season","Considered one of the best ball-hawking corners of his era"]},
+{n:"Brian Dawkins",p:"S",o:73,tm:["PHI","DEN"],pb:9,ap:4,mvp:0,chp:0,ca:1,cm:0,y:16,ts:["Played his college football at Clemson","Nicknamed Weapon X for his intense playing alter ego"]},
+{n:"Steve Atwater",p:"S",o:73,tm:["DEN","NYJ"],pb:8,ap:2,mvp:0,chp:2,ca:2,cm:0,y:11,ts:["Played his college football at Arkansas","Famous for a thunderous hit on Christian Okoye"]},
+{n:"Dave Casper",p:"TE",o:72,tm:["Raiders","Oilers","Vikings"],pb:5,ap:4,mvp:0,chp:1,ca:1,cm:0,y:11,ts:["Played college football at Notre Dame","Second-round pick","Inducted into the Pro Football Hall of Fame","Caught the famous 'Ghost to the Post' playoff reception","Played for an AFC West franchise during the bulk of his prime","Member of the NFL 1970s All-Decade Team"]},
+{n:"DeMarcus Ware",p:"DL",o:72,tm:["Cowboys","Broncos"],pb:9,ap:4,mvp:0,chp:1,ca:1,cm:0,y:12,ts:["Played college football at Troy","First-round pick","Multiple-time first-team All-Pro at edge rusher","Inducted into the Pro Football Hall of Fame","Led the NFL in sacks in multiple seasons","Member of the NFL 2010s All-Decade Team","Recorded over 130 career sacks"]},
+{n:"Earl Thomas",p:"S",o:72,tm:["SEA","BAL"],pb:7,ap:3,mvp:0,chp:1,ca:2,cm:0,y:10,ts:["Played his college football at Texas","Famous for his deep middle range as a free safety"]},
+{n:"John Elway",p:"QB",o:71,tm:["DEN"],pb:9,ap:1,mvp:1,chp:2,ca:5,cm:1,y:16,ts:["Refused to play for the team that drafted him first overall","Also drafted by the Yankees as an outfielder"]},
+{n:"Ronde Barber",p:"CB",o:71,tm:["Buccaneers"],pb:5,ap:3,mvp:0,chp:1,ca:1,cm:0,y:16,ts:["Played college football at Virginia","Third-round pick","Spent his entire career with one NFC South franchise","Inducted into the Pro Football Hall of Fame","Recorded a defining playoff pick-six in an NFC Championship game","Twin brother also played in the NFL","First cornerback ever with 20 sacks and 40 interceptions","Transitioned into a broadcasting career"]},
+{n:"LaDainian Tomlinson",p:"RB",o:70,tm:["SD","NYJ"],pb:5,ap:3,mvp:1,chp:0,ca:0,cm:0,y:11,ts:["Played college football in Texas","Running back drafted in top 5","Scored over 30 touchdowns in a season","Played for AFC teams only","Had over 100 rushing touchdowns","Played for a team in the AFC West","Former first-round pick from a non-blue-blood program","Known for production as both a runner and receiver","Played most of his prime with the same franchise"]},
+{n:"Thurman Thomas",p:"RB",o:70,tm:["Bills","Dolphins"],pb:5,ap:2,mvp:1,chp:0,ca:4,cm:0,y:13,ts:["Played college football at Oklahoma State","Second-round pick","Played in four consecutive Super Bowls without winning","Inducted into the Pro Football Hall of Fame","Led the NFL in yards from scrimmage in multiple consecutive seasons","Known for elite versatility as a runner and receiver","Spent the bulk of his career with one AFC East franchise"]},
+{n:"Tyreek Hill",p:"WR",o:70,tm:["KC","MIA"],pb:8,ap:3,mvp:0,chp:1,ca:3,cm:0,y:10,ts:["Nicknamed Cheetah for his sprinter background","Was a 5th round pick out of West Alabama"]},
+{n:"Antonio Brown",p:"WR",o:70,tm:["Steelers","Raiders","Patriots","Buccaneers"],pb:7,ap:4,mvp:0,chp:1,ca:1,cm:0,y:12,ts:["Played college football at Central Michigan","Drafted in the sixth round","Member of the NFL 2010s All-Decade Team","Recorded six consecutive seasons with over 100 receptions","Career ended amid multiple off-field controversies","Spent the bulk of his prime with one AFC North franchise"]},
+{n:"Antonio Gates",p:"TE",o:70,tm:["SD"],pb:8,ap:3,mvp:0,chp:0,ca:0,cm:0,y:16,ts:["Played college basketball at Kent State without playing college football","Holds the record for receiving touchdowns by a tight end"]},
+{n:"Dick Butkus",p:"LB",o:70,tm:["CHI"],pb:8,ap:6,mvp:0,chp:0,ca:0,cm:0,y:9,ts:["Played his college football at Illinois","A college award is given annually in his name to the top linebacker"]},
+{n:"John Lynch",p:"S",o:70,tm:["Buccaneers","Broncos"],pb:9,ap:2,mvp:0,chp:1,ca:1,cm:0,y:15,ts:["Played college football at Stanford","Third-round pick","Inducted into the Pro Football Hall of Fame","Known as one of the hardest hitters of his era","Played professional baseball before committing to football","Transitioned into a successful front-office career after retirement"]},
+{n:"Kurt Warner",p:"QB",o:69,tm:["Rams","Giants","Cardinals"],pb:4,ap:2,mvp:2,chp:1,ca:3,cm:1,y:12,ts:["Played college football at Northern Iowa","Went undrafted","Stocked grocery shelves before becoming a starting quarterback","Played in the Arena Football League","Led three different teams to Super Bowls in two cases","Inducted into the Pro Football Hall of Fame","Engineered the 'Greatest Show on Turf' offense","Known for elite pocket presence and quick release"]},
+{n:"Earl Campbell",p:"RB",o:69,tm:["Oilers","Saints"],pb:5,ap:3,mvp:1,chp:0,ca:0,cm:0,y:8,ts:["Played college football at Texas","Won the Heisman Trophy","First overall draft pick","Won Offensive Rookie of the Year","Inducted into the Pro Football Hall of Fame","Led the NFL in rushing yards in multiple consecutive seasons","Known for punishing physical running style","Career was relatively short due to the punishment of his style"]},
+{n:"Eric Dickerson",p:"RB",o:69,tm:["LA","IND","LAR","ATL"],pb:6,ap:5,mvp:0,chp:0,ca:0,cm:0,y:11,ts:["Played his college career at SMU","Holds the single season rushing yardage record from his second pro year"]},
+{n:"Marvin Harrison",p:"WR",o:69,tm:["IND"],pb:8,ap:3,mvp:0,chp:1,ca:1,cm:0,y:13,ts:["Played his college career at Syracuse","Set the single season receptions record in 2002"]},
+{n:"Terrell Owens",p:"WR",o:69,tm:["SF","PHI","DAL","BUF","CIN"],pb:6,ap:5,mvp:0,chp:0,ca:1,cm:0,y:15,ts:["Played his college ball at Chattanooga","Caught 20 passes in a single regular season game"]},
+{n:"Michael Strahan",p:"DL",o:69,tm:["NYG"],pb:7,ap:4,mvp:0,chp:1,ca:2,cm:0,y:15,ts:["Played his college football at Texas Southern","Set the single season sacks record in 2001"]},
+{n:"John Randle",p:"DL",o:69,tm:["Vikings","Seahawks"],pb:7,ap:6,mvp:0,chp:0,ca:0,cm:0,y:14,ts:["Played college football at Texas A&I","Went undrafted","Inducted into the Pro Football Hall of Fame","Led the NFL in sacks in a season","Known for nonstop talk and energy on the field","Recorded over 130 career sacks","Member of the NFL 1990s All-Decade Team"]},
+{n:"Chris Jones",p:"DL",o:69,tm:["Chiefs"],pb:5,ap:2,mvp:0,chp:3,ca:4,cm:0,y:10,ts:["Played college football at Mississippi State","Second-round pick","Spent his entire career with one AFC West franchise","Known for rare pass-rush ability from the interior","Recorded a 15-sack season as an interior defender","Held out and signed a record-setting interior contract"]},
+{n:"Deacon Jones",p:"DL",o:69,tm:["LA","SD","WAS"],pb:8,ap:5,mvp:0,chp:0,ca:0,cm:0,y:14,ts:["Credited with coining the term sack","Part of the famous Fearsome Foursome defensive line"]},
+{n:"Randy Moss",p:"WR",o:68,tm:["MIN","OAK","NE","TEN","SF"],pb:6,ap:4,mvp:0,chp:0,ca:2,cm:0,y:14,ts:["Played college football outside a power conference","Drafted 21st overall","Played for the Vikings, Raiders, Patriots, Titans, and 49ers","Caught passes from Tom Brady","Known for vertical speed","Had a record-breaking touchdown season","Played for teams in both cold and warm climates","Joined an already established offense as a rookie","Former first-round pick with pre-draft questions"]},
+{n:"Michael Irvin",p:"WR",o:68,tm:["Cowboys"],pb:5,ap:1,mvp:0,chp:3,ca:3,cm:0,y:12,ts:["Played college football at Miami","First-round pick","Spent his entire career with one NFC East franchise","Inducted into the Pro Football Hall of Fame","Member of one of the most famous offensive trios in NFL history","Known for elite physicality and contested catches"]},
+{n:"Warren Sapp",p:"DL",o:68,tm:["TB","OAK"],pb:7,ap:4,mvp:0,chp:1,ca:1,cm:0,y:13,ts:["Played his college football at Miami","Won Defensive Player of the Year in 1999"]},
+{n:"Darren Sharper",p:"S",o:68,tm:["Packers","Vikings","Saints"],pb:5,ap:3,mvp:0,chp:1,ca:1,cm:0,y:14,ts:["Played college football at William & Mary","Second-round pick","Tied the single-season pick-six record","Recorded over 60 career interceptions","Career legacy has been overshadowed by serious post-career legal issues","Played for at least three different franchises"]},
+{n:"Drew Brees",p:"QB",o:67,tm:["SD","NO"],pb:13,ap:1,mvp:0,chp:1,ca:1,cm:1,y:20,ts:["Played his college career at Purdue","Helped revive a franchise after Hurricane Katrina"]},
+{n:"Luke Kuechly",p:"LB",o:67,tm:["CAR"],pb:7,ap:5,mvp:0,chp:0,ca:1,cm:0,y:8,ts:["Played his college football at Boston College","Won Defensive Rookie of the Year and then DPOY in his second season"]},
+{n:"Asante Samuel",p:"CB",o:67,tm:["Patriots","Eagles","Falcons"],pb:4,ap:1,mvp:0,chp:2,ca:3,cm:0,y:11,ts:["Played college football at UCF","Drafted in the fourth round","Led the NFL in interceptions in multiple seasons","Recorded multiple pick-six interceptions in his career","Known for ball-hawking instincts"]},
+{n:"Dan Marino",p:"QB",o:66,tm:["MIA"],pb:9,ap:3,mvp:1,chp:0,ca:1,cm:0,y:17,ts:["Drafted 27th overall after five quarterbacks went before him","Held the single-season passing yards record for two decades"]},
+{n:"Lamar Jackson",p:"QB",o:66,tm:["BAL"],pb:3,ap:2,mvp:2,chp:0,ca:0,cm:0,y:8,ts:["Former Heisman Trophy-winning quarterback","Played college football in the ACC","Last pick of the first round","Known for elite rushing production at quarterback","Drafted by an AFC North franchise","Frequently criticized early in career for passing mechanics","Has multiple seasons with over 700 rushing yards","Played in offenses built heavily around quarterback mobility","Part of the same draft class as Josh Allen and Baker Mayfield"]},
+{n:"DeAndre Hopkins",p:"WR",o:66,tm:["HOU","ARI","TEN","KC"],pb:5,ap:3,mvp:0,chp:1,ca:1,cm:0,y:13,ts:["Played his college football at Clemson","Famous for elite contested catch ability and large hands"]},
+{n:"Larry Fitzgerald",p:"WR",o:66,tm:["ARI"],pb:11,ap:1,mvp:0,chp:0,ca:1,cm:0,y:17,ts:["Played his college football at Pittsburgh","Set a single postseason receiving yards record in his only championship run"]},
+{n:"Patrick Willis",p:"LB",o:66,tm:["SF"],pb:7,ap:5,mvp:0,chp:0,ca:0,cm:0,y:8,ts:["Played his college football at Ole Miss","Retired in his prime after only eight pro seasons"]},
+{n:"Brian Urlacher",p:"LB",o:66,tm:["CHI"],pb:8,ap:4,mvp:0,chp:0,ca:1,cm:0,y:13,ts:["Played his college football at New Mexico","Played safety in college before moving to middle linebacker"]},
+{n:"Rodney Harrison",p:"S",o:66,tm:["Chargers","Patriots"],pb:2,ap:2,mvp:0,chp:2,ca:3,cm:0,y:15,ts:["Played college football at Western Illinois","Drafted in the fifth round","Known as one of the most physical and fined players of his era","Recorded over 30 career sacks as a safety","Transitioned into a broadcasting career"]},
+{n:"Torry Holt",p:"WR",o:65,tm:["Rams","Jaguars"],pb:7,ap:1,mvp:0,chp:1,ca:2,cm:0,y:11,ts:["Played college football at NC State","First-round pick","Member of the 'Greatest Show on Turf' offense","Led the NFL in receiving yards in multiple seasons","Posted six consecutive seasons with over 1,300 receiving yards","Known for elite speed and route precision","Spent the bulk of his career with one NFC West franchise"]},
+{n:"Calvin Johnson",p:"WR",o:65,tm:["DET"],pb:6,ap:3,mvp:0,chp:0,ca:0,cm:0,y:9,ts:["ACC wide receiver","Top-5 draft pick","Played entire career for one NFC team","Known for size and speed combination","Had a season with nearly 2,000 receiving yards","Played home games in a dome","Frequently faced double coverage","Shared the field with a former No. 1 overall pick at quarterback","Retired while still highly productive"]},
+{n:"George Kittle",p:"TE",o:65,tm:["SF"],pb:6,ap:2,mvp:0,chp:0,ca:2,cm:0,y:9,ts:["Fifth-round tight end from the Big Ten","Played college football at a program known for developing tight ends","Drafted by an NFC West franchise","Known for elite blocking and receiving versatility","Played home games on the West Coast","Frequently produced large yards-after-catch totals","Part of a draft class that included Patrick Mahomes and Christian McCaffrey","Entered the league without major statistical college production","Known for high-energy personality and physical play style"]},
+{n:"Marshawn Lynch",p:"RB",o:64,tm:["Bills","Seahawks","Raiders"],pb:5,ap:1,mvp:0,chp:1,ca:2,cm:0,y:12,ts:["Played college football at California","First-round pick","Famous for the 'Beast Quake' playoff touchdown run","Known for elite contact balance and breaking tackles","Briefly retired before returning to the league","Played for an AFC East, an NFC West, and an AFC West franchise","Has multiple seasons with over 1,200 rushing yards","Famous for limited media interviews using a recurring phrase"]},
+{n:"Davante Adams",p:"WR",o:64,tm:["GB","LV","NYJ","LAR"],pb:6,ap:3,mvp:0,chp:0,ca:0,cm:0,y:12,ts:["Played his college football at Fresno State","Considered one of the best route runners of his generation"]},
+{n:"Julio Jones",p:"WR",o:64,tm:["Falcons","Titans","Buccaneers","Eagles"],pb:7,ap:2,mvp:0,chp:0,ca:1,cm:0,y:13,ts:["Played college football at Alabama","Top-ten overall draft pick","Led the NFL in receiving yards in multiple seasons","Spent the bulk of his career with one NFC South franchise","Known for rare combination of size and speed","Posted multiple seasons with over 1,500 receiving yards","Career declined sharply due to persistent hamstring injuries"]},
+{n:"Cris Carter",p:"WR",o:64,tm:["Eagles","Vikings","Dolphins"],pb:8,ap:2,mvp:0,chp:0,ca:0,cm:0,y:16,ts:["Played college football at Ohio State","Selected in a supplemental draft","Released early in his career by his first franchise","Spent most of his career with an NFC North franchise","Inducted into the Pro Football Hall of Fame","Known for elite hands and red-zone production","Recorded multiple seasons with over 1,000 receiving yards","Has a brother who also played in the NFL","Caught over 1,000 career passes"]},
+{n:"Reggie Wayne",p:"WR",o:64,tm:["Colts"],pb:6,ap:1,mvp:0,chp:1,ca:2,cm:0,y:14,ts:["Played college football at Miami","First-round pick","Spent his entire career with one AFC South franchise","Played alongside a future Hall of Fame quarterback for most of his career","Recorded over 1,000 receptions in his career","Recorded over 14,000 career receiving yards","Known for precise route running"]},
+{n:"Julius Peppers",p:"DL",o:64,tm:["Panthers","Bears","Packers"],pb:9,ap:3,mvp:0,chp:0,ca:1,cm:0,y:17,ts:["Played college football and basketball at North Carolina","Top-three overall draft pick","Won Defensive Rookie of the Year","Multiple-time first-team All-Pro at edge rusher","Inducted into the Pro Football Hall of Fame","Recorded over 150 career sacks","Member of the NFL 2000s All-Decade Team","Known for rare combination of size, speed, and athleticism"]},
+{n:"Tyrann Mathieu",p:"S",o:64,tm:["ARI","HOU","KC","NO"],pb:3,ap:2,mvp:0,chp:1,ca:2,cm:0,y:13,ts:["Played his college football at LSU where he was nicknamed Honey Badger","Fell to the third round of the draft after college concerns"]},
+{n:"Eli Manning",p:"QB",o:63,tm:["Giants"],pb:4,ap:0,mvp:0,chp:2,ca:2,cm:2,y:16,ts:["Played college football at Ole Miss","First overall draft pick","Refused to play for the team that drafted him and was traded","Came from a football family","Spent his entire career with one NFC East franchise","Beat an undefeated team in a Super Bowl","Known more for clutch playoff performances than regular-season dominance","Started over 200 consecutive games"]},
+{n:"Shaun Alexander",p:"RB",o:63,tm:["Seahawks","Washington"],pb:3,ap:1,mvp:1,chp:0,ca:1,cm:0,y:9,ts:["Played college football at Alabama","First-round pick","Set the single-season rushing touchdown record at the time","Led the NFL in rushing yards in his MVP season","Known for elite vision and goal-line production","Spent the bulk of his career with one NFC West franchise"]},
+{n:"Priest Holmes",p:"RB",o:63,tm:["Ravens","Chiefs"],pb:3,ap:2,mvp:0,chp:1,ca:1,cm:0,y:10,ts:["Played college football at Texas","Went undrafted","Set the single-season touchdown record at the time","Considered one of the most efficient backs of his era","Played the bulk of his career with an AFC West franchise","Known for elite receiving ability out of the backfield"]},
+{n:"Cooper Kupp",p:"WR",o:63,tm:["Rams","Seahawks"],pb:3,ap:1,mvp:0,chp:1,ca:1,cm:1,y:9,ts:["Played college football at Eastern Washington","Drafted in the third round","Won the Triple Crown of receiving in a season","Won Offensive Player of the Year","Spent the bulk of his career with one NFC West franchise","Known for elite separation, route running, and football intelligence","Has battled multiple lower-body injuries since his MVP season"]},
+{n:"Andre Johnson",p:"WR",o:63,tm:["Texans","Colts","Titans"],pb:7,ap:2,mvp:0,chp:0,ca:0,cm:0,y:14,ts:["Played college football at Miami","Top-three overall draft pick","Spent the bulk of his career with one AFC South franchise","Inducted into the Pro Football Hall of Fame","Led the NFL in receiving yards in multiple seasons","Recorded over 14,000 career receiving yards","Known for physical dominance and YAC ability","Earned All-Pro honors at the receiver position"]},
+{n:"Kellen Winslow Sr",p:"TE",o:63,tm:["SD"],pb:5,ap:3,mvp:0,chp:0,ca:0,cm:0,y:9,ts:["Played his college career at Missouri","Famous for being carried off the field after a playoff overtime game in Miami"]},
+{n:"Mark Bavaro",p:"TE",o:63,tm:["Giants","Browns","Eagles"],pb:2,ap:2,mvp:0,chp:2,ca:2,cm:0,y:9,ts:["Played college football at Notre Dame","Drafted in the fourth round","Known for physical run blocking and toughness","Famous for dragging multiple defenders during a Super Bowl run","Played the bulk of his career with one NFC East franchise"]},
+{n:"J.J. Watt",p:"DL",o:63,tm:["HOU","ARI"],pb:5,ap:5,mvp:0,chp:0,ca:0,cm:0,y:12,ts:["Played his college football at Wisconsin after transferring from Central Michigan","Won Defensive Player of the Year three times"]},
+{n:"T.J. Watt",p:"LB",o:63,tm:["Steelers"],pb:7,ap:4,mvp:0,chp:0,ca:0,cm:0,y:9,ts:["Played college football at Wisconsin","First-round pick","Won Defensive Player of the Year","Spent his entire career with one AFC North franchise","Tied the single-season sack record","Brothers also play in the NFL","Multiple-time first-team All-Pro at edge rusher","Led the NFL in sacks in multiple seasons","Recorded multiple seasons with over 15 sacks"]},
+{n:"Harry Carson",p:"LB",o:63,tm:["Giants"],pb:9,ap:2,mvp:0,chp:1,ca:1,cm:0,y:13,ts:["Played college football at South Carolina State","Drafted in the fourth round","Spent his entire career with one NFC East franchise","Inducted into the Pro Football Hall of Fame","Credited with popularizing the Gatorade shower","Known for elite run defense and leadership"]},
+{n:"Stephon Gilmore",p:"CB",o:63,tm:["Bills","Patriots","Panthers","Colts","Cowboys","Vikings"],pb:5,ap:2,mvp:0,chp:1,ca:2,cm:0,y:14,ts:["Former first-round pick out of South Carolina","Won Defensive Player of the Year earlier in his career","Won a Super Bowl with the Patriots","Played for the Bills, Patriots, Panthers, Colts, Cowboys, and Vikings","Considered a former All-Pro in decline","Plays outside boundary corner"]},
+{n:"Budda Baker",p:"S",o:63,tm:["Cardinals"],pb:6,ap:2,mvp:0,chp:0,ca:0,cm:0,y:9,ts:["Played college football at Washington","Second-round pick","Spent his entire career with one NFC West franchise","Known for elite range, speed, and tackling despite undersized frame","Recorded over 150 tackles in multiple seasons","Considered one of the best run-defending safeties in the league"]}
   ];
-  // NOTE: a few offensive linemen (OL) are included so the pool has depth,
-  // but the simplified roster above has no dedicated OL slot — they simply
-  // won't be nominated because they fit no open slot. This keeps the pool
-  // rich without complicating the ten-slot layout.
 
-  /* ---- Valuation helpers ------------------------------------------- */
+  /* ================= CLUE ENGINE (ported from the full game) =========
+     Turns a player into a fame-adaptive ladder of trivia clues. Legends
+     get their giveaway facts stripped (must be recognised); lesser names
+     get a pinpoint clue so they're crackable by a knowledgeable player. */
 
-  // Convert an overall rating into a market price. The exponent makes elite
-  // players cost dramatically more than average ones (a 99 is worth far more
-  // than three 80s), which is what forces real budget trade-offs.
-  function marketValue(p){
-    return Math.max(1, Math.round(Math.pow(Math.max(0, p.o - 52), 1.55) / 6));
+  var HINT_COLLEGES = /\b(michigan|ohio state|alabama|auburn|lsu|georgia|clemson|notre dame|usc|ucla|oklahoma state|oklahoma|texas a&m|texas|florida state|florida|miami|penn state|nebraska|wisconsin|oregon|stanford|tennessee|kentucky|arkansas|missouri|iowa|michigan state|washington|utah|tcu|baylor|west virginia|virginia tech|north carolina|nc state|louisville|pittsburgh|pitt|syracuse|boston college|maryland|rutgers|purdue|indiana|illinois|minnesota|northwestern|kansas state|kansas|mississippi state|ole miss|mississippi|south carolina|vanderbilt|colorado|arizona state|arizona|byu|boise state|cincinnati|houston|smu|memphis|tulane|temple|fresno state|san diego state|hawaii|delaware|montana|grambling|jackson state|north dakota state|villanova|marshall|toledo|ball state|central michigan|western michigan|northern illinois|appalachian state|southern university|northern iowa|ucf|troy|kent state|william & mary|savannah state|eastern washington|western illinois|north texas|texas southern|chattanooga|new mexico)\b/;
+  var HINT_AWARDS = /\b(heisman|doak walker|biletnikoff|outland|butkus|jim thorpe|bednarik|maxwell|walter payton|consensus all-american|all-american)\b/;
+
+  function classifyHintText(text){
+    var s = String(text||'').toLowerCase();
+    var category = 'other';
+    if(/draft|overall|round|undrafted|number-one|top \d+ pick|first overall|\d+(st|nd|rd|th) pick/.test(s)) category='draft';
+    else if(HINT_COLLEGES.test(s) || HINT_AWARDS.test(s) || /college|university|recruit|\bsec\b|big ten|big 12|\bacc\b|pac-1[02]|junior college|fbs|fcs/.test(s)) category='origin';
+    else if(/son of|brother of|father|two[- ]sport|baseball|basketball|olympic|record|first player|only player|hall of fame|retired (his )?number/.test(s)) category='signature';
+    else if(/afc|nfc|franchise|traded|signed with|joined|played for|conference championship|journeyman|one team|stayed with|spent his|division/.test(s)) category='path';
+    else if(/mvp|pro bowl|all-pro|champion|super bowl|led the league|yards|touchdown|sack|interception|rushing|passing|receiving/.test(s)) category='accolade';
+    else if(/speed|size|arm|hands|route|coverage|pocket|mobile|physical|height|weight|pounds|throw|style|known for|elusive|power|tackler|blocker/.test(s)) category='style';
+    var tier = 2;
+    var pinpoint = /\b(19|20)\d{2}\b/.test(s) || /#\d/.test(s) || /\b\d+(st|nd|rd|th) overall\b/.test(s)
+      || /first overall|number-one pick/.test(s) || HINT_COLLEGES.test(s) || HINT_AWARDS.test(s)
+      || /over [\d,]+|\b\d,\d{3}\b|\b\d{3,}\b/.test(s) || /son of|two[- ]sport|major league|olympic|hall of fame/.test(s);
+    var vague = /multiple|several|various|early in his|expectations|known more for|most of his|generational|elite|considered|rebuilding|different (teams|franchises)|cold-weather|high expectations|frequently cited|a veteran|long-tenured|longevity|durable/.test(s);
+    if(pinpoint) tier=3; else if(vague) tier=1;
+    return { category:category, tier:tier };
   }
+
+  function hintFame(p){ return (p.mvp||0)*5 + (p.ap||0)*3 + (p.pb||0)*1 + (p.chp||0)*2 + (p.cm||0)*3; }
+  function hintFameTier(p){ var f=hintFame(p); return f>=20?'high':f<=3?'low':'mid'; }
+
+  // Team normalisation for career-path clues.
+  var TEAM_DEFS = [
+    ['49ers','NFC',['SF']],['Cardinals','NFC',['ARI']],['Falcons','NFC',['ATL']],['Ravens','AFC',['BAL']],
+    ['Bills','AFC',['BUF']],['Bears','NFC',['CHI']],['Bengals','AFC',['CIN']],['Broncos','AFC',['DEN']],
+    ['Browns','AFC',['CLE']],['Buccaneers','NFC',['TB']],['Panthers','NFC',['CAR']],
+    ['Commanders','NFC',['WAS','Washington','Redskins']],['Chargers','AFC',['LAC','SD']],['Chiefs','AFC',['KC']],
+    ['Colts','AFC',['IND']],['Cowboys','NFC',['DAL']],['Lions','NFC',['DET']],['Dolphins','AFC',['MIA']],
+    ['Eagles','NFC',['PHI']],['Packers','NFC',['GB']],['Giants','NFC',['NYG']],['Texans','AFC',['HOU']],
+    ['Jaguars','AFC',['JAX']],['Jets','AFC',['NYJ']],['Rams','NFC',['LAR','STL']],['Raiders','AFC',['OAK','LV']],
+    ['Vikings','NFC',['MIN']],['Patriots','AFC',['NE']],['Saints','NFC',['NO']],['Oilers','AFC',[]],
+    ['Steelers','AFC',['PIT']],['Seahawks','NFC',['SEA']],['Titans','AFC',['TEN']]
+  ];
+  var TEAM_CANON = {};
+  TEAM_DEFS.forEach(function(d){ TEAM_CANON[d[0]]={name:d[0],conf:d[1]}; d[2].forEach(function(a){ TEAM_CANON[a]={name:d[0],conf:d[1]}; }); });
+  function teamInfo(code){ if(code==='LA') return {name:'a Los Angeles team',conf:null}; return TEAM_CANON[code] || {name:code,conf:null}; }
+  function joinNames(a){ return a.length<=1 ? (a[0]||'') : a.slice(0,-1).join(', ')+' and '+a[a.length-1]; }
+  function parseDraftYear(p){ for(var i=0;i<p.ts.length;i++){ var m=String(p.ts[i]).match(/\b(19[5-9]\d|20[0-2]\d)\b/); if(m){ var y=+m[1]; if(y>=1950&&y<=2025) return y; } } return null; }
+
+  function derivedClues(p){
+    var out=[]; var infos=(p.tm||[]).map(teamInfo);
+    var names=[], seen={};
+    infos.forEach(function(t){ if(t.name && !seen[t.name]){ seen[t.name]=1; names.push(t.name); } });
+    if(names.length===1) out.push({kind:'trivia',text:'Spent his entire career with the '+names[0],category:'path',tier:3});
+    else if(names.length>=2 && names.length<=3) out.push({kind:'trivia',text:'Played for the '+joinNames(names),category:'path',tier:3});
+    else if(names.length>=4) out.push({kind:'trivia',text:'A journeyman — suited up for the '+names[0]+', '+names[1]+', and '+(names.length-2)+' other franchises',category:'path',tier:2});
+    var confs=[]; var cs={}; infos.forEach(function(t){ if(t.conf && !cs[t.conf]){ cs[t.conf]=1; confs.push(t.conf); } });
+    if(confs.length===1) out.push({kind:'trivia',text:'Played his career in the '+confs[0],category:'path',tier:2});
+    else if(confs.length===2) out.push({kind:'trivia',text:'Played in both the AFC and NFC',category:'path',tier:2});
+    var yr=parseDraftYear(p);
+    if(yr) out.push({kind:'trivia',text:'Entered the NFL in the '+(Math.floor(yr/10)*10)+'s',category:'draft',tier:2});
+    return out;
+  }
+
+  function selectTieredClues(cands, count, p){
+    var fame = hintFameTier(p);
+    var pool = fame==='high' ? cands.filter(function(c){ return c.tier<3; }) : cands.slice();
+    if(!pool.length) pool = cands.slice();
+    var t3count = pool.filter(function(c){ return c.tier===3; }).length;
+    var choose = function(arr){ return arr[Math.floor(Math.random()*arr.length)]; };
+    var pattern = fame==='high'
+      ? choose([[1,2,2],[1,1,2],[2,2,2],[1,2,2]])
+      : t3count>=2
+        ? choose([[1,2,3],[1,2,3],[2,2,3],[1,3,3],[2,3,1],[1,2,2]])
+        : t3count===1
+          ? choose([[1,2,3],[2,2,3],[1,2,2],[2,2,2],[1,2,2]])
+          : choose([[1,2,2],[1,2,2],[2,2,2],[1,1,2]]);
+    var used=[], usedCat={}, out=[];
+    var avail = function(t){ return shuffle(pool.filter(function(c){ return used.indexOf(c)===-1 && c.tier===t; })); };
+    function take(prefTier){
+      var order=[prefTier,prefTier-1,prefTier+1,prefTier-2,prefTier+2].filter(function(t){ return t>=1&&t<=3; });
+      for(var i=0;i<order.length;i++){
+        var t=order[i]; var list=avail(t);
+        var cand=null;
+        for(var j=0;j<list.length;j++){ if(!usedCat[list[j].category]){ cand=list[j]; break; } }
+        if(!cand) cand=list[0];
+        if(cand){ used.push(cand); usedCat[cand.category]=1; out.push(cand); return; }
+      }
+    }
+    for(var i=0;i<count;i++) take(pattern[i]!=null?pattern[i]:2);
+    while(out.length<count){
+      var rest=shuffle(pool.filter(function(c){ return used.indexOf(c)===-1; }));
+      if(!rest.length) break; used.push(rest[0]); out.push(rest[0]);
+    }
+    return shuffle(out);
+  }
+
+  function buildClues(p, count){
+    count = count || CLUES_PER_CARD;
+    var cands=[];
+    var add=function(cond,label,value,unit,category,tier){ if(cond) cands.push({kind:'stat',label:label,value:value,unit:unit,category:category,tier:tier}); };
+    add(true,'Pro Bowls',p.pb,'selections','accolade', p.pb>=7?3:p.pb>=3?2:1);
+    add(true,'All-Pro Selections',p.ap,'first-team','accolade', p.ap>=3?3:p.ap>=1?2:1);
+    add(p.mvp>0,'NFL MVP Awards',p.mvp, p.mvp===1?'time':'times','accolade',3);
+    add(true,'Championships',p.chp, p.ca?('('+p.ca+' title-game appearances)'):'', 'accolade', p.chp>0?2:1);
+    add(p.cm>0,'Championship MVPs',p.cm, p.cm===1?'time':'times','accolade',3);
+    add(true,'Years Active',p.y,'seasons','path',1);
+    add(p.tm.length>1,'Franchises',p.tm.length,'different teams','path',2);
+    p.ts.forEach(function(t){ var c=classifyHintText(t); cands.push({kind:'trivia',text:t,category:c.category,tier:c.tier}); });
+    derivedClues(p).forEach(function(c){ cands.push(c); });
+    return selectTieredClues(cands, count, p);
+  }
+
+  /* ---- Valuation ---------------------------------------------------- */
+  function marketValue(p){ return Math.max(1, Math.round(Math.pow(Math.max(0, p.o - 52), 1.55) / 6)); }
 
   /* ---- State -------------------------------------------------------- */
   var state = null, busy = false;
   var sel = { name:'', opp:2, diff:'medium', bid:0 };
   var DIFF_NOTES = {
-    easy:'Easy — GMs value players loosely and leave obvious bargains on the board.',
-    medium:'Medium — GMs value players reasonably and spread their cap, with a little noise you can exploit.',
-    hard:'Hard — GMs price players tightly and rarely leave a clear bargain sitting.',
-    impossible:'Sharp — near-perfect valuations and disciplined cap management. They punish every mistake.'
+    easy:'Casual — the GMs only recognise true household names, so deep cuts slip past them for you to steal.',
+    medium:'Fan — the GMs recognise most well-known players but miss deeper cuts, and their bids carry some noise you can exploit.',
+    hard:'Diehard — the GMs crack most clue cards and price tightly. You need real depth of knowledge to beat them.',
+    impossible:'Historian — the GMs recognise nearly everyone and bid with discipline. Hiding a player from them is almost impossible.'
   };
-  // Difficulty tuning: `noise` is the random swing around a GM\'s target bid;
-  // `premium` is how much extra the tier pays to secure players it wants.
+  // SKILL = how much football the tier knows (base recognition); noise =
+  // random swing on bids; aggr range = per-GM personality aggressiveness.
   var DIFF_CFG = {
-    easy:       { noise:0.45, premium:0.98, aggrLo:0.80, aggrHi:1.10 },
-    medium:     { noise:0.26, premium:1.00, aggrLo:0.88, aggrHi:1.12 },
-    hard:       { noise:0.13, premium:1.03, aggrLo:0.95, aggrHi:1.12 },
-    impossible: { noise:0.05, premium:1.06, aggrLo:1.00, aggrHi:1.10 }
+    easy:       { skill:0.35, noise:0.42, aggrLo:0.80, aggrHi:1.10 },
+    medium:     { skill:0.55, noise:0.26, aggrLo:0.88, aggrHi:1.12 },
+    hard:       { skill:0.75, noise:0.14, aggrLo:0.95, aggrHi:1.12 },
+    impossible: { skill:0.92, noise:0.06, aggrLo:1.00, aggrHi:1.10 }
   };
 
   var $ = function(id){ return document.getElementById(id); };
@@ -532,7 +643,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
   /* ---- Setup interactions ------------------------------------------ */
   var nameInput=$('name-input'), oppSeg=$('opp-seg'), diffSeg=$('diff-seg'), diffNote=$('diff-note');
   try { var savedName = localStorage.getItem('bd_name'); if(savedName) nameInput.value = savedName; } catch(e){}
-
   oppSeg.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
     Array.prototype.forEach.call(oppSeg.children,function(c){c.classList.remove('selected');}); b.classList.add('selected'); sel.opp=parseInt(b.dataset.opp,10); });
   diffSeg.addEventListener('click', function(e){ var b=e.target.closest('button'); if(!b) return;
@@ -553,164 +663,114 @@ document.getElementById('year').textContent = new Date().getFullYear();
   function startGame(){
     sel.name = (nameInput.value.trim() || 'Your Franchise');
     try { localStorage.setItem('bd_name', sel.name); } catch(e){}
-
     var cfg = DIFF_CFG[sel.diff];
     var gms = [ makeGM(sel.name, true, 1.0) ];
     var names = shuffle(GM_NAMES).slice(0, sel.opp);
-    names.forEach(function(nm){
-      // each AI gets a fixed personality aggressiveness within the tier's range
-      var aggr = cfg.aggrLo + Math.random()*(cfg.aggrHi - cfg.aggrLo);
-      gms.push(makeGM(nm, false, aggr));
-    });
-
-    state = { gms:gms, pool:shuffle(POOL.slice()), diff:sel.diff, cfg:cfg, current:null };
+    names.forEach(function(nm){ gms.push(makeGM(nm, false, cfg.aggrLo + Math.random()*(cfg.aggrHi-cfg.aggrLo))); });
+    state = { gms:gms, pool:shuffle(POOL.slice()), diff:sel.diff, cfg:cfg, current:null, clues:null };
     setupEl.classList.add('hidden'); gameEl.classList.remove('hidden');
     logEl.innerHTML=''; winBox.classList.add('hidden'); rosterView.classList.add('hidden');
-    pushLog('Draft begins — '+sel.name+' vs '+sel.opp+' GM'+(sel.opp>1?'s':'')+' ('+sel.diff+'). Everyone has $'+BUDGET+'.', 'system');
+    pushLog('Draft begins — '+sel.name+' vs '+sel.opp+' GM'+(sel.opp>1?'s':'')+' ('+labelForDiff(sel.diff)+'). Everyone has $'+BUDGET+'.', 'system');
     nominateNext();
     window.scrollTo({top:0,behavior:'smooth'});
   }
-
-  function makeGM(name, isHuman, aggr){
-    return { name:name, isHuman:isHuman, aggr:aggr, budget:BUDGET, roster:SLOTS.map(function(){ return null; }) };
-  }
+  function labelForDiff(d){ return {easy:'Casual',medium:'Fan',hard:'Diehard',impossible:'Historian'}[d]; }
+  function makeGM(name, isHuman, aggr){ return { name:name, isHuman:isHuman, aggr:aggr, budget:BUDGET, roster:SLOTS.map(function(){ return null; }) }; }
 
   /* ---- Roster / slot helpers --------------------------------------- */
   function emptyCount(gm){ var c=0; gm.roster.forEach(function(x){ if(!x) c++; }); return c; }
-
-  // First open slot index that accepts `pos`, preferring a dedicated
-  // (single-position) slot over the flex so value drops into the flex.
   function openSlotFor(gm, pos){
     var flexIdx=-1;
     for(var i=0;i<SLOTS.length;i++){
       if(gm.roster[i]) continue;
       if(SLOTS[i].pos.indexOf(pos)===-1) continue;
-      if(SLOTS[i].pos.length===1) return i;      // dedicated slot — take it
-      if(flexIdx===-1) flexIdx=i;                // remember flex as fallback
+      if(SLOTS[i].pos.length===1) return i;
+      if(flexIdx===-1) flexIdx=i;
     }
     return flexIdx;
   }
   function canUse(gm, player){ return openSlotFor(gm, player.p) !== -1; }
+  function maxBid(gm){ var e=emptyCount(gm); if(e<=0) return 0; return Math.max(1, gm.budget - (e-1)*MIN_RESERVE); }
 
-  // The most a GM may legally bid: it must keep $MIN_RESERVE for every OTHER
-  // still-empty slot, guaranteeing it can always complete a legal roster.
-  function maxBid(gm){
-    var empties = emptyCount(gm);
-    if(empties<=0) return 0;
-    return Math.max(1, gm.budget - (empties-1)*MIN_RESERVE);
-  }
-
-  /* ---- Nomination --------------------------------------------------- */
-  // Put the highest-rated remaining player that SOMEONE can still use on the
-  // block. Pool is pre-sorted-ish but we scan for the best usable each time.
+  /* ---- Nomination (identity hidden) -------------------------------- */
   function nominateNext(){
     revealBox.classList.add('hidden');
-    // remove players nobody can use anymore (keeps the board honest)
-    state.pool = state.pool.filter(function(p){
-      return state.gms.some(function(gm){ return canUse(gm, p); });
-    });
-    if(state.pool.length===0 || state.gms.every(function(gm){ return emptyCount(gm)===0; })){
-      return endDraft();
-    }
-    // pick highest overall among usable players
+    state.pool = state.pool.filter(function(p){ return state.gms.some(function(gm){ return canUse(gm, p); }); });
+    if(state.pool.length===0 || state.gms.every(function(gm){ return emptyCount(gm)===0; })) return endDraft();
     var best=null;
-    state.pool.forEach(function(p){
-      if(state.gms.some(function(gm){ return canUse(gm,p); })){
-        if(!best || p.o>best.o) best=p;
-      }
-    });
+    state.pool.forEach(function(p){ if(state.gms.some(function(gm){ return canUse(gm,p); })){ if(!best || p.o>best.o) best=p; } });
     state.current = best;
+    state.clues = buildClues(best);   // generate the mystery clue card once
     sel.bid = 0;
     renderBoard();
     renderAuctionCard(best);
-    // human may or may not be able to use this player
     var human = state.gms[0];
     if(canUse(human, best) && emptyCount(human)>0){
       bidStage.classList.remove('hidden');
-      setBid(suggestedOpeningBid(human, best));
+      setBid(0);
       setControlsEnabled(true);
     } else {
-      // human can't use this player — auto-run the AI-only auction
       bidStage.classList.add('hidden');
-      pushLog('<span class="who">'+human.name+'</span> can\'t use '+best.n+' ('+best.p+') — no open slot.');
+      pushLog('<span class="who">'+human.name+'</span> has no open '+POS_META[best.p].n+' slot — sitting this one out.');
       setTimeout(function(){ resolveAuction(null); }, 700);
     }
   }
 
-  function suggestedOpeningBid(gm, p){
-    // a gentle default so the human isn't starting from zero on stars
-    var mv = marketValue(p);
-    return Math.max(0, Math.min(maxBid(gm), Math.round(mv*0.6)));
-  }
-
   /* ---- Bid controls (human) ---------------------------------------- */
-  function setBid(v){
-    var mx = maxBid(state.gms[0]);
-    if(v<0) v=0; if(v>mx) v=mx;
-    sel.bid=v; bidVal.textContent=v;
-    bidCap.textContent='Cap space: $'+state.gms[0].budget+'  ·  Max legal bid: $'+mx+'  (must keep $1 for each empty slot)';
-  }
+  function setBid(v){ var mx=maxBid(state.gms[0]); if(v<0)v=0; if(v>mx)v=mx; sel.bid=v; bidVal.textContent=v;
+    bidCap.textContent='Cap space: $'+state.gms[0].budget+'  ·  Max legal bid: $'+mx+'  (must keep $1 per empty slot)'; }
   bidMinus.addEventListener('click', function(){ if(busy) return; setBid(sel.bid-1); });
   bidPlus.addEventListener('click', function(){ if(busy) return; setBid(sel.bid+1); });
-
   function buildQuickBids(){
     quickbids.innerHTML='';
-    var mx = maxBid(state.gms[0]);
-    [5,10,15,25].forEach(function(inc){
-      var b=document.createElement('button'); b.textContent='+$'+inc;
-      b.addEventListener('click', function(){ if(busy) return; setBid(sel.bid+inc); });
-      quickbids.appendChild(b);
-    });
-    var mxb=document.createElement('button'); mxb.textContent='Max $'+mx;
-    mxb.addEventListener('click', function(){ if(busy) return; setBid(maxBid(state.gms[0])); });
-    quickbids.appendChild(mxb);
+    [5,10,15,25].forEach(function(inc){ var b=document.createElement('button'); b.textContent='+$'+inc; b.addEventListener('click', function(){ if(busy) return; setBid(sel.bid+inc); }); quickbids.appendChild(b); });
+    var mxb=document.createElement('button'); mxb.textContent='Max $'+maxBid(state.gms[0]); mxb.addEventListener('click', function(){ if(busy) return; setBid(maxBid(state.gms[0])); }); quickbids.appendChild(mxb);
   }
-
   bidBtn.addEventListener('click', function(){ if(busy) return; resolveAuction(sel.bid); });
   passBtn.addEventListener('click', function(){ if(busy) return; resolveAuction(0); });
 
-  /* ---- AI bid ------------------------------------------------------- */
-  // Target = fair share of remaining cap, stretched by how elite the player
-  // is (tier), scaled by the GM's personality aggression, then jittered by
-  // the difficulty's noise. Always capped by maxBid() so the GM stays legal.
+  /* ---- Recognition + AI bid ---------------------------------------- */
+  // Chance an AI recognises the mystery player: driven by the tier's base
+  // football knowledge (skill) plus how famous the player is. Legends are
+  // known by almost everyone; obscure players only by the sharpest GMs.
+  function recognizeProb(p){
+    var fameNorm = Math.min(1, hintFame(p)/25);
+    var skill = state.cfg.skill;
+    return Math.max(0.03, Math.min(0.97, skill*0.6 + fameNorm*0.55));
+  }
+  // If recognised, the GM bids toward true value (stretched for quality).
+  // If NOT, it bids cautiously and largely blind to how good he really is —
+  // which is why a player you know but the room doesn't goes cheap.
   function computeAIBid(gm, p){
-    if(!canUse(gm, p)) return 0;
-    var empties = emptyCount(gm);
-    if(empties<=0) return 0;
-    var fairShare = gm.budget / empties;
-    var tier = Math.max(0, Math.min(1, (p.o - 63) / 36));   // 0 (role player) .. 1 (superstar)
-    var target = fairShare * (0.55 + tier*1.5);             // stretch up to ~2x for stars
-    target *= gm.aggr;
-    // difficulty noise (random swing) + premium for the sharp tiers
-    var cfg = state.cfg;
-    target *= (1 + (Math.random()*2-1)*cfg.noise);
-    target *= cfg.premium;
+    if(!canUse(gm, p)) return { bid:0, recog:false };
+    var empties=emptyCount(gm); if(empties<=0) return { bid:0, recog:false };
+    var recog = Math.random() < recognizeProb(p);
+    var fair = gm.budget / empties;
+    var tier = Math.max(0, Math.min(1, (p.o - 63) / 36));
+    var base = recog ? fair*(0.55 + tier*1.5) : fair*(0.35 + Math.random()*0.5);
+    base *= gm.aggr;
+    base *= (1 + (Math.random()*2-1)*state.cfg.noise);
     var cap = maxBid(gm);
-    var bid = Math.round(Math.min(target, cap));
-    // if the GM genuinely needs this slot and can afford it, never bid $0
+    var bid = Math.round(Math.min(base, cap));
     if(bid < 1 && cap >= 1) bid = 1;
-    return Math.max(0, bid);
+    return { bid:Math.max(0,bid), recog:recog };
   }
 
   /* ---- Auction resolution ------------------------------------------ */
-  // humanBid is the human's blind bid (0 = pass), or null if the human can't
-  // use the player (AI-only auction).
   function resolveAuction(humanBid){
     busy=true; setControlsEnabled(false);
     var p = state.current;
-    var bids = [];   // { gm, amount }
+    var bids = [];
     state.gms.forEach(function(gm, idx){
-      var amount;
       if(idx===0){
-        amount = (humanBid===null) ? 0 : Math.min(humanBid, maxBid(gm));
+        var amount = (humanBid===null) ? 0 : Math.min(humanBid, maxBid(gm));
         if(!canUse(gm,p)) amount = 0;
+        bids.push({ gm:gm, amount:amount, recog:null });
       } else {
-        amount = computeAIBid(gm, p);
+        var r = computeAIBid(gm, p);
+        bids.push({ gm:gm, amount:r.bid, recog:r.recog });
       }
-      bids.push({ gm:gm, amount:amount });
     });
-
-    // winner = highest amount > 0; tie-break by most cap left, then random
     var contenders = bids.filter(function(b){ return b.amount>0; });
     var winner = null;
     if(contenders.length){
@@ -721,8 +781,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
       });
       winner = contenders[0];
     }
-
-    // apply result
     if(winner){
       var slot = openSlotFor(winner.gm, p.p);
       winner.gm.roster[slot] = { player:p, paid:winner.amount };
@@ -730,11 +788,9 @@ document.getElementById('year').textContent = new Date().getFullYear();
       state.pool = state.pool.filter(function(x){ return x!==p; });
       pushLog('<span class="who">'+winner.gm.name+'</span> wins <strong>'+p.n+'</strong> ('+p.p+', '+p.o+' OVR) for <strong>$'+winner.amount+'</strong>.');
     } else {
-      // nobody bid — player goes undrafted so we don't loop forever
       state.pool = state.pool.filter(function(x){ return x!==p; });
       pushLog(p.n+' ('+p.p+') drew no bids — goes undrafted.', 'system');
     }
-
     renderReveal(p, bids, winner);
     renderBoard();
     busy=false;
@@ -742,18 +798,36 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
   function renderReveal(p, bids, winner){
     bidStage.classList.add('hidden');
-    var html = '<h3>'+p.n+' — '+(winner? (winner.gm.name+' wins for $'+winner.amount) : 'no bids')+'</h3>';
-    // sort bids high to low for display
+    var col = (POS_META[p.p]||{c:'#666'}).c;
+    var you = bids[0];
+    var youWon = winner && winner.gm===state.gms[0];
+    var outcome, ocls;
+    if(youWon){ outcome='You won '+p.n+' for $'+winner.amount+'.'; ocls='win'; }
+    else if(winner){ outcome=winner.gm.name+' won '+p.n+' for $'+winner.amount+'.'; ocls='lose'; }
+    else { outcome=p.n+' drew no bids and went undrafted.'; ocls='lose'; }
+
+    // how many AI GMs recognised him — the social-deduction payoff
+    var recCount = bids.filter(function(b,i){ return i>0 && b.recog; }).length;
+    var aiCount = bids.length-1;
+    var recNote = aiCount>0 ? ('Rival GMs who recognised him: '+recCount+' of '+aiCount) : '';
+
+    var html = '<div class="reveal-head">'+
+      '<div class="ovr-badge" style="background:'+col+';"><span class="num">'+p.o+'</span><span class="lbl">OVR</span></div>'+
+      '<div><div class="reveal-name">'+p.n+'</div><div class="reveal-sub">'+POS_META[p.p].n+' · '+(p.tm[0]||'')+' · '+p.y+' yrs · '+p.pb+'× Pro Bowl'+(p.mvp?(' · '+p.mvp+'× MVP'):'')+'</div></div>'+
+      '</div>';
+    html += '<div class="reveal-outcome '+ocls+'">'+outcome+'</div>';
+    if(recNote) html += '<div class="recog-note">'+recNote+'</div>';
     var shown = bids.slice().sort(function(a,b){ return b.amount-a.amount; });
     shown.forEach(function(b){
       var isWin = winner && b.gm===winner.gm;
       var label = b.amount>0 ? ('$'+b.amount) : (canUse(b.gm,p)?'passed':'—');
-      html += '<div class="bidline'+(isWin?' win':'')+'"><span>'+b.gm.name+(b.gm.isHuman?' (you)':'')+'</span><span class="amt">'+label+(isWin?'  ✓':'')+'</span></div>';
+      var rec = (b.gm.isHuman) ? '' : (b.recog ? '<span class="rec">knew him</span>' : '<span class="rec">didn\'t know</span>');
+      html += '<div class="bidline'+(isWin?' win':'')+'"><span>'+b.gm.name+(b.gm.isHuman?' (you)':'')+rec+'</span><span class="amt">'+label+(isWin?'  ✓':'')+'</span></div>';
     });
     html += '<div class="btn-row" style="margin-top:12px;"><button class="btn btn-primary" id="next-btn" style="width:100%;justify-content:center;">Next player &rarr;</button></div>';
     revealBox.innerHTML = html;
     revealBox.classList.remove('hidden');
-    $('next-btn').addEventListener('click', function(){ nominateNext(); });
+    revealBox.querySelector('#next-btn').addEventListener('click', function(){ nominateNext(); });
   }
 
   /* ---- End of draft + scoring -------------------------------------- */
@@ -762,40 +836,27 @@ document.getElementById('year').textContent = new Date().getFullYear();
 
   function endDraft(){
     bidStage.classList.add('hidden'); revealBox.classList.add('hidden');
-    // rank by total OVR, tiebreak leftover cap
-    var ranked = state.gms.slice().sort(function(a,b){
-      var ta=rosterTotal(a), tb=rosterTotal(b);
-      if(tb!==ta) return tb-ta;
-      return b.budget-a.budget;
-    });
-    var winner = ranked[0];
-    var youWon = winner.isHuman;
-
+    var ranked = state.gms.slice().sort(function(a,b){ var ta=rosterTotal(a), tb=rosterTotal(b); if(tb!==ta) return tb-ta; return b.budget-a.budget; });
+    var winner = ranked[0], youWon = winner.isHuman;
     var html = '<h3>'+(youWon?'🏆 You win the draft!':winner.name+' wins the draft')+'</h3>';
     html += '<p style="color:var(--text-secondary);margin:0 0 4px;">Final roster ratings — highest total wins.</p>';
     winBox.innerHTML = html;
-    winBox.classList.remove('hidden');
-
-    // full breakdown of every roster
     var grid = '<div class="final-grid">';
     ranked.forEach(function(gm){
       grid += '<div class="final-team'+(gm===winner?' winner':'')+'">';
       grid += '<h4><span>'+gm.name+(gm.isHuman?' (you)':'')+'</span><span class="tot">'+rosterTotal(gm)+' OVR · $'+gm.budget+' left</span></h4>';
       grid += '<div class="roster-wrap"><table class="roster"><tbody>';
       gm.roster.forEach(function(x,i){
-        if(x){
-          grid += '<tr><td class="slot">'+SLOTS[i].key+'</td><td>'+x.player.n+' <span style="color:var(--text-muted);font-size:12px;">'+x.player.p+'</span></td><td class="ovr">'+x.player.o+'</td><td class="paid">$'+x.paid+'</td></tr>';
-        } else {
-          grid += '<tr><td class="slot">'+SLOTS[i].key+'</td><td class="empty" colspan="3">— empty —</td></tr>';
-        }
+        if(x) grid += '<tr><td class="slot">'+SLOTS[i].key+'</td><td>'+x.player.n+' <span style="color:var(--text-muted);font-size:12px;">'+x.player.p+'</span></td><td class="ovr">'+x.player.o+'</td><td class="paid">$'+x.paid+'</td></tr>';
+        else grid += '<tr><td class="slot">'+SLOTS[i].key+'</td><td class="empty" colspan="3">— empty —</td></tr>';
       });
       grid += '</tbody></table></div></div>';
     });
     grid += '</div>';
     winBox.innerHTML += grid;
     winBox.innerHTML += '<div class="btn-row" style="margin-top:14px;justify-content:center;"><button class="btn btn-primary" id="again-btn" style="min-width:180px;">Draft again</button></div>';
-    $('again-btn').addEventListener('click', function(){ winBox.classList.add('hidden'); startGame(); });
-
+    winBox.classList.remove('hidden');
+    winBox.querySelector('#again-btn').addEventListener('click', function(){ winBox.classList.add('hidden'); startGame(); });
     pushLog(youWon? 'You win with '+rosterTotal(winner)+' total OVR!' : winner.name+' wins with '+rosterTotal(winner)+' total OVR.', 'system');
     renderBoard();
   }
@@ -826,21 +887,27 @@ document.getElementById('year').textContent = new Date().getFullYear();
     if(!rosterView.classList.contains('hidden')) renderRosterTable();
   }
 
+  // The mystery card: position + clue ladder ONLY. No name, no rating.
   function renderAuctionCard(p){
     boardStatus.textContent = 'On the block  ·  '+state.pool.length+' players left';
     var col = (POS_META[p.p]||{c:'#666'}).c;
-    var acc = function(v,k){ return '<div class="acc"><div class="v">'+v+'</div><div class="k">'+k+'</div></div>'; };
     var human = state.gms[0];
     var slotIdx = openSlotFor(human, p.p);
     var fills = slotIdx>=0 ? ('Fills your '+SLOTS[slotIdx].label+' slot') : 'You have no open slot for this position';
+    var clues = state.clues.map(function(c, i){
+      var body = (c.kind==='stat')
+        ? '<span class="clabel">'+c.label+':</span> '+c.value+(c.unit?(' '+c.unit):'')
+        : c.text;
+      return '<div class="clue-item"><span class="cnum">'+(i+1)+'</span><span>'+body+'</span></div>';
+    }).join('');
     auctionCard.innerHTML =
-      '<div class="ovr-badge" style="background:'+col+';"><span class="num">'+p.o+'</span><span class="lbl">OVR</span></div>'+
-      '<div class="pl-info">'+
-        '<div class="pl-name">'+p.n+'</div>'+
-        '<div class="pl-sub"><span class="pos-tag" style="background:'+col+';">'+p.p+'</span>'+p.t+' · '+p.y+' yrs</div>'+
-        '<div class="accolades">'+acc(p.pb,'Pro Bowls')+acc(p.ap,'All-Pro')+acc(p.mvp,'MVP')+acc(p.chp,'Titles')+'</div>'+
-        '<div class="fills-note">'+fills+'</div>'+
-      '</div>';
+      '<div class="myst-head">'+
+        '<div class="myst-badge">🕵️</div>'+
+        '<div><div class="myst-title">Mystery '+POS_META[p.p].n+'</div>'+
+          '<div class="myst-sub"><span class="pos-tag" style="background:'+col+';">'+p.p+'</span> &nbsp;Identify him from the clues, then bid blind</div></div>'+
+      '</div>'+
+      '<div class="clue-list">'+clues+'</div>'+
+      '<div class="fills-note">'+fills+'</div>';
     buildQuickBids();
   }
 
@@ -856,8 +923,6 @@ document.getElementById('year').textContent = new Date().getFullYear();
   }
 
   function pushLog(html, cls){ var d=document.createElement('div'); d.className='log-entry'+(cls?' '+cls:''); d.innerHTML=html; logEl.appendChild(d); logEl.scrollTop=logEl.scrollHeight; }
-
-  /* ---- Utility ------------------------------------------------------ */
   function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i];a[i]=a[j];a[j]=t; } return a; }
 
 })();

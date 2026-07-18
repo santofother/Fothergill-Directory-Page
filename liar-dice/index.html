@@ -695,6 +695,12 @@ var PA = (function(){
   function minQty(){ if(!state||!state.currentBid) return 1; var cq=state.currentBid.qty,cf=state.currentBid.face; if(sel.face>cf) return cq; return cq+1; }
   function maxQty(){ return state ? totalDiceInPlay(state) : 1; }
   function clampQty(){ var mn=minQty(),mx=maxQty(); if(sel.qty<mn)sel.qty=mn; if(sel.qty>mx)sel.qty=mx; qtyVal.textContent=sel.qty; var cap=document.querySelector('.stepper .cap'); if(cap) cap.textContent='of '+mx+' dice'; }
+  // Reset the human's bid selector to its defaults at the start of each round.
+  function resetBidSelector(){
+    sel.qty=1; sel.face=2;
+    Array.prototype.forEach.call(facePicker.children,function(c,i){ c.classList.toggle('selected', i===1); });
+    qtyVal.textContent=sel.qty;
+  }
   qtyMinus.addEventListener('click', function(){ sel.qty--; clampQty(); });
   qtyPlus.addEventListener('click', function(){ sel.qty++; clampQty(); });
 
@@ -725,6 +731,7 @@ var PA = (function(){
   function startRound(){
     state.players.forEach(function(p){ if(p.numDice>0){ p.dice=[]; for(var i=0;i<p.numDice;i++) p.dice.push(rollDie()); } else p.dice=[]; });
     state.currentBid=null; state.phase='bidding';
+    resetBidSelector();
     var alive=getAliveIdx(state);
     if(state.roundStarter===undefined || state.players[state.roundStarter].numDice<=0) state.roundStarter=alive[0];
     state.current=state.roundStarter;
